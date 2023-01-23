@@ -92,18 +92,18 @@ public class Rendering3D extends Application{
 				p1 = multiply(getRotateY(this.angle), p1);
 				p2 = multiply(getRotateY(this.angle), p2);
 				p3 = multiply(getRotateY(this.angle), p3);
+				p1 = multiply(getRotateZ(this.angle), p1);
+				p2 = multiply(getRotateZ(this.angle), p2);
+				p3 = multiply(getRotateZ(this.angle), p3);
 				
 				// Translate
-				p1 = multiply(getTranslation(0, 0, 4), p1);
-				p2 = multiply(getTranslation(0, 0, 4), p2);
-				p3 = multiply(getTranslation(0, 0, 4), p3);
+				p1 = multiply(getTranslation(0, 0, 6), p1);
+				p2 = multiply(getTranslation(0, 0, 6), p2);
+				p3 = multiply(getTranslation(0, 0, 6), p3);
 				
 				Point3D point1 = new Point3D(p1[0], p1[1], p1[2]);
 				Point3D point2 = new Point3D(p2[0], p2[1], p2[2]);
 				Point3D point3 = new Point3D(p3[0], p3[1], p3[2]);
-				/*Point3D normal = getNormal(point2.subtract(point1), point3.subtract(point1));
-				normal.multiply(1/normal.magnitude());
-				double dot = dotProduct(normal, point1.subtract(cx, cy, cz));*/
 				
 				Point3D normal = point2.subtract(point1).crossProduct(point3.subtract(point1));
 				normal.normalize();
@@ -124,7 +124,11 @@ public class Rendering3D extends Application{
 					double px3 = p3[0]/(p3[3] == 0 ? 1 : p3[3]);
 					double py3 = p3[1]/(p3[3] == 0 ? 1 : p3[3]);
 					double pz1 = p1[2];
-					if (px1 > 1 || px1 < -1 || py1 > 1 || py1 < -1 || pz1 > 1 || pz1 < -1){
+					double pz2 = p2[2];
+					double pz3 = p3[2];
+					if (px1 > 1 || px1 < -1 || py1 > 1 || py1 < -1 || pz1 > 1 || pz1 < -1
+					 || px2 > 1 || px2 < -1 || py2 > 1 || py2 < -1 || pz2 > 1 || pz2 < -1
+					 || px3 > 1 || px3 < -1 || py3 > 1 || py3 < -1 || pz3 > 1 || pz3 < -1){
 						setProjectedPoint(i, 0, null);
 						setProjectedPoint(i, 1, null);
 						setProjectedPoint(i, 2, null);
