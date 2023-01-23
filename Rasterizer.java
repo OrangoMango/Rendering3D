@@ -18,11 +18,15 @@ public class Rasterizer extends Application{
 	
 	private static class Triangle{
 		private Point2D a, b, c;
+		private Point2D ta, tb, tc;
 		
-		public Triangle(Point2D a, Point2D b, Point2D c){
+		public Triangle(Point2D a, Point2D b, Point2D c, Point2D ta, Point2D tb, Point2D tc){
 			this.a = a;
 			this.b = b;
 			this.c = c;
+			this.ta = ta;
+			this.tb = tb;
+			this.tc = tc;
 		}
 		
 		public void render(GraphicsContext gc){
@@ -30,7 +34,31 @@ public class Rasterizer extends Application{
 			gc.setLineWidth(1);
 			
 			gc.strokePolygon(new double[]{a.getX(), b.getX(), c.getX()}, new double[]{a.getY(), b.getY(), c.getY()}, 3);
+			
+			renderTriangle(a.getX(), a.getY(), b.getX(), b.getY(), c.getX(), c.getY(), gc);
 		}
+		
+		private void renderTriangle(double x1, double y1, double x2, double y2, double x3, double y3, GraphicsContext gc){
+			double[] swap = new double[2];
+			if (y2 < y1){
+				y1 = swap(y2, y2 = y1);
+				x1 = swap(x2, x2 = x1);
+			}
+			if (y3 < y1){
+				y1 = swap(y3, y3 = y1);
+				x1 = swap(x3, x3 = x1);
+			}
+			if (y3 < y2){
+				y2 = swap(y3, y3 = y2);
+				x2 = swap(x3, x3 = x2);
+			}
+			
+			
+		}
+	}
+	
+	private static double swap(double a, double b){
+		return a;
 	}
 
 	@Override
@@ -55,7 +83,7 @@ public class Rasterizer extends Application{
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		pane.getChildren().add(canvas);
 		
-		this.triangle = new Triangle(new Point2D(100, 100), new Point2D(500, 250), new Point2D(400, 300));
+		this.triangle = new Triangle(new Point2D(100, 400), new Point2D(400, 200), new Point2D(500, 250), null, null, null);
 		
 		Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
 		loop.setCycleCount(Animation.INDEFINITE);

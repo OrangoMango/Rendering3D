@@ -170,9 +170,9 @@ public class Rendering3D extends Application{
 				
 				if (p1 == null || p2 == null || p3 == null) continue;
 				
-				gc.strokeLine(p1.getX(), HEIGHT-p1.getY(), p2.getX(), HEIGHT-p2.getY());
-				gc.strokeLine(p2.getX(), HEIGHT-p2.getY(), p3.getX(), HEIGHT-p3.getY());
-				gc.strokeLine(p1.getX(), HEIGHT-p1.getY(), p3.getX(), HEIGHT-p3.getY());
+				gc.strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+				gc.strokeLine(p2.getX(), p2.getY(), p3.getX(), p3.getY());
+				gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
 
 				Point2D t1 = this.textureVertex[this.textureFaces[i][0]];
 				Point2D t2 = this.textureVertex[this.textureFaces[i][1]];
