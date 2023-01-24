@@ -110,7 +110,13 @@ public class Rasterizer extends Application{
 						tex_u = (1-t)*tex_su+t*tex_eu;
 						tex_v = (1-t)*tex_sv+t*tex_ev;
 						
-						gc.getPixelWriter().setColor(j, i, image.getPixelReader().getColor((int)(tex_u*image.getWidth()), (int)(tex_v*image.getHeight())));
+						int pix_x = (int)(tex_u*(image.getWidth())) % ((int)image.getWidth());
+						int pix_y = (int)(tex_v*(image.getHeight())) % ((int)image.getHeight());
+						
+						if (pix_x < 0) pix_x = (int)image.getWidth()-pix_x;
+						if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
+
+						gc.getPixelWriter().setColor(j, i, image.getPixelReader().getColor(pix_x, pix_y));
 						
 						t += tstep;
 					}
@@ -156,7 +162,13 @@ public class Rasterizer extends Application{
 						tex_u = (1-t)*tex_su+t*tex_eu;
 						tex_v = (1-t)*tex_sv+t*tex_ev;
 						
-						gc.getPixelWriter().setColor(j, i, image.getPixelReader().getColor((int)(tex_u*image.getWidth()), (int)(tex_v*image.getHeight())));
+						int pix_x = (int)(tex_u*(image.getWidth())) % ((int)image.getWidth());
+						int pix_y = (int)(tex_v*(image.getHeight())) % ((int)image.getHeight());
+						
+						if (pix_x < 0) pix_x = (int)image.getWidth()-pix_x;
+						if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
+
+						gc.getPixelWriter().setColor(j, i, image.getPixelReader().getColor(pix_x, pix_y));
 						
 						t += tstep;
 					}
@@ -165,7 +177,7 @@ public class Rasterizer extends Application{
 		}
 	}
 	
-	private static <T extends Number> T swap(T a, T b){
+	private static <T> T swap(T a, T b){
 		return a;
 	}
 
