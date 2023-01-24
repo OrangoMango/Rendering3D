@@ -407,7 +407,7 @@ public class Rendering3D extends Application{
 			}
 		}
 		
-		//cubes.add(loadCubeFromFile(new File("/home/paul/projects/JavaFX3D/teddy.obj")));
+		//cubes.add(loadCubeFromFile(new File("teddy.obj")));
 		
 		Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
 		loop.setCycleCount(Animation.INDEFINITE);
