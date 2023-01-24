@@ -2,6 +2,7 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
+import javafx.scene.image.Image;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
 import javafx.animation.*;
@@ -13,6 +14,7 @@ public class Rasterizer extends Application{
 	private static final double HEIGHT = 600;
 	private volatile int frames, fps;
 	private static final int FPS = 40;
+	private static final Image IMAGE = new Image(Rasterizer.class.getResourceAsStream("dirt.png"));
 	
 	private Triangle triangle;
 	
@@ -35,29 +37,135 @@ public class Rasterizer extends Application{
 			
 			gc.strokePolygon(new double[]{a.getX(), b.getX(), c.getX()}, new double[]{a.getY(), b.getY(), c.getY()}, 3);
 			
-			renderTriangle(a.getX(), a.getY(), b.getX(), b.getY(), c.getX(), c.getY(), gc);
+			renderTriangle((int)a.getX(), (int)a.getY(), (int)b.getX(), (int)b.getY(), (int)c.getX(), (int)c.getY(), 0, 1, 0, 0, 1, 0, gc, IMAGE);
 		}
 		
-		private void renderTriangle(double x1, double y1, double x2, double y2, double x3, double y3, GraphicsContext gc){
-			double[] swap = new double[2];
+		private void renderTriangle(int x1, int y1, int x2, int y2, int x3, int y3, double u1, double v1, double u2, double v2, double u3, double v3, GraphicsContext gc, Image image){
 			if (y2 < y1){
 				y1 = swap(y2, y2 = y1);
 				x1 = swap(x2, x2 = x1);
+				u1 = swap(u2, u2 = u1);
+				v1 = swap(v2, v2 = v1);
 			}
 			if (y3 < y1){
 				y1 = swap(y3, y3 = y1);
 				x1 = swap(x3, x3 = x1);
+				u1 = swap(u3, u3 = u1);
+				v1 = swap(v3, v3 = v1);
 			}
 			if (y3 < y2){
 				y2 = swap(y3, y3 = y2);
 				x2 = swap(x3, x3 = x2);
+				u2 = swap(u3, u3 = u2);
+				v2 = swap(v3, v3 = v2);
 			}
 			
+			int dx1 = x2-x1;
+			int dy1 = y2-y1;
+			double du1 = u2-u1;
+			double dv1 = v2-v1;
 			
+			int dx2 = x3-x1;
+			int dy2 = y3-y1;
+			double du2 = u3-u1;
+			double dv2 = v3-v1;
+			
+			double tex_u, tex_v;
+			
+			double dax_step = 0, dbx_step = 0, du1_step = 0, dv1_step = 0, du2_step = 0, dv2_step = 0;
+			
+			if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
+			if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
+			
+			if (dy1 != 0) du1_step = du1/Math.abs(dy1);
+			if (dy1 != 0) dv1_step = dv1/Math.abs(dy1);
+			
+			if (dy2 != 0) du2_step = du2/Math.abs(dy2);
+			if (dy2 != 0) dv2_step = dv2/Math.abs(dy2);
+			
+			if (dy1 != 0){
+				for (int i = y1; i <= y2; i++){
+					int ax = x1+(int)((i-y1)*dax_step);
+					int bx = x1+(int)((i-y1)*dbx_step);
+					
+					double tex_su = u1+(i-y1)*du1_step;
+					double tex_sv = v1+(i-y1)*dv1_step;
+					
+					double tex_eu = u1+(i-y1)*du2_step;
+					double tex_ev = v1+(i-y1)*dv2_step;
+					
+					if (ax > bx){
+						ax = swap(bx, bx = ax);
+						tex_su = swap(tex_eu, tex_eu = tex_su);
+						tex_sv = swap(tex_ev, tex_ev = tex_sv);
+					}
+					
+					tex_u = tex_su;
+					tex_v = tex_sv;
+					
+					double tstep = 1.0/(bx-ax);
+					double t = 0.0;
+					
+					for (int j = ax; j < bx; j++){
+						tex_u = (1-t)*tex_su+t*tex_eu;
+						tex_v = (1-t)*tex_sv+t*tex_ev;
+						
+						gc.getPixelWriter().setColor(j, i, image.getPixelReader().getColor((int)(tex_u*image.getWidth()), (int)(tex_v*image.getHeight())));
+						
+						t += tstep;
+					}
+				}
+			}
+			
+			dx1 = x3-x2;
+			dy1 = y3-y2;
+			du1 = u3-u2;
+			dv1 = v3-v2;
+			
+			if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
+			if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
+			
+			du1_step = 0; dv1_step = 0;
+			if (dy1 != 0) du1_step = du1/Math.abs(dy1);
+			if (dy1 != 0) dv1_step = dv1/Math.abs(dy1);
+			
+			if (dy1 != 0){
+				for (int i = y2; i <= y3; i++){
+					int ax = x2+(int)((i-y2)*dax_step);
+					int bx = x1+(int)((i-y1)*dbx_step);
+					
+					double tex_su = u2+(i-y2)*du1_step;
+					double tex_sv = v2+(i-y2)*dv1_step;
+					
+					double tex_eu = u1+(i-y1)*du2_step;
+					double tex_ev = v1+(i-y1)*dv2_step;
+					
+					if (ax > bx){
+						ax = swap(bx, bx = ax);
+						tex_su = swap(tex_eu, tex_eu = tex_su);
+						tex_sv = swap(tex_ev, tex_ev = tex_sv);
+					}
+					
+					tex_u = tex_su;
+					tex_v = tex_sv;
+					
+					double tstep = 1.0/(bx-ax);
+					double t = 0.0;
+					
+					for (int j = ax; j < bx; j++){
+						tex_u = (1-t)*tex_su+t*tex_eu;
+						tex_v = (1-t)*tex_sv+t*tex_ev;
+						
+						gc.getPixelWriter().setColor(j, i, image.getPixelReader().getColor((int)(tex_u*image.getWidth()), (int)(tex_v*image.getHeight())));
+						
+						t += tstep;
+					}
+				}
+			}
 		}
 	}
 	
-	private static double swap(double a, double b){
+	private static <T extends Number> T swap(T a, T b){
 		return a;
 	}
 
