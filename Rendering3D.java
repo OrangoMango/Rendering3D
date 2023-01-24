@@ -15,8 +15,8 @@ import java.util.*;
 import java.io.*;
 
 public class Rendering3D extends Application{
-	private static final double WIDTH = 600;
-	private static final double HEIGHT = 600;
+	private static final int WIDTH = 600;
+	private static final int HEIGHT = 600;
 	private Map<KeyCode, Boolean> keys = new HashMap<>();
 	private volatile int frames, fps;
 	private static final int FPS = 40;
@@ -35,7 +35,10 @@ public class Rendering3D extends Application{
 	private List<Cube> cubes = new ArrayList<>();
 	private static double cx, cy, cz, rx, ry;
 	private double mouseX, mouseY, mouseOldX, mouseOldY;
-	private static final Image IMAGE = new Image(Rendering3D.class.getResourceAsStream("coal.png"));
+	private static double[][] depthBuffer = new double[WIDTH][HEIGHT];
+	private static final Image COAL_IMAGE = new Image(Rendering3D.class.getResourceAsStream("coal.png"));
+	private static final Image DIRT_IMAGE = new Image(Rendering3D.class.getResourceAsStream("dirt.png"));
+	private static final Image STONE_IMAGE = new Image(Rendering3D.class.getResourceAsStream("stone.png"));
 	
 	private static class Cube {
 		private Point3D[] points;
@@ -45,9 +48,11 @@ public class Rendering3D extends Application{
 		private double angle;
 		private Point2D[] textureVertex;
 		private int[][] textureFaces;
+		private Image image;
 		
-		public Cube(Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces){
+		public Cube(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces){
 			this.color = Color.WHITE; //Color.color(Math.random(), Math.random(), Math.random());
+			this.image = image;
 			this.points = points;
 			this.projected = new double[faces.length][3][3]; // TO FIX
 			this.faces = faces;
@@ -186,7 +191,7 @@ public class Rendering3D extends Application{
 				projected[i][1][2] = 1/projected[i][1][2];
 				projected[i][2][2] = 1/projected[i][2][2];
 				
-				renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(), t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(), projected[i][0][2], projected[i][1][2], projected[i][2][2], gc, IMAGE);
+				renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(), t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(), projected[i][0][2], projected[i][1][2], projected[i][2][2], gc, this.image);
 			}
 		}
 		
@@ -278,8 +283,10 @@ public class Rendering3D extends Application{
 						
 						if (pix_x < 0) pix_x = (int)image.getWidth()-pix_x;
 						if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
-
-						gc.getPixelWriter().setColor(j, i, image.getPixelReader().getColor(pix_x, pix_y));
+						if (depthBuffer[j][i] <= tex_w){
+							depthBuffer[j][i] = tex_w;
+							gc.getPixelWriter().setColor(j, i, image.getPixelReader().getColor(pix_x, pix_y));
+						}
 						
 						t += tstep;
 					}
@@ -337,8 +344,10 @@ public class Rendering3D extends Application{
 						
 						if (pix_x < 0) pix_x = (int)image.getWidth()-pix_x;
 						if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
-
-						gc.getPixelWriter().setColor(j, i, image.getPixelReader().getColor(pix_x, pix_y));
+						if (depthBuffer[j][i] <= tex_w){
+							depthBuffer[j][i] = tex_w;
+							gc.getPixelWriter().setColor(j, i, image.getPixelReader().getColor(pix_x, pix_y));
+						}
 						
 						t += tstep;
 					}
@@ -386,12 +395,19 @@ public class Rendering3D extends Application{
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		pane.getChildren().add(canvas);
 		
-		for (int i = 0; i < 1; i++){
-			for (int j = 0; j < 1; j++){
-				cubes.add(new Cube(new Point3D[]{
-					new Point3D(i*2, 0, j*2), new Point3D(i*2, 1, j*2), new Point3D(1+i*2, 1, j*2),
-					new Point3D(1+i*2, 0, j*2), new Point3D(i*2, 0, 1+j*2), new Point3D(i*2, 1, 1+j*2), 
-					new Point3D(1+i*2, 1, 1+j*2), new Point3D(1+i*2, 0, 1+j*2)}, new int[][]{
+		Random random = new Random();
+		
+		for (int i = 0; i < 3; i += 2){
+			for (int j = 0; j < 3; j += 2){
+				cubes.add(new Cube(switch(random.nextInt(3)){
+					case 0 -> COAL_IMAGE;
+					case 1 -> DIRT_IMAGE;
+					case 2 -> STONE_IMAGE;
+					default -> null;
+				}, new Point3D[]{
+					new Point3D(i, 0, j), new Point3D(i, 1, j), new Point3D(1+i, 1, j),
+					new Point3D(1+i, 0, j), new Point3D(i, 0, 1+j), new Point3D(i, 1, 1+j), 
+					new Point3D(1+i, 1, 1+j), new Point3D(1+i, 0, 1+j)}, new int[][]{
 						{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
 						{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
 						{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
@@ -427,6 +443,7 @@ public class Rendering3D extends Application{
 	
 	private void update(GraphicsContext gc){
 		gc.clearRect(0, 0, WIDTH, HEIGHT);
+		depthBuffer = new double[WIDTH][HEIGHT];
 		gc.setFill(Color.BLACK);
 		gc.fillRect(0, 0, WIDTH, HEIGHT);
 		gc.save();
@@ -566,7 +583,7 @@ public class Rendering3D extends Application{
 				fs[i] = faces.get(i);
 			}
 			
-			return new Cube(ps, fs, null, null);
+			return new Cube(null, ps, fs, null, null);
 			
 		} catch (IOException ex){
 			ex.printStackTrace();
