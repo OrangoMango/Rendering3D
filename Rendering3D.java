@@ -54,7 +54,7 @@ public class Rendering3D extends Application{
 			this.color = Color.WHITE; //Color.color(Math.random(), Math.random(), Math.random());
 			this.image = image;
 			this.points = points;
-			this.projected = new double[faces.length][3][3]; // TO FIX
+			this.projected = new double[faces.length][3][3];
 			this.faces = faces;
 			this.textureVertex = textureCoords;
 			this.textureFaces = vertexFaces;
@@ -302,7 +302,7 @@ public class Rendering3D extends Application{
 			if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
 			if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
 			
-			du1_step = 0; dv1_step = 0;
+			du1_step = 0; dv1_step = 0; dw1_step = 0;
 			if (dy1 != 0) du1_step = du1/Math.abs(dy1);
 			if (dy1 != 0) dv1_step = dv1/Math.abs(dy1);
 			if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
@@ -397,8 +397,8 @@ public class Rendering3D extends Application{
 		
 		Random random = new Random();
 		
-		for (int i = 0; i < 3; i += 2){
-			for (int j = 0; j < 3; j += 2){
+		for (int i = 0; i < 1; i++){
+			for (int j = 0; j < 1; j++){
 				cubes.add(new Cube(switch(random.nextInt(3)){
 					case 0 -> COAL_IMAGE;
 					case 1 -> DIRT_IMAGE;
@@ -446,8 +446,6 @@ public class Rendering3D extends Application{
 		depthBuffer = new double[WIDTH][HEIGHT];
 		gc.setFill(Color.BLACK);
 		gc.fillRect(0, 0, WIDTH, HEIGHT);
-		gc.save();
-		//gc.translate(300, 220);
 		
 		if (this.keys.getOrDefault(KeyCode.W, false)){
 			moveCamera(0, 0, 0.1);
@@ -483,7 +481,6 @@ public class Rendering3D extends Application{
 			cube.evaluate();
 			cube.render(gc);
 		}
-		gc.restore();
 	}
 	
 	private void moveCamera(double tx, double ty, double tz){
