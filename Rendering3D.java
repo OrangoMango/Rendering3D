@@ -192,6 +192,7 @@ public class Rendering3D extends Application{
 				projected[i][2][2] = 1/projected[i][2][2];
 				
 				renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(), t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(), projected[i][0][2], projected[i][1][2], projected[i][2][2], gc, this.image);
+				
 			}
 		}
 		
@@ -423,7 +424,7 @@ public class Rendering3D extends Application{
 			}
 		}
 		
-		//cubes.add(loadCubeFromFile(new File("teddy.obj")));
+		//cubes.add(loadCubeFromFile(new File("test.obj")));
 		
 		Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
 		loop.setCycleCount(Animation.INDEFINITE);
@@ -562,10 +563,10 @@ public class Rendering3D extends Application{
 			List<int[]> faces = new ArrayList<>();
 			String line;
 			while ((line = reader.readLine()) != null){
-				if (line.startsWith("v")){
+				if (line.startsWith("v ")){
 					points.add(new Point3D(Double.parseDouble(line.split(" ")[1]), Double.parseDouble(line.split(" ")[2]), Double.parseDouble(line.split(" ")[3])));
-				} else if (line.startsWith("f")){
-					faces.add(new int[]{Integer.parseInt(line.split(" ")[1])-1, Integer.parseInt(line.split(" ")[2])-1, Integer.parseInt(line.split(" ")[3])-1});
+				} else if (line.startsWith("f ")){
+					faces.add(new int[]{Integer.parseInt(line.split(" ")[1].split("//")[0])-1, Integer.parseInt(line.split(" ")[2].split("//")[0])-1, Integer.parseInt(line.split(" ")[3].split("//")[0])-1});
 				}
 			}
 			reader.close();
