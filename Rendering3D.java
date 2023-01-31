@@ -101,6 +101,12 @@ public class Rendering3D extends Application{
 				double[] p2 = new double[]{points[1].getX(), points[1].getY(), points[1].getZ(), 1};
 				double[] p3 = new double[]{points[2].getX(), points[2].getY(), points[2].getZ(), 1};
 				
+				// Scale
+				double factor = 0.1;
+				p1 = multiply(getScale(factor, factor, factor), p1);
+				p2 = multiply(getScale(factor, factor, factor), p2);
+				p3 = multiply(getScale(factor, factor, factor), p3);
+				
 				// Rotate
 				p1 = multiply(getRotateX(this.angle), p1);
 				p2 = multiply(getRotateX(this.angle), p2);
@@ -699,6 +705,15 @@ public class Rendering3D extends Application{
 			{1, 0, 0, tx},
 			{0, 1, 0, ty},
 			{0, 0, 1, tz},
+			{0, 0, 0, 1}
+		};
+	}
+	
+	private static double[][] getScale(double sx, double sy, double sz){
+		return new double[][]{
+			{sx, 0, 0, 0},
+			{0, sy, 0, 0},
+			{0, 0, sz, 0},
 			{0, 0, 0, 1}
 		};
 	}
