@@ -19,7 +19,7 @@ public class Rendering3D extends Application{
 	private static final int HEIGHT = 600;
 	private Map<KeyCode, Boolean> keys = new HashMap<>();
 	private volatile int frames, fps;
-	private static final int FPS = 40;
+	private static final int FPS = 10;
 	
 	private static double aspectRatio = HEIGHT/WIDTH;
 	private static double fov = Math.toRadians(45);
@@ -43,15 +43,16 @@ public class Rendering3D extends Application{
 	private static class Cube {
 		private Point3D[] points;
 		private double[][][] projected;
+		private Color[][] vertexColors;
 		private int[][] faces;
-		private double[][] colors;
+		private Color[] colors;
 		private Color color;
 		private double angle;
 		private Point2D[] textureVertex;
 		private int[][] textureFaces;
 		private Image image;
 		
-		public Cube(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, double[][] colors){
+		public Cube(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, Color[] colors){
 			this.color = Color.WHITE; //Color.color(Math.random(), Math.random(), Math.random());
 			this.image = image;
 			this.points = points;
@@ -66,7 +67,7 @@ public class Rendering3D extends Application{
 			return this.points;
 		}
 		
-		private Point3D[][] getTrianglePoints(){
+		private Point3D[][] getTrianglePoints(Color[][] vertexColors){
 			Point3D[][] output = new Point3D[this.faces.length][3];
 			for (int i = 0; i < output.length; i++){
 				Point3D[] tr = new Point3D[3];
@@ -74,6 +75,13 @@ public class Rendering3D extends Application{
 				tr[1] = getPoints()[this.faces[i][1]];
 				tr[2] = getPoints()[this.faces[i][2]];
 				output[i] = tr;
+				if (this.colors != null){
+					Color[] cr = new Color[3];
+					cr[0] = this.colors[this.faces[i][0]];
+					cr[1] = this.colors[this.faces[i][1]];
+					cr[2] = this.colors[this.faces[i][2]];
+					vertexColors[i] = cr;
+				}
 			}
 			return output;
 		}
@@ -84,7 +92,8 @@ public class Rendering3D extends Application{
 		
 		private void evaluate(){
 			int i = 0;
-			for (Point3D[] points : getTrianglePoints()){				
+			this.vertexColors = new Color[this.faces.length][3];
+			for (Point3D[] points : getTrianglePoints(vertexColors)){
 				double[][] cam = multiply(multiply(getTranslation(-cx, -cy, -cz), multiply(getRotateX(rx), getRotateY(ry))), PROJECTION_MATRIX);
 				
 				// Apply transforms
@@ -167,12 +176,12 @@ public class Rendering3D extends Application{
 				
 				i++;
 			}
-			this.angle += 0.01;
+			this.angle += 0.01*40/FPS;
 		}
 		
 		public void render(GraphicsContext gc){
-			gc.setStroke(this.color);
-			gc.setLineWidth(1);
+			//gc.setStroke(this.color);
+			//gc.setLineWidth(1);
 			
 			for (int i = 0; i < projected.length; i++){
 				if (projected[i][0] == null || projected[i][1] == null || projected[i][2] == null) continue;
@@ -181,22 +190,185 @@ public class Rendering3D extends Application{
 				Point2D p2 = new Point2D(projected[i][1][0], projected[i][1][1]);
 				Point2D p3 = new Point2D(projected[i][2][0], projected[i][2][1]);
 				
-				gc.strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-				gc.strokeLine(p2.getX(), p2.getY(), p3.getX(), p3.getY());
-				gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
+				//gc.strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+				//gc.strokeLine(p2.getX(), p2.getY(), p3.getX(), p3.getY());
+				//gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
+
+				projected[i][0][2] = 1/projected[i][0][2];
+				projected[i][1][2] = 1/projected[i][1][2];
+				projected[i][2][2] = 1/projected[i][2][2];
 
 				if (this.colors == null){
 					Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(1/projected[i][0][2]);
 					Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(1/projected[i][1][2]);
 					Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(1/projected[i][2][2]);
 					
-					projected[i][0][2] = 1/projected[i][0][2];
-					projected[i][1][2] = 1/projected[i][1][2];
-					projected[i][2][2] = 1/projected[i][2][2];
-					
 					renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(), t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(), projected[i][0][2], projected[i][1][2], projected[i][2][2], gc, this.image);
 				} else {
-					// TBD
+					renderColoredTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(), this.vertexColors[i][0], this.vertexColors[i][1], this.vertexColors[i][2], projected[i][0][2], projected[i][1][2], projected[i][2][2], gc);
+				}
+			}
+		}
+		
+		private void renderColoredTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Color c1, Color c2, Color c3, 
+											double w1, double w2, double w3, GraphicsContext gc){
+			if (y2 < y1){
+				y1 = swap(y2, y2 = y1);
+				x1 = swap(x2, x2 = x1);
+				c1 = swap(c2, c2 = c1);
+				w1 = swap(w2, w2 = w1);
+			}
+			if (y3 < y1){
+				y1 = swap(y3, y3 = y1);
+				x1 = swap(x3, x3 = x1);
+				c1 = swap(c3, c3 = c1);
+				w1 = swap(w3, w3 = w1);
+			}
+			if (y3 < y2){
+				y2 = swap(y3, y3 = y2);
+				x2 = swap(x3, x3 = x2);
+				c2 = swap(c3, c3 = c2);
+				w2 = swap(w3, w3 = w2);
+			}
+			
+			int dx1 = x2-x1;
+			int dy1 = y2-y1;
+			double dr1 = c2.getRed()-c1.getRed();
+			double dg1 = c2.getGreen()-c1.getGreen();
+			double db1 = c2.getBlue()-c1.getBlue();
+			double dw1 = w2-w1;
+			
+			int dx2 = x3-x1;
+			int dy2 = y3-y1;
+			double dr2 = c3.getRed()-c1.getRed();
+			double dg2 = c3.getGreen()-c1.getGreen();
+			double db2 = c3.getBlue()-c1.getBlue();
+			double dw2 = w3-w1;
+			
+			double col_r, col_g, col_b, col_w;
+			
+			double dax_step = 0, dbx_step = 0, dr1_step = 0, dg1_step = 0, db1_step = 0, dr2_step = 0, dg2_step = 0, db2_step = 0, dw1_step = 0, dw2_step = 0;
+			
+			if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
+			if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
+			
+			if (dy1 != 0) dr1_step = dr1/Math.abs(dy1);
+			if (dy1 != 0) dg1_step = dg1/Math.abs(dy1);
+			if (dy1 != 0) db1_step = db1/Math.abs(dy1);
+			if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
+			
+			if (dy2 != 0) dr2_step = dr2/Math.abs(dy2);
+			if (dy2 != 0) dg2_step = dg2/Math.abs(dy2);
+			if (dy2 != 0) db2_step = db2/Math.abs(dy2);
+			if (dy2 != 0) dw2_step = dw2/Math.abs(dy2);
+			
+			if (dy1 != 0){
+				for (int i = y1; i <= y2; i++){
+					int ax = x1+(int)((i-y1)*dax_step);
+					int bx = x1+(int)((i-y1)*dbx_step);
+					
+					double col_sr = c1.getRed()+(i-y1)*dr1_step;
+					double col_sg = c1.getGreen()+(i-y1)*dg1_step;
+					double col_sb = c1.getBlue()+(i-y1)*db1_step;
+					double col_sw = w1+(i-y1)*dw1_step;
+					
+					double col_er = c1.getRed()+(i-y1)*dr2_step;
+					double col_eg = c1.getGreen()+(i-y1)*dg2_step;
+					double col_eb = c1.getBlue()+(i-y1)*db2_step;
+					double col_ew = w1+(i-y1)*dw2_step;
+					
+					if (ax > bx){
+						ax = swap(bx, bx = ax);
+						col_sr = swap(col_er, col_er = col_sr);
+						col_sg = swap(col_eg, col_eg = col_sg);
+						col_sb = swap(col_eb, col_eb = col_sb);
+						col_sw = swap(col_ew, col_ew = col_sw);
+					}
+					
+					col_r = col_sr;
+					col_g = col_sg;
+					col_b = col_sb;
+					col_w = col_sw;
+					
+					double tstep = 1.0/(bx-ax);
+					double t = 0.0;
+					
+					for (int j = ax; j < bx; j++){
+						col_r = (1-t)*col_sr+t*col_er;
+						col_g = (1-t)*col_sg+t*col_eg;
+						col_b = (1-t)*col_sb+t*col_eb;
+						col_w = (1-t)*col_sw+t*col_ew;
+						
+						if (depthBuffer[j][i] <= col_w){
+							depthBuffer[j][i] = col_w;
+							gc.getPixelWriter().setColor(j, i, Color.color(col_r, col_g, col_b));
+						}
+
+						t += tstep;
+					}
+				}
+			}
+			
+			dx1 = x3-x2;
+			dy1 = y3-y2;
+			dr1 = c3.getRed()-c2.getRed();
+			dg1 = c3.getGreen()-c2.getGreen();
+			db1 = c3.getBlue()-c2.getBlue();
+			dw1 = w3-w2;
+			
+			if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
+			if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
+			
+			dr1_step = 0; dg1_step = 0; db1_step = 0;
+			if (dy1 != 0) dr1_step = dr1/Math.abs(dy1);
+			if (dy1 != 0) dg1_step = dg1/Math.abs(dy1);
+			if (dy1 != 0) db1_step = db1/Math.abs(dy1);
+			if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
+			
+			if (dy1 != 0){
+				for (int i = y2; i <= y3; i++){
+					int ax = x2+(int)((i-y2)*dax_step);
+					int bx = x1+(int)((i-y1)*dbx_step);
+					
+					double col_sr = c2.getRed()+(i-y2)*dr1_step;
+					double col_sg = c2.getGreen()+(i-y2)*dg1_step;
+					double col_sb = c2.getBlue()+(i-y2)*db1_step;
+					double col_sw = w2+(i-y2)*dw1_step;
+					
+					double col_er = c1.getRed()+(i-y1)*dr2_step;
+					double col_eg = c1.getGreen()+(i-y1)*dg2_step;
+					double col_eb = c1.getBlue()+(i-y1)*db2_step;
+					double col_ew = w1+(i-y1)*dw2_step;
+					
+					if (ax > bx){
+						ax = swap(bx, bx = ax);
+						col_sr = swap(col_er, col_er = col_sr);
+						col_sg = swap(col_eg, col_eg = col_sg);
+						col_sb = swap(col_eb, col_eb = col_sb);
+						col_sw = swap(col_ew, col_ew = col_sw);
+					}
+					
+					col_r = col_sr;
+					col_g = col_sg;
+					col_b = col_sb;
+					col_w = col_sw;
+					
+					double tstep = 1.0/(bx-ax);
+					double t = 0.0;
+					
+					for (int j = ax; j < bx; j++){
+						col_r = (1-t)*col_sr+t*col_er;
+						col_g = (1-t)*col_sg+t*col_eg;
+						col_b = (1-t)*col_sb+t*col_eb;
+						col_w = (1-t)*col_sw+t*col_ew;
+						
+						if (depthBuffer[j][i] <= col_w){
+							depthBuffer[j][i] = col_w;
+							gc.getPixelWriter().setColor(j, i, Color.color(col_r, col_g, col_b));
+						}
+
+						t += tstep;
+					}
 				}
 			}
 		}
@@ -429,7 +601,7 @@ public class Rendering3D extends Application{
 			}
 		}*/
 		
-		cubes.add(loadCubeFromFile(new File("car.obj")));
+		cubes.add(loadCubeFromFile(new File("car.obj"))); // export_2023-01-30_22h06m23s.obj
 		
 		Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
 		loop.setCycleCount(Animation.INDEFINITE);
@@ -479,14 +651,14 @@ public class Rendering3D extends Application{
 			ry = 0;
 			this.keys.put(KeyCode.R, true);
 		}
-		
-		gc.setFill(Color.WHITE);
-		gc.fillText(String.format("%.2f %.2f FPS:%d\nCx: %.2f Cy: %.2f Cz: %.2f", Math.toDegrees(rx), Math.toDegrees(ry), fps, cx, cy, cz), 30, 30);
-		
+				
 		for (Cube cube : cubes){
 			cube.evaluate();
 			cube.render(gc);
 		}
+		
+		gc.setFill(Color.WHITE);
+		gc.fillText(String.format("%.2f %.2f FPS:%d\nCx: %.2f Cy: %.2f Cz: %.2f", Math.toDegrees(rx), Math.toDegrees(ry), fps, cx, cy, cz), 30, 30);
 	}
 	
 	private void moveCamera(double tx, double ty, double tz){
@@ -565,7 +737,7 @@ public class Rendering3D extends Application{
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			List<Point3D> points = new ArrayList<>();
-			List<double[]> colors = new ArrayList<>();
+			List<Color> colors = new ArrayList<>();
 			List<int[]> faces = new ArrayList<>();
 			String line;
 			while ((line = reader.readLine()) != null){
@@ -577,7 +749,7 @@ public class Rendering3D extends Application{
 					}
 					points.add(new Point3D(parray[0], parray[1], parray[2]));
 					if (parray.length == 6){
-						colors.add(new double[]{parray[3], parray[4], parray[5]});
+						colors.add(Color.color(parray[3], parray[4], parray[5]));
 					}
 				} else if (line.startsWith("f ")){
 					String[] pieces = line.split(" ");
@@ -594,7 +766,7 @@ public class Rendering3D extends Application{
 			reader.close();
 			
 			Point3D[] ps = new Point3D[points.size()];
-			double[][] cs = new double[points.size()][3];
+			Color[] cs = new Color[points.size()];
 			for (int i = 0; i < ps.length; i++){
 				ps[i] = points.get(i);
 				if (colors.size() > 0) cs[i] = colors.get(i);
