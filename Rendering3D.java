@@ -23,7 +23,7 @@ public class Rendering3D extends Application{
 	
 	private static double aspectRatio = HEIGHT/WIDTH;
 	private static double fov = Math.toRadians(45);
-	private static double zFar = 50;
+	private static double zFar = 100;
 	private static double zNear = 1;
 	private static final double[][] PROJECTION_MATRIX = {
 		{aspectRatio*1/Math.tan(fov/2), 0, 0, 0},
@@ -44,18 +44,20 @@ public class Rendering3D extends Application{
 		private Point3D[] points;
 		private double[][][] projected;
 		private int[][] faces;
+		private double[][] colors;
 		private Color color;
 		private double angle;
 		private Point2D[] textureVertex;
 		private int[][] textureFaces;
 		private Image image;
 		
-		public Cube(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces){
+		public Cube(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, double[][] colors){
 			this.color = Color.WHITE; //Color.color(Math.random(), Math.random(), Math.random());
 			this.image = image;
 			this.points = points;
 			this.projected = new double[faces.length][3][3];
 			this.faces = faces;
+			this.colors = colors;
 			this.textureVertex = textureCoords;
 			this.textureFaces = vertexFaces;
 		}
@@ -169,8 +171,8 @@ public class Rendering3D extends Application{
 		}
 		
 		public void render(GraphicsContext gc){
-			//gc.setStroke(this.color);
-			//gc.setLineWidth(1);
+			gc.setStroke(this.color);
+			gc.setLineWidth(1);
 			
 			for (int i = 0; i < projected.length; i++){
 				if (projected[i][0] == null || projected[i][1] == null || projected[i][2] == null) continue;
@@ -179,20 +181,23 @@ public class Rendering3D extends Application{
 				Point2D p2 = new Point2D(projected[i][1][0], projected[i][1][1]);
 				Point2D p3 = new Point2D(projected[i][2][0], projected[i][2][1]);
 				
-				//gc.strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-				//gc.strokeLine(p2.getX(), p2.getY(), p3.getX(), p3.getY());
-				//gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
+				gc.strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+				gc.strokeLine(p2.getX(), p2.getY(), p3.getX(), p3.getY());
+				gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
 
-				Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(1/projected[i][0][2]);
-				Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(1/projected[i][1][2]);
-				Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(1/projected[i][2][2]);
-				
-				projected[i][0][2] = 1/projected[i][0][2];
-				projected[i][1][2] = 1/projected[i][1][2];
-				projected[i][2][2] = 1/projected[i][2][2];
-				
-				renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(), t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(), projected[i][0][2], projected[i][1][2], projected[i][2][2], gc, this.image);
-				
+				if (this.colors == null){
+					Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(1/projected[i][0][2]);
+					Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(1/projected[i][1][2]);
+					Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(1/projected[i][2][2]);
+					
+					projected[i][0][2] = 1/projected[i][0][2];
+					projected[i][1][2] = 1/projected[i][1][2];
+					projected[i][2][2] = 1/projected[i][2][2];
+					
+					renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(), t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(), projected[i][0][2], projected[i][1][2], projected[i][2][2], gc, this.image);
+				} else {
+					// TBD
+				}
 			}
 		}
 		
@@ -398,7 +403,7 @@ public class Rendering3D extends Application{
 		
 		Random random = new Random();
 		
-		for (int i = 0; i < 1; i++){
+		/*for (int i = 0; i < 1; i++){
 			for (int j = 0; j < 1; j++){
 				cubes.add(new Cube(switch(random.nextInt(3)){
 					case 0 -> COAL_IMAGE;
@@ -420,11 +425,11 @@ public class Rendering3D extends Application{
 					{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 					{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 					{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
-				}));
+				}, null));
 			}
-		}
+		}*/
 		
-		//cubes.add(loadCubeFromFile(new File("test.obj")));
+		cubes.add(loadCubeFromFile(new File("car.obj")));
 		
 		Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
 		loop.setCycleCount(Animation.INDEFINITE);
@@ -560,20 +565,39 @@ public class Rendering3D extends Application{
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			List<Point3D> points = new ArrayList<>();
+			List<double[]> colors = new ArrayList<>();
 			List<int[]> faces = new ArrayList<>();
 			String line;
 			while ((line = reader.readLine()) != null){
 				if (line.startsWith("v ")){
-					points.add(new Point3D(Double.parseDouble(line.split(" ")[1]), Double.parseDouble(line.split(" ")[2]), Double.parseDouble(line.split(" ")[3])));
+					String[] pieces = line.split(" ");
+					double[] parray = new double[pieces.length-1];
+					for (int i = 0; i < parray.length; i++){
+						parray[i] = Double.parseDouble(line.split(" ")[i+1]);
+					}
+					points.add(new Point3D(parray[0], parray[1], parray[2]));
+					if (parray.length == 6){
+						colors.add(new double[]{parray[3], parray[4], parray[5]});
+					}
 				} else if (line.startsWith("f ")){
-					faces.add(new int[]{Integer.parseInt(line.split(" ")[1].split("//")[0])-1, Integer.parseInt(line.split(" ")[2].split("//")[0])-1, Integer.parseInt(line.split(" ")[3].split("//")[0])-1});
+					String[] pieces = line.split(" ");
+					int[] farray = new int[pieces.length-1];
+					for (int i = 0; i < farray.length; i++){
+						farray[i] = Integer.parseInt(line.split(" ")[i+1].split("/")[0])-1;
+					}
+					faces.add(new int[]{farray[0], farray[1], farray[2]});
+					if (farray.length == 4){ // Squares
+						faces.add(new int[]{farray[0], farray[2], farray[3]});
+					}
 				}
 			}
 			reader.close();
 			
 			Point3D[] ps = new Point3D[points.size()];
+			double[][] cs = new double[points.size()][3];
 			for (int i = 0; i < ps.length; i++){
 				ps[i] = points.get(i);
+				if (colors.size() > 0) cs[i] = colors.get(i);
 			}
 			
 			int[][] fs = new int[faces.size()][3];
@@ -581,7 +605,7 @@ public class Rendering3D extends Application{
 				fs[i] = faces.get(i);
 			}
 			
-			return new Cube(null, ps, fs, null, null);
+			return new Cube(null, ps, fs, null, null, cs.length == 0 ? null : cs);
 			
 		} catch (IOException ex){
 			ex.printStackTrace();
