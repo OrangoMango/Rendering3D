@@ -14,7 +14,7 @@ public class SpriteStack extends Application{
 	private volatile int frames, fps;
 	private static final int FPS = 40;
 	
-	private static final String IMAGE_NAME = "temple.png";
+	private static final String IMAGE_NAME = "car.png";
 	private static Image IMAGE = new Image(SpriteStack.class.getResourceAsStream(IMAGE_NAME));
 	
 	private double angle = 0;
@@ -79,7 +79,7 @@ public class SpriteStack extends Application{
 		gc.setFill(Color.BLACK);
 		gc.fillRect(0, 0, WIDTH, HEIGHT);
 		
-		int sprites = 32; // temple -> 32, car -> 8
+		int sprites = 8; // temple -> 32, car -> 8
 		
 		gc.save();
 		gc.translate(200+IMAGE.getWidth()/sprites/2, 200+IMAGE.getHeight()/2);

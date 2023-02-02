@@ -102,7 +102,7 @@ public class Rendering3D extends Application{
 				double[] p3 = new double[]{points[2].getX(), points[2].getY(), points[2].getZ(), 1};
 				
 				// Scale
-				double factor = 0.1;
+				double factor = 0.1; //0.1;
 				p1 = multiply(getScale(factor, factor, factor), p1);
 				p2 = multiply(getScale(factor, factor, factor), p2);
 				p3 = multiply(getScale(factor, factor, factor), p3);
@@ -200,17 +200,22 @@ public class Rendering3D extends Application{
 				//gc.strokeLine(p2.getX(), p2.getY(), p3.getX(), p3.getY());
 				//gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
 
-				projected[i][0][2] = 1/projected[i][0][2];
-				projected[i][1][2] = 1/projected[i][1][2];
-				projected[i][2][2] = 1/projected[i][2][2];
-
 				if (this.colors == null){
 					Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(1/projected[i][0][2]);
 					Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(1/projected[i][1][2]);
 					Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(1/projected[i][2][2]);
 					
+					projected[i][0][2] = 1/projected[i][0][2];
+					projected[i][1][2] = 1/projected[i][1][2];
+					projected[i][2][2] = 1/projected[i][2][2];
+					
 					renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(), t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(), projected[i][0][2], projected[i][1][2], projected[i][2][2], gc, this.image);
 				} else {
+					
+					projected[i][0][2] = 1/projected[i][0][2];
+					projected[i][1][2] = 1/projected[i][1][2];
+					projected[i][2][2] = 1/projected[i][2][2];
+					
 					renderColoredTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(), this.vertexColors[i][0], this.vertexColors[i][1], this.vertexColors[i][2], projected[i][0][2], projected[i][1][2], projected[i][2][2], gc);
 				}
 			}
@@ -581,29 +586,32 @@ public class Rendering3D extends Application{
 		
 		Random random = new Random();
 		
-		/*for (int i = 0; i < 1; i++){
-			for (int j = 0; j < 1; j++){
-				cubes.add(new Cube(switch(random.nextInt(3)){
-					case 0 -> COAL_IMAGE;
-					case 1 -> DIRT_IMAGE;
-					case 2 -> STONE_IMAGE;
-					default -> null;
-				}, new Point3D[]{
-					new Point3D(i, 0, j), new Point3D(i, 1, j), new Point3D(1+i, 1, j),
-					new Point3D(1+i, 0, j), new Point3D(i, 0, 1+j), new Point3D(i, 1, 1+j), 
-					new Point3D(1+i, 1, 1+j), new Point3D(1+i, 0, 1+j)}, new int[][]{
-						{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
-						{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
-						{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
-						{1, 6, 2}, {4, 0, 3}, {4, 3, 7}
-				}, new Point2D[]{
-					new Point2D(0, 1), new Point2D(0, 0), new Point2D(1, 0), new Point2D(1, 1)
-				}, new int[][]{
-					{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
-					{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
-					{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
-					{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
-				}, null));
+		/*for (int i = 0; i < 10; i++){
+			for (int j = 0; j < 10; j++){
+				for (int k = 0; k < 10; k++){
+					if (!isPrime(i+j+k)) continue;
+					cubes.add(new Cube(switch(random.nextInt(3)){
+						case 0 -> COAL_IMAGE;
+						case 1 -> DIRT_IMAGE;
+						case 2 -> STONE_IMAGE;
+						default -> null;
+					}, new Point3D[]{
+						new Point3D(i, k, j), new Point3D(i, 1+k, j), new Point3D(1+i, 1+k, j),
+						new Point3D(1+i, k, j), new Point3D(i, k, 1+j), new Point3D(i, 1+k, 1+j), 
+						new Point3D(1+i, 1+k, 1+j), new Point3D(1+i, k, 1+j)}, new int[][]{
+							{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
+							{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
+							{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
+							{1, 6, 2}, {4, 0, 3}, {4, 3, 7}
+					}, new Point2D[]{
+						new Point2D(0, 1), new Point2D(0, 0), new Point2D(1, 0), new Point2D(1, 1)
+					}, new int[][]{
+						{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+						{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+						{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+						{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
+					}, null));
+				}
 			}
 		}*/
 		
@@ -623,6 +631,14 @@ public class Rendering3D extends Application{
 		
 		stage.setScene(new Scene(pane, WIDTH, HEIGHT));
 		stage.show();
+	}
+	
+	private static boolean isPrime(int n){
+		if (n == 0 || n == 1 || n == 2) return true;
+		for (int i = 2; i < Math.sqrt(n); i++){
+			if (n % i == 0) return false;
+		}
+		return true;
 	}
 	
 	private void update(GraphicsContext gc){
