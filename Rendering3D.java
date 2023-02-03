@@ -31,7 +31,7 @@ public class Rendering3D extends Application{
 		{0, 0, 2/(zFar-zNear), -2*zNear/(zFar-zNear)-1},
 		{0, 0, 1, 0}
 	};
-	private static final Point3D LIGHT = new Point3D(0, 0, 1);
+	private static Point3D LIGHT = new Point3D(0, 0, -35);
 	
 	private List<Cube> cubes = new ArrayList<>();
 	private static double cx, cy, cz, rx, ry;
@@ -53,6 +53,8 @@ public class Rendering3D extends Application{
 		private int[][] textureFaces;
 		private Point3D[] normals;
 		private Image image;
+		private Point3D[][] trianglePoints;
+		private Color[][] vertexCol;
 		
 		public Cube(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, Color[] colors){
 			this.color = Color.WHITE; //Color.color(Math.random(), Math.random(), Math.random());
@@ -71,6 +73,14 @@ public class Rendering3D extends Application{
 		}
 		
 		private Point3D[][] getTrianglePoints(Color[][] vertexColors){
+			if (this.trianglePoints != null){
+				if (this.colors != null){
+					for (int i = 0; i < this.vertexCol.length; i++){
+						System.arraycopy(this.vertexCol[i], 0, vertexColors[i], 0, vertexColors[i].length);
+					}
+				}
+				return this.trianglePoints;
+			}
 			Point3D[][] output = new Point3D[this.faces.length][3];
 			for (int i = 0; i < output.length; i++){
 				Point3D[] tr = new Point3D[3];
@@ -86,6 +96,8 @@ public class Rendering3D extends Application{
 					vertexColors[i] = cr;
 				}
 			}
+			this.vertexCol = vertexColors;
+			this.trianglePoints = output;
 			return output;
 		}
 		
@@ -111,9 +123,9 @@ public class Rendering3D extends Application{
 				p3 = multiply(getScale(factor, factor, factor), p3);*/
 				
 				// Rotate
-				p1 = multiply(getRotateX(this.angle), p1);
-				p2 = multiply(getRotateX(this.angle), p2);
-				p3 = multiply(getRotateX(this.angle), p3);
+				p1 = multiply(getRotateX(this.angle+Math.PI/2), p1);
+				p2 = multiply(getRotateX(this.angle+Math.PI/2), p2);
+				p3 = multiply(getRotateX(this.angle+Math.PI/2), p3);
 				p1 = multiply(getRotateY(this.angle), p1);
 				p2 = multiply(getRotateY(this.angle), p2);
 				p3 = multiply(getRotateY(this.angle), p3);
@@ -136,7 +148,7 @@ public class Rendering3D extends Application{
 				
 				double dot = normal.dotProduct(point1.subtract(cx, cy, cz));
 				
-				if (dot < 0){
+				if (dot < 0){					
 					// Project 3D -> 2D
 					p1 = multiply(cam, p1);
 					p2 = multiply(cam, p2);
@@ -186,7 +198,7 @@ public class Rendering3D extends Application{
 				
 				i++;
 			}
-			this.angle += 0.01*40/FPS;
+			//this.angle += 0.01*40/FPS;
 		}
 		
 		public void render(GraphicsContext gc){
@@ -320,7 +332,7 @@ public class Rendering3D extends Application{
 						
 						if (depthBuffer[j][i] <= col_w){
 							depthBuffer[j][i] = col_w;
-							gc.getPixelWriter().setColor(j, i, getLight(Color.color(col_r, col_g, col_b), this.normals[index]));
+							gc.getPixelWriter().setColor(j, i, getLight(Color.color(col_r, col_g, col_b), this.normals[index], this.trianglePoints[index][0]));
 						}
 
 						t += tstep;
@@ -383,7 +395,7 @@ public class Rendering3D extends Application{
 						
 						if (depthBuffer[j][i] <= col_w){
 							depthBuffer[j][i] = col_w;
-							gc.getPixelWriter().setColor(j, i, getLight(Color.color(col_r, col_g, col_b), this.normals[index]));
+							gc.getPixelWriter().setColor(j, i, getLight(Color.color(col_r, col_g, col_b), this.normals[index], this.trianglePoints[index][0]));
 						}
 
 						t += tstep;
@@ -482,7 +494,7 @@ public class Rendering3D extends Application{
 						if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
 						if (depthBuffer[j][i] <= tex_w){
 							depthBuffer[j][i] = tex_w;
-							gc.getPixelWriter().setColor(j, i, getLight(image.getPixelReader().getColor(pix_x, pix_y), this.normals[index]));
+							gc.getPixelWriter().setColor(j, i, getLight(image.getPixelReader().getColor(pix_x, pix_y), this.normals[index], this.trianglePoints[index][0]));
 						}
 						
 						t += tstep;
@@ -543,7 +555,7 @@ public class Rendering3D extends Application{
 						if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
 						if (depthBuffer[j][i] <= tex_w){
 							depthBuffer[j][i] = tex_w;
-							gc.getPixelWriter().setColor(j, i, getLight(image.getPixelReader().getColor(pix_x, pix_y), this.normals[index]));
+							gc.getPixelWriter().setColor(j, i, getLight(image.getPixelReader().getColor(pix_x, pix_y), this.normals[index], this.trianglePoints[index][0]));
 						}
 						
 						t += tstep;
@@ -562,7 +574,7 @@ public class Rendering3D extends Application{
 		Thread counter = new Thread(() -> {
 			while (true){
 				try {
-					this.fps = Math.min(this.frames, FPS);
+					this.fps = this.frames;
 					this.frames = 0;
 					Thread.sleep(1000);
 				} catch (InterruptedException ex){
@@ -688,8 +700,12 @@ public class Rendering3D extends Application{
 			cube.render(gc);
 		}
 		
+		double lspeed = 5;
+		double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{LIGHT.getX(), LIGHT.getY(), LIGHT.getZ()});
+		LIGHT = new Point3D(rotationV[0], rotationV[1], rotationV[2]);
+		
 		gc.setFill(Color.WHITE);
-		gc.fillText(String.format("%.2f %.2f FPS:%d\nCx: %.2f Cy: %.2f Cz: %.2f", Math.toDegrees(rx), Math.toDegrees(ry), fps, cx, cy, cz), 30, 30);
+		gc.fillText(String.format("%.2f %.2f FPS:%d (%d)\nCx: %.2f Cy: %.2f Cz: %.2f\nLight: %s", Math.toDegrees(rx), Math.toDegrees(ry), fps, FPS, cx, cy, cz, LIGHT), 30, 30);
 	}
 	
 	private void moveCamera(double tx, double ty, double tz){
@@ -773,12 +789,13 @@ public class Rendering3D extends Application{
 		return out;
 	}
 	
-	private static Color getLight(Color color, Point3D normal){
+	private static Color getLight(Color color, Point3D normal, Point3D point){
 		double red = color.getRed();
 		double green = color.getGreen();
 		double blue = color.getBlue();
 		double intensity = 1;
-		double factor = normal.dotProduct(LIGHT);
+		
+		double factor = normal.dotProduct(point.subtract(LIGHT).normalize());
 		
 		if (factor < -1) factor = 1;
 		else if (factor > 0) factor = 0;
