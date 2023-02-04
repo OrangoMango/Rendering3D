@@ -31,10 +31,11 @@ public class Rendering3D extends Application{
 		{0, 0, 2/(zFar-zNear), -2*zNear/(zFar-zNear)-1},
 		{0, 0, 1, 0}
 	};
-	private static Point3D LIGHT = new Point3D(0, 0, -35);
+	private static Point3D LIGHT = new Point3D(0, -5, -10);
 	
 	private List<Cube> cubes = new ArrayList<>();
 	private static double cx, cy, cz, rx, ry;
+	private static boolean SHOW_LINES = false;
 	private double mouseX, mouseY, mouseOldX, mouseOldY;
 	private static double[][] depthBuffer = new double[WIDTH][HEIGHT];
 	private static final Image COAL_IMAGE = new Image(Rendering3D.class.getResourceAsStream("coal.png"));
@@ -202,9 +203,11 @@ public class Rendering3D extends Application{
 		}
 		
 		public void render(GraphicsContext gc){
-			//gc.setStroke(this.color);
-			//gc.setLineWidth(1);
-			
+			if (SHOW_LINES){
+				gc.setStroke(this.color);
+				gc.setLineWidth(1);
+			}
+
 			for (int i = 0; i < projected.length; i++){
 				if (projected[i][0] == null || projected[i][1] == null || projected[i][2] == null) continue;
 
@@ -212,31 +215,35 @@ public class Rendering3D extends Application{
 				Point2D p2 = new Point2D(projected[i][1][0], projected[i][1][1]);
 				Point2D p3 = new Point2D(projected[i][2][0], projected[i][2][1]);
 				
-				//gc.strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-				//gc.strokeLine(p2.getX(), p2.getY(), p3.getX(), p3.getY());
-				//gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
+				if (SHOW_LINES){
+					gc.strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+					gc.strokeLine(p2.getX(), p2.getY(), p3.getX(), p3.getY());
+					gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
+				}
 
-				if (this.colors == null){
-					Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(1/projected[i][0][2]);
-					Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(1/projected[i][1][2]);
-					Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(1/projected[i][2][2]);
-					
-					projected[i][0][2] = 1/projected[i][0][2];
-					projected[i][1][2] = 1/projected[i][1][2];
-					projected[i][2][2] = 1/projected[i][2][2];
-					
-					renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
-							t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(),
-							projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, this.image);
-				} else {
-					
-					projected[i][0][2] = 1/projected[i][0][2];
-					projected[i][1][2] = 1/projected[i][1][2];
-					projected[i][2][2] = 1/projected[i][2][2];
-					
-					renderColoredTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
-							this.vertexColors[i][0], this.vertexColors[i][1], this.vertexColors[i][2],
-							projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc);
+				if (!SHOW_LINES){
+					if (this.colors == null){
+						Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(1/projected[i][0][2]);
+						Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(1/projected[i][1][2]);
+						Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(1/projected[i][2][2]);
+						
+						projected[i][0][2] = 1/projected[i][0][2];
+						projected[i][1][2] = 1/projected[i][1][2];
+						projected[i][2][2] = 1/projected[i][2][2];
+						
+						renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
+								t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(),
+								projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, this.image);
+					} else {
+						
+						projected[i][0][2] = 1/projected[i][0][2];
+						projected[i][1][2] = 1/projected[i][1][2];
+						projected[i][2][2] = 1/projected[i][2][2];
+						
+						renderColoredTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
+								this.vertexColors[i][0], this.vertexColors[i][1], this.vertexColors[i][2],
+								projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc);
+					}
 				}
 			}
 		}
@@ -635,7 +642,7 @@ public class Rendering3D extends Application{
 			}
 		}*/
 		
-		cubes.add(loadCubeFromFile(new File("car.obj"))); // export_2023-01-30_22h06m23s.obj
+		cubes.add(loadCubeFromFile(new File("model.obj"), 0, 5, 0, 0.05));
 		
 		Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
 		loop.setCycleCount(Animation.INDEFINITE);
@@ -669,23 +676,30 @@ public class Rendering3D extends Application{
 		
 		double speed = 0.3;
 		if (this.keys.getOrDefault(KeyCode.W, false)){
-			moveCamera(0, 0, speed);
-			this.keys.put(KeyCode.W, true);
+			cx += speed*Math.cos(ry+Math.PI/2);
+			cz += speed*Math.sin(ry+Math.PI/2);
+			this.keys.put(KeyCode.W, false);
 		} else if (this.keys.getOrDefault(KeyCode.A, false)){
-			moveCamera(-speed, 0, 0);
-			this.keys.put(KeyCode.A, true);
+			cx += speed*Math.cos(ry+Math.PI);
+			cz += speed*Math.sin(ry+Math.PI);
+			this.keys.put(KeyCode.A, false);
 		} else if (this.keys.getOrDefault(KeyCode.S, false)){
-			moveCamera(0, 0, -speed);
-			this.keys.put(KeyCode.S, true);
+			cx -= speed*Math.cos(ry+Math.PI/2);
+			cz -= speed*Math.sin(ry+Math.PI/2);
+			this.keys.put(KeyCode.S, false);
 		} else if (this.keys.getOrDefault(KeyCode.D, false)){
-			moveCamera(speed, 0, 0);
-			this.keys.put(KeyCode.D, true);
+			cx -= speed*Math.cos(ry+Math.PI);
+			cz -= speed*Math.sin(ry+Math.PI);
+			this.keys.put(KeyCode.D, false);
 		} else if (this.keys.getOrDefault(KeyCode.SPACE, false)){
-			moveCamera(0, -speed, 0);
-			this.keys.put(KeyCode.SPACE, true);
+			cy -= speed;
+			this.keys.put(KeyCode.SPACE, false);
 		} else if (this.keys.getOrDefault(KeyCode.Z, false)){
-			moveCamera(0, speed, 0);
-			this.keys.put(KeyCode.Z, true);
+			cy += speed;
+			this.keys.put(KeyCode.Z, false);
+		} else if (this.keys.getOrDefault(KeyCode.F1, false)){
+			SHOW_LINES = !SHOW_LINES;
+			this.keys.put(KeyCode.F1, false);
 		} else if (this.keys.getOrDefault(KeyCode.R, false)){
 			cx = 0;
 			cy = 0;
@@ -701,17 +715,16 @@ public class Rendering3D extends Application{
 		}
 		
 		double lspeed = 5;
-		double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{LIGHT.getX(), LIGHT.getY(), LIGHT.getZ()});
-		LIGHT = new Point3D(rotationV[0], rotationV[1], rotationV[2]);
+		//double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{LIGHT.getX(), LIGHT.getY(), LIGHT.getZ()});
+		//LIGHT = new Point3D(rotationV[0], rotationV[1], rotationV[2]);
+		//cx = LIGHT.getX();
+		//cy = LIGHT.getY();
+		//cz = LIGHT.getZ();
+		//ry = Math.atan2(cz, cx)+Math.PI/2;
+		LIGHT = new Point3D(cx, cy, cz);
 		
 		gc.setFill(Color.WHITE);
 		gc.fillText(String.format("%.2f %.2f FPS:%d (%d)\nCx: %.2f Cy: %.2f Cz: %.2f\nLight: %s", Math.toDegrees(rx), Math.toDegrees(ry), fps, FPS, cx, cy, cz, LIGHT), 30, 30);
-	}
-	
-	private void moveCamera(double tx, double ty, double tz){
-		cx += tx;
-		cy += ty;
-		cz += tz;
 	}
 	
 	private static double[][] getRotateX(double angle){
@@ -793,7 +806,7 @@ public class Rendering3D extends Application{
 		double red = color.getRed();
 		double green = color.getGreen();
 		double blue = color.getBlue();
-		double intensity = 1;
+		double intensity = Math.max(0, 1-point.subtract(LIGHT).magnitude()*0.005);
 		
 		double factor = normal.dotProduct(point.subtract(LIGHT).normalize());
 		
@@ -807,13 +820,48 @@ public class Rendering3D extends Application{
 		return Color.color(red, green, blue);
 	}
 	
-	private Cube loadCubeFromFile(File file){
+	private Map<String, double[]> loadMaterialLib(File file){
+		if (!file.exists()) return null;
+		Map<String, double[]> output = new HashMap<>();
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(file));
+			String line;
+			String name = null;
+			double[] current = null;
+			while ((line = reader.readLine()) != null){
+				if (line.startsWith("newmtl")){
+					if (name != null){
+						output.put(name, current);
+					}
+					name = line.split(" ")[1];
+					current = new double[3];
+				} else if (line.startsWith("Kd") && current != null){
+					current[0] = Double.parseDouble(line.split(" ")[1]);
+					current[1] = Double.parseDouble(line.split(" ")[2]);
+					current[2] = Double.parseDouble(line.split(" ")[3]);
+				} else if (line.startsWith("D") && current != null){
+					// nothing
+				}
+			}
+			reader.close();
+			return output;
+		} catch (IOException ex){
+			ex.printStackTrace();
+			return null;
+		}
+	}
+	
+	private Cube loadCubeFromFile(File file, double x, double y, double z, double scale){
+		
+		Map<String, double[]> mtllib = loadMaterialLib(new File("model.mtl"));
+		
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			List<Point3D> points = new ArrayList<>();
-			List<Color> colors = new ArrayList<>();
+			Map<Integer, Color> colors = new HashMap<>();
 			List<int[]> faces = new ArrayList<>();
 			String line;
+			String currentMaterial = null;
 			while ((line = reader.readLine()) != null){
 				if (line.startsWith("v ")){
 					String[] pieces = line.split(" ");
@@ -821,10 +869,10 @@ public class Rendering3D extends Application{
 					for (int i = 0; i < parray.length; i++){
 						parray[i] = Double.parseDouble(line.split(" ")[i+1]);
 					}
-					points.add(new Point3D(parray[0], parray[1], parray[2]));
+					points.add(new Point3D(parray[0]*scale+x, parray[1]*scale+y, parray[2]*scale+z));
 					if (parray.length == 6){
-						colors.add(Color.color(parray[3], parray[4], parray[5]));
-					}
+						colors.put(points.size()-1, Color.color(parray[3], parray[4], parray[5]));
+					} 
 				} else if (line.startsWith("f ")){
 					String[] pieces = line.split(" ");
 					int[] farray = new int[pieces.length-1];
@@ -835,6 +883,16 @@ public class Rendering3D extends Application{
 					if (farray.length == 4){ // Squares
 						faces.add(new int[]{farray[0], farray[2], farray[3]});
 					}
+					if (mtllib != null){
+						colors.put(farray[0], Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]));
+						colors.put(farray[1], Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]));
+						colors.put(farray[2], Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]));
+						if (farray.length == 4){
+							colors.put(farray[3], Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]));
+						}
+					}
+				} else if (line.startsWith("usemtl")){
+					currentMaterial = line.split(" ")[1];
 				}
 			}
 			reader.close();
