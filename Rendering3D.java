@@ -31,11 +31,12 @@ public class Rendering3D extends Application{
 		{0, 0, 2/(zFar-zNear), -2*zNear/(zFar-zNear)-1},
 		{0, 0, 1, 0}
 	};
-	private static Point3D LIGHT = new Point3D(0, -15, -35);
+	private static Point3D LIGHT = new Point3D(0, -5, -5);
 	
 	private List<Cube> cubes = new ArrayList<>();
 	private static double cx, cy, cz, rx, ry;
 	private static boolean SHOW_LINES = false;
+	private boolean followLight = false;
 	private double mouseX, mouseY, mouseOldX, mouseOldY;
 	private static double[][] depthBuffer = new double[WIDTH][HEIGHT];
 	private static final Image COAL_IMAGE = new Image(Rendering3D.class.getResourceAsStream("coal.png"));
@@ -135,9 +136,9 @@ public class Rendering3D extends Application{
 				p3 = multiply(getRotateZ(this.angle), p3);
 				
 				// Translate
-				p1 = multiply(getTranslation(0, 0, 16), p1);
-				p2 = multiply(getTranslation(0, 0, 16), p2);
-				p3 = multiply(getTranslation(0, 0, 16), p3);
+				p1 = multiply(getTranslation(0, 0, 8), p1);
+				p2 = multiply(getTranslation(0, 0, 8), p2);
+				p3 = multiply(getTranslation(0, 0, 8), p3);
 				
 				Point3D point1 = new Point3D(p1[0], p1[1], p1[2]);
 				Point3D point2 = new Point3D(p2[0], p2[1], p2[2]);
@@ -145,9 +146,9 @@ public class Rendering3D extends Application{
 				
 				Point3D normal = point2.subtract(point1).crossProduct(point3.subtract(point1));
 				normal.normalize();
-				this.normals[i][0] = normal;
-				this.normals[i][1] = normal;
-				this.normals[i][2] = normal;
+				//this.normals[i][0] = normal;
+				//this.normals[i][1] = normal;
+				//this.normals[i][2] = normal;
 				
 				double dot = normal.dotProduct(point1.subtract(cx, cy, cz));
 				
@@ -663,7 +664,7 @@ public class Rendering3D extends Application{
 		
 		Random random = new Random();
 		
-		for (int i = 0; i < 1; i++){
+		/*for (int i = 0; i < 1; i++){
 			for (int j = 0; j < 1; j++){
 				for (int k = 0; k < 1; k++){
 					//if (!isPrime(i+j+k)) continue;
@@ -690,10 +691,10 @@ public class Rendering3D extends Application{
 					}, null, null));
 				}
 			}
-		}
+		}*/
 		
 		//cubes.add(loadCubeFromFile(new File("model.obj"), 0, 5, 0, 0.05));
-		//cubes.add(loadCubeFromFile(new File("car.obj"), 0, 0, 0, 1));
+		cubes.add(loadCubeFromFile(new File("bus.obj"), 0, 0, 0, 0.1));
 		
 		Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
 		loop.setCycleCount(Animation.INDEFINITE);
@@ -751,6 +752,9 @@ public class Rendering3D extends Application{
 		} else if (this.keys.getOrDefault(KeyCode.F1, false)){
 			SHOW_LINES = !SHOW_LINES;
 			this.keys.put(KeyCode.F1, false);
+		} else if (this.keys.getOrDefault(KeyCode.F2, false)){
+			followLight = !followLight;
+			this.keys.put(KeyCode.F2, false);
 		} else if (this.keys.getOrDefault(KeyCode.R, false)){
 			cx = 0;
 			cy = 0;
@@ -766,13 +770,15 @@ public class Rendering3D extends Application{
 		}
 		
 		double lspeed = 5;
-		//double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{LIGHT.getX(), LIGHT.getY(), LIGHT.getZ()});
-		//LIGHT = new Point3D(rotationV[0], rotationV[1], rotationV[2]);
-		//cx = LIGHT.getX();
-		//cy = LIGHT.getY();
-		//cz = LIGHT.getZ();
-		//ry = Math.atan2(cz, cx)+Math.PI/2;
-		LIGHT = new Point3D(cx, cy, cz);
+		double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{LIGHT.getX(), LIGHT.getY(), LIGHT.getZ()});
+		LIGHT = new Point3D(rotationV[0], rotationV[1], rotationV[2]);
+		if (followLight){
+			cx = LIGHT.getX();
+			cy = LIGHT.getY();
+			cz = LIGHT.getZ();
+			ry = Math.atan2(cz, cx)+Math.PI/2;
+		}
+		//LIGHT = new Point3D(cx, cy, cz);
 		
 		gc.setFill(Color.WHITE);
 		gc.fillText(String.format("%.2f %.2f FPS:%d (%d)\nCx: %.2f Cy: %.2f Cz: %.2f\nLight: %s", Math.toDegrees(rx), Math.toDegrees(ry), fps, FPS, cx, cy, cz, LIGHT), 30, 30);
