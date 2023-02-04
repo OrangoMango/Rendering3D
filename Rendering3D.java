@@ -31,7 +31,7 @@ public class Rendering3D extends Application{
 		{0, 0, 2/(zFar-zNear), -2*zNear/(zFar-zNear)-1},
 		{0, 0, 1, 0}
 	};
-	private static Point3D LIGHT = new Point3D(0, -5, -10);
+	private static Point3D LIGHT = new Point3D(0, -15, -35);
 	
 	private List<Cube> cubes = new ArrayList<>();
 	private static double cx, cy, cz, rx, ry;
@@ -124,9 +124,9 @@ public class Rendering3D extends Application{
 				p3 = multiply(getScale(factor, factor, factor), p3);*/
 				
 				// Rotate
-				p1 = multiply(getRotateX(this.angle+Math.PI/2), p1);
-				p2 = multiply(getRotateX(this.angle+Math.PI/2), p2);
-				p3 = multiply(getRotateX(this.angle+Math.PI/2), p3);
+				p1 = multiply(getRotateX(this.angle), p1);
+				p2 = multiply(getRotateX(this.angle), p2);
+				p3 = multiply(getRotateX(this.angle), p3);
 				p1 = multiply(getRotateY(this.angle), p1);
 				p2 = multiply(getRotateY(this.angle), p2);
 				p3 = multiply(getRotateY(this.angle), p3);
@@ -642,7 +642,8 @@ public class Rendering3D extends Application{
 			}
 		}*/
 		
-		cubes.add(loadCubeFromFile(new File("model.obj"), 0, 5, 0, 0.05));
+		//cubes.add(loadCubeFromFile(new File("model.obj"), 0, 5, 0, 0.05));
+		cubes.add(loadCubeFromFile(new File("car.obj"), 0, 0, 0, 1));
 		
 		Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
 		loop.setCycleCount(Animation.INDEFINITE);
@@ -715,13 +716,13 @@ public class Rendering3D extends Application{
 		}
 		
 		double lspeed = 5;
-		//double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{LIGHT.getX(), LIGHT.getY(), LIGHT.getZ()});
-		//LIGHT = new Point3D(rotationV[0], rotationV[1], rotationV[2]);
+		double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{LIGHT.getX(), LIGHT.getY(), LIGHT.getZ()});
+		LIGHT = new Point3D(rotationV[0], rotationV[1], rotationV[2]);
 		//cx = LIGHT.getX();
 		//cy = LIGHT.getY();
 		//cz = LIGHT.getZ();
 		//ry = Math.atan2(cz, cx)+Math.PI/2;
-		LIGHT = new Point3D(cx, cy, cz);
+		//LIGHT = new Point3D(cx, cy, cz);
 		
 		gc.setFill(Color.WHITE);
 		gc.fillText(String.format("%.2f %.2f FPS:%d (%d)\nCx: %.2f Cy: %.2f Cz: %.2f\nLight: %s", Math.toDegrees(rx), Math.toDegrees(ry), fps, FPS, cx, cy, cz, LIGHT), 30, 30);
@@ -853,7 +854,7 @@ public class Rendering3D extends Application{
 	
 	private Cube loadCubeFromFile(File file, double x, double y, double z, double scale){
 		
-		Map<String, double[]> mtllib = loadMaterialLib(new File("model.mtl"));
+		Map<String, double[]> mtllib = loadMaterialLib(new File(file.getName().replaceAll("\\.[^.]+$", "")+".mtl"));
 		
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -871,7 +872,7 @@ public class Rendering3D extends Application{
 					}
 					points.add(new Point3D(parray[0]*scale+x, parray[1]*scale+y, parray[2]*scale+z));
 					if (parray.length == 6){
-						colors.put(points.size()-1, Color.color(parray[3], parray[4], parray[5]));
+						colors.put(colors.size() == 0 ? 0 : Collections.max(colors.keySet())+1, Color.color(parray[3], parray[4], parray[5]));
 					} 
 				} else if (line.startsWith("f ")){
 					String[] pieces = line.split(" ");
