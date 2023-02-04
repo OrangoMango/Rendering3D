@@ -52,12 +52,12 @@ public class Rendering3D extends Application{
 		private double angle;
 		private Point2D[] textureVertex;
 		private int[][] textureFaces;
-		private Point3D[] normals;
+		private Point3D[][] normals;
 		private Image image;
 		private Point3D[][] trianglePoints;
 		private Color[][] vertexCol;
 		
-		public Cube(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, Color[] colors){
+		public Cube(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, Color[] colors, Point3D[][] ns){
 			this.color = Color.WHITE; //Color.color(Math.random(), Math.random(), Math.random());
 			this.image = image;
 			this.points = points;
@@ -66,7 +66,7 @@ public class Rendering3D extends Application{
 			this.colors = colors;
 			this.textureVertex = textureCoords;
 			this.textureFaces = vertexFaces;
-			this.normals = new Point3D[faces.length];
+			this.normals = ns == null ? new Point3D[faces.length][3] : ns;
 		}
 		
 		public Point3D[] getPoints(){
@@ -145,7 +145,9 @@ public class Rendering3D extends Application{
 				
 				Point3D normal = point2.subtract(point1).crossProduct(point3.subtract(point1));
 				normal.normalize();
-				this.normals[i] = normal;
+				this.normals[i][0] = normal;
+				this.normals[i][1] = normal;
+				this.normals[i][2] = normal;
 				
 				double dot = normal.dotProduct(point1.subtract(cx, cy, cz));
 				
@@ -250,23 +252,31 @@ public class Rendering3D extends Application{
 		
 		private void renderColoredTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Color c1, Color c2, Color c3, 
 											double w1, double w2, double w3, int index, GraphicsContext gc){
+												
+			double l1 = getLightIntensity(this.normals[index][0], this.trianglePoints[index][0]);
+			double l2 = getLightIntensity(this.normals[index][1], this.trianglePoints[index][1]);
+			double l3 = getLightIntensity(this.normals[index][2], this.trianglePoints[index][2]);
+												
 			if (y2 < y1){
 				y1 = swap(y2, y2 = y1);
 				x1 = swap(x2, x2 = x1);
 				c1 = swap(c2, c2 = c1);
 				w1 = swap(w2, w2 = w1);
+				l1 = swap(l2, l2 = l1);
 			}
 			if (y3 < y1){
 				y1 = swap(y3, y3 = y1);
 				x1 = swap(x3, x3 = x1);
 				c1 = swap(c3, c3 = c1);
 				w1 = swap(w3, w3 = w1);
+				l1 = swap(l3, l3 = l1);
 			}
 			if (y3 < y2){
 				y2 = swap(y3, y3 = y2);
 				x2 = swap(x3, x3 = x2);
 				c2 = swap(c3, c3 = c2);
 				w2 = swap(w3, w3 = w2);
+				l2 = swap(l3, l3 = l2);
 			}
 			
 			int dx1 = x2-x1;
@@ -275,6 +285,7 @@ public class Rendering3D extends Application{
 			double dg1 = c2.getGreen()-c1.getGreen();
 			double db1 = c2.getBlue()-c1.getBlue();
 			double dw1 = w2-w1;
+			double dl1 = l2-l1;
 			
 			int dx2 = x3-x1;
 			int dy2 = y3-y1;
@@ -282,10 +293,11 @@ public class Rendering3D extends Application{
 			double dg2 = c3.getGreen()-c1.getGreen();
 			double db2 = c3.getBlue()-c1.getBlue();
 			double dw2 = w3-w1;
+			double dl2 = l3-l1;
 			
-			double col_r, col_g, col_b, col_w;
+			double col_r, col_g, col_b, col_w, col_l;
 			
-			double dax_step = 0, dbx_step = 0, dr1_step = 0, dg1_step = 0, db1_step = 0, dr2_step = 0, dg2_step = 0, db2_step = 0, dw1_step = 0, dw2_step = 0;
+			double dax_step = 0, dbx_step = 0, dr1_step = 0, dg1_step = 0, db1_step = 0, dr2_step = 0, dg2_step = 0, db2_step = 0, dw1_step = 0, dw2_step = 0, dl1_step = 0, dl2_step = 0;
 			
 			if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
 			if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
@@ -294,11 +306,13 @@ public class Rendering3D extends Application{
 			if (dy1 != 0) dg1_step = dg1/Math.abs(dy1);
 			if (dy1 != 0) db1_step = db1/Math.abs(dy1);
 			if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
+			if (dy1 != 0) dl1_step = dl1/Math.abs(dy1);
 			
 			if (dy2 != 0) dr2_step = dr2/Math.abs(dy2);
 			if (dy2 != 0) dg2_step = dg2/Math.abs(dy2);
 			if (dy2 != 0) db2_step = db2/Math.abs(dy2);
 			if (dy2 != 0) dw2_step = dw2/Math.abs(dy2);
+			if (dy2 != 0) dl2_step = dl2/Math.abs(dy2);
 
 			if (dy1 != 0){
 				for (int i = y1; i <= y2; i++){
@@ -309,11 +323,13 @@ public class Rendering3D extends Application{
 					double col_sg = c1.getGreen()+(i-y1)*dg1_step;
 					double col_sb = c1.getBlue()+(i-y1)*db1_step;
 					double col_sw = w1+(i-y1)*dw1_step;
+					double col_sl = l1+(i-y1)*dl1_step;
 					
 					double col_er = c1.getRed()+(i-y1)*dr2_step;
 					double col_eg = c1.getGreen()+(i-y1)*dg2_step;
 					double col_eb = c1.getBlue()+(i-y1)*db2_step;
 					double col_ew = w1+(i-y1)*dw2_step;
+					double col_el = l1+(i-y1)*dl2_step;
 					
 					if (ax > bx){
 						ax = swap(bx, bx = ax);
@@ -321,12 +337,14 @@ public class Rendering3D extends Application{
 						col_sg = swap(col_eg, col_eg = col_sg);
 						col_sb = swap(col_eb, col_eb = col_sb);
 						col_sw = swap(col_ew, col_ew = col_sw);
+						col_sl = swap(col_el, col_el = col_sl);
 					}
 					
 					col_r = col_sr;
 					col_g = col_sg;
 					col_b = col_sb;
 					col_w = col_sw;
+					col_l = col_sl;
 					
 					double tstep = 1.0/(bx-ax);
 					double t = 0.0;
@@ -336,10 +354,11 @@ public class Rendering3D extends Application{
 						col_g = (1-t)*col_sg+t*col_eg;
 						col_b = (1-t)*col_sb+t*col_eb;
 						col_w = (1-t)*col_sw+t*col_ew;
+						col_l = (1-t)*col_sl+t*col_el;
 						
 						if (depthBuffer[j][i] <= col_w){
 							depthBuffer[j][i] = col_w;
-							gc.getPixelWriter().setColor(j, i, getLight(Color.color(col_r, col_g, col_b), this.normals[index], this.trianglePoints[index][0]));
+							gc.getPixelWriter().setColor(j, i, getLight(Color.color(col_r, col_g, col_b), Math.max(col_l, 0)));
 						}
 
 						t += tstep;
@@ -353,15 +372,17 @@ public class Rendering3D extends Application{
 			dg1 = c3.getGreen()-c2.getGreen();
 			db1 = c3.getBlue()-c2.getBlue();
 			dw1 = w3-w2;
+			dl1 = l3-l2;
 			
 			if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
 			if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
 			
-			dr1_step = 0; dg1_step = 0; db1_step = 0;
+			dr1_step = 0; dg1_step = 0; db1_step = 0; dw1_step = 0; dl1_step = 0;
 			if (dy1 != 0) dr1_step = dr1/Math.abs(dy1);
 			if (dy1 != 0) dg1_step = dg1/Math.abs(dy1);
 			if (dy1 != 0) db1_step = db1/Math.abs(dy1);
 			if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
+			if (dy1 != 0) dl1_step = dl1/Math.abs(dy1);
 			
 			if (dy1 != 0){
 				for (int i = y2; i <= y3; i++){
@@ -372,11 +393,13 @@ public class Rendering3D extends Application{
 					double col_sg = c2.getGreen()+(i-y2)*dg1_step;
 					double col_sb = c2.getBlue()+(i-y2)*db1_step;
 					double col_sw = w2+(i-y2)*dw1_step;
+					double col_sl = l2+(i-y2)*dl1_step;
 					
 					double col_er = c1.getRed()+(i-y1)*dr2_step;
 					double col_eg = c1.getGreen()+(i-y1)*dg2_step;
 					double col_eb = c1.getBlue()+(i-y1)*db2_step;
 					double col_ew = w1+(i-y1)*dw2_step;
+					double col_el = l1+(i-y1)*dl2_step;
 					
 					if (ax > bx){
 						ax = swap(bx, bx = ax);
@@ -384,12 +407,14 @@ public class Rendering3D extends Application{
 						col_sg = swap(col_eg, col_eg = col_sg);
 						col_sb = swap(col_eb, col_eb = col_sb);
 						col_sw = swap(col_ew, col_ew = col_sw);
+						col_sl = swap(col_el, col_el = col_sl);
 					}
 					
 					col_r = col_sr;
 					col_g = col_sg;
 					col_b = col_sb;
 					col_w = col_sw;
+					col_l = col_sl;
 					
 					double tstep = 1.0/(bx-ax);
 					double t = 0.0;
@@ -399,10 +424,11 @@ public class Rendering3D extends Application{
 						col_g = (1-t)*col_sg+t*col_eg;
 						col_b = (1-t)*col_sb+t*col_eb;
 						col_w = (1-t)*col_sw+t*col_ew;
+						col_l = (1-t)*col_sl+t*col_el;
 						
 						if (depthBuffer[j][i] <= col_w){
 							depthBuffer[j][i] = col_w;
-							gc.getPixelWriter().setColor(j, i, getLight(Color.color(col_r, col_g, col_b), this.normals[index], this.trianglePoints[index][0]));
+							gc.getPixelWriter().setColor(j, i, getLight(Color.color(col_r, col_g, col_b), Math.max(col_l, 0)));
 						}
 
 						t += tstep;
@@ -413,12 +439,18 @@ public class Rendering3D extends Application{
 		
 		private void renderTriangle(int x1, int y1, int x2, int y2, int x3, int y3, double u1, double v1, double u2, double v2, double u3, double v3, 
 									double w1, double w2, double w3, int index, GraphicsContext gc, Image image){
+			
+			double l1 = getLightIntensity(this.normals[index][0], this.trianglePoints[index][0]);
+			double l2 = getLightIntensity(this.normals[index][1], this.trianglePoints[index][1]);
+			double l3 = getLightIntensity(this.normals[index][2], this.trianglePoints[index][2]);
+
 			if (y2 < y1){
 				y1 = swap(y2, y2 = y1);
 				x1 = swap(x2, x2 = x1);
 				u1 = swap(u2, u2 = u1);
 				v1 = swap(v2, v2 = v1);
 				w1 = swap(w2, w2 = w1);
+				l1 = swap(l2, l2 = l1);
 			}
 			if (y3 < y1){
 				y1 = swap(y3, y3 = y1);
@@ -426,6 +458,7 @@ public class Rendering3D extends Application{
 				u1 = swap(u3, u3 = u1);
 				v1 = swap(v3, v3 = v1);
 				w1 = swap(w3, w3 = w1);
+				l1 = swap(l3, l3 = l1);
 			}
 			if (y3 < y2){
 				y2 = swap(y3, y3 = y2);
@@ -433,6 +466,7 @@ public class Rendering3D extends Application{
 				u2 = swap(u3, u3 = u2);
 				v2 = swap(v3, v3 = v2);
 				w2 = swap(w3, w3 = w2);
+				l2 = swap(l3, l3 = l2);
 			}
 			
 			int dx1 = x2-x1;
@@ -440,16 +474,18 @@ public class Rendering3D extends Application{
 			double du1 = u2-u1;
 			double dv1 = v2-v1;
 			double dw1 = w2-w1;
+			double dl1 = l2-l1;
 			
 			int dx2 = x3-x1;
 			int dy2 = y3-y1;
 			double du2 = u3-u1;
 			double dv2 = v3-v1;
 			double dw2 = w3-w1;
+			double dl2 = l3-l1;
 			
-			double tex_u, tex_v, tex_w;
+			double tex_u, tex_v, tex_w, tex_l;
 			
-			double dax_step = 0, dbx_step = 0, du1_step = 0, dv1_step = 0, du2_step = 0, dv2_step = 0, dw1_step = 0, dw2_step = 0;
+			double dax_step = 0, dbx_step = 0, du1_step = 0, dv1_step = 0, du2_step = 0, dv2_step = 0, dw1_step = 0, dw2_step = 0, dl1_step = 0, dl2_step = 0;
 			
 			if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
 			if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
@@ -457,10 +493,12 @@ public class Rendering3D extends Application{
 			if (dy1 != 0) du1_step = du1/Math.abs(dy1);
 			if (dy1 != 0) dv1_step = dv1/Math.abs(dy1);
 			if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
+			if (dy1 != 0) dl1_step = dl1/Math.abs(dy1);
 			
 			if (dy2 != 0) du2_step = du2/Math.abs(dy2);
 			if (dy2 != 0) dv2_step = dv2/Math.abs(dy2);
 			if (dy2 != 0) dw2_step = dw2/Math.abs(dy2);
+			if (dy2 != 0) dl2_step = dl2/Math.abs(dy2);
 			
 			if (dy1 != 0){
 				for (int i = y1; i <= y2; i++){
@@ -470,21 +508,25 @@ public class Rendering3D extends Application{
 					double tex_su = u1+(i-y1)*du1_step;
 					double tex_sv = v1+(i-y1)*dv1_step;
 					double tex_sw = w1+(i-y1)*dw1_step;
+					double tex_sl = l1+(i-y1)*dl1_step;
 					
 					double tex_eu = u1+(i-y1)*du2_step;
 					double tex_ev = v1+(i-y1)*dv2_step;
 					double tex_ew = w1+(i-y1)*dw2_step;
+					double tex_el = l1+(i-y1)*dl2_step;
 					
 					if (ax > bx){
 						ax = swap(bx, bx = ax);
 						tex_su = swap(tex_eu, tex_eu = tex_su);
 						tex_sv = swap(tex_ev, tex_ev = tex_sv);
 						tex_sw = swap(tex_ew, tex_ew = tex_sw);
+						tex_sl = swap(tex_el, tex_el = tex_sl);
 					}
 					
 					tex_u = tex_su;
 					tex_v = tex_sv;
 					tex_w = tex_sw;
+					tex_l = tex_sl;
 					
 					double tstep = 1.0/(bx-ax);
 					double t = 0.0;
@@ -493,6 +535,7 @@ public class Rendering3D extends Application{
 						tex_u = (1-t)*tex_su+t*tex_eu;
 						tex_v = (1-t)*tex_sv+t*tex_ev;
 						tex_w = (1-t)*tex_sw+t*tex_ew;
+						tex_l = (1-t)*tex_sl+t*tex_el;
 						
 						int pix_x = (int)(tex_u/tex_w*(image.getWidth())) % ((int)image.getWidth());
 						int pix_y = (int)(tex_v/tex_w*(image.getHeight())) % ((int)image.getHeight());
@@ -501,7 +544,7 @@ public class Rendering3D extends Application{
 						if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
 						if (depthBuffer[j][i] <= tex_w){
 							depthBuffer[j][i] = tex_w;
-							gc.getPixelWriter().setColor(j, i, getLight(image.getPixelReader().getColor(pix_x, pix_y), this.normals[index], this.trianglePoints[index][0]));
+							gc.getPixelWriter().setColor(j, i, getLight(image.getPixelReader().getColor(pix_x, pix_y), Math.max(tex_l, 0)));
 						}
 						
 						t += tstep;
@@ -514,14 +557,16 @@ public class Rendering3D extends Application{
 			du1 = u3-u2;
 			dv1 = v3-v2;
 			dw1 = w3-w2;
+			dl1 = l3-l2;
 			
 			if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
 			if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
 			
-			du1_step = 0; dv1_step = 0; dw1_step = 0;
+			du1_step = 0; dv1_step = 0; dw1_step = 0; dl1_step = 0;
 			if (dy1 != 0) du1_step = du1/Math.abs(dy1);
 			if (dy1 != 0) dv1_step = dv1/Math.abs(dy1);
 			if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
+			if (dy1 != 0) dl1_step = dl1/Math.abs(dy1);
 			
 			if (dy1 != 0){
 				for (int i = y2; i <= y3; i++){
@@ -531,21 +576,25 @@ public class Rendering3D extends Application{
 					double tex_su = u2+(i-y2)*du1_step;
 					double tex_sv = v2+(i-y2)*dv1_step;
 					double tex_sw = w2+(i-y2)*dw1_step;
+					double tex_sl = l2+(i-y2)*dl1_step;
 					
 					double tex_eu = u1+(i-y1)*du2_step;
 					double tex_ev = v1+(i-y1)*dv2_step;
 					double tex_ew = w1+(i-y1)*dw2_step;
+					double tex_el = l1+(i-y1)*dl2_step;
 					
 					if (ax > bx){
 						ax = swap(bx, bx = ax);
 						tex_su = swap(tex_eu, tex_eu = tex_su);
 						tex_sv = swap(tex_ev, tex_ev = tex_sv);
 						tex_sw = swap(tex_ew, tex_ew = tex_sw);
+						tex_sl = swap(tex_el, tex_el = tex_sl);
 					}
 					
 					tex_u = tex_su;
 					tex_v = tex_sv;
 					tex_w = tex_sw;
+					tex_l = tex_sl;
 					
 					double tstep = 1.0/(bx-ax);
 					double t = 0.0;
@@ -554,6 +603,7 @@ public class Rendering3D extends Application{
 						tex_u = (1-t)*tex_su+t*tex_eu;
 						tex_v = (1-t)*tex_sv+t*tex_ev;
 						tex_w = (1-t)*tex_sw+t*tex_ew;
+						tex_l = (1-t)*tex_sl+t*tex_el;
 						
 						int pix_x = (int)(tex_u/tex_w*(image.getWidth())) % ((int)image.getWidth());
 						int pix_y = (int)(tex_v/tex_w*(image.getHeight())) % ((int)image.getHeight());
@@ -562,7 +612,7 @@ public class Rendering3D extends Application{
 						if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
 						if (depthBuffer[j][i] <= tex_w){
 							depthBuffer[j][i] = tex_w;
-							gc.getPixelWriter().setColor(j, i, getLight(image.getPixelReader().getColor(pix_x, pix_y), this.normals[index], this.trianglePoints[index][0]));
+							gc.getPixelWriter().setColor(j, i, getLight(image.getPixelReader().getColor(pix_x, pix_y), Math.max(tex_l, 0)));
 						}
 						
 						t += tstep;
@@ -613,7 +663,7 @@ public class Rendering3D extends Application{
 		
 		Random random = new Random();
 		
-		/*for (int i = 0; i < 1; i++){
+		for (int i = 0; i < 1; i++){
 			for (int j = 0; j < 1; j++){
 				for (int k = 0; k < 1; k++){
 					//if (!isPrime(i+j+k)) continue;
@@ -637,13 +687,13 @@ public class Rendering3D extends Application{
 						{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 						{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 						{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
-					}, null));
+					}, null, null));
 				}
 			}
-		}*/
+		}
 		
 		//cubes.add(loadCubeFromFile(new File("model.obj"), 0, 5, 0, 0.05));
-		cubes.add(loadCubeFromFile(new File("car.obj"), 0, 0, 0, 1));
+		//cubes.add(loadCubeFromFile(new File("car.obj"), 0, 0, 0, 1));
 		
 		Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
 		loop.setCycleCount(Animation.INDEFINITE);
@@ -661,13 +711,13 @@ public class Rendering3D extends Application{
 		stage.show();
 	}
 	
-	private static boolean isPrime(int n){
+	/*private static boolean isPrime(int n){
 		if (n == 0 || n == 1 || n == 2) return true;
 		for (int i = 2; i < Math.sqrt(n); i++){
 			if (n % i == 0) return false;
 		}
 		return true;
-	}
+	}*/
 	
 	private void update(GraphicsContext gc){
 		gc.clearRect(0, 0, WIDTH, HEIGHT);
@@ -716,13 +766,13 @@ public class Rendering3D extends Application{
 		}
 		
 		double lspeed = 5;
-		double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{LIGHT.getX(), LIGHT.getY(), LIGHT.getZ()});
-		LIGHT = new Point3D(rotationV[0], rotationV[1], rotationV[2]);
+		//double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{LIGHT.getX(), LIGHT.getY(), LIGHT.getZ()});
+		//LIGHT = new Point3D(rotationV[0], rotationV[1], rotationV[2]);
 		//cx = LIGHT.getX();
 		//cy = LIGHT.getY();
 		//cz = LIGHT.getZ();
 		//ry = Math.atan2(cz, cx)+Math.PI/2;
-		//LIGHT = new Point3D(cx, cy, cz);
+		LIGHT = new Point3D(cx, cy, cz);
 		
 		gc.setFill(Color.WHITE);
 		gc.fillText(String.format("%.2f %.2f FPS:%d (%d)\nCx: %.2f Cy: %.2f Cz: %.2f\nLight: %s", Math.toDegrees(rx), Math.toDegrees(ry), fps, FPS, cx, cy, cz, LIGHT), 30, 30);
@@ -803,21 +853,22 @@ public class Rendering3D extends Application{
 		return out;
 	}
 	
-	private static Color getLight(Color color, Point3D normal, Point3D point){
-		double red = color.getRed();
-		double green = color.getGreen();
-		double blue = color.getBlue();
+	private static double getLightIntensity(Point3D normal, Point3D point){
 		double intensity = Math.max(0, 1-point.subtract(LIGHT).magnitude()*0.005);
-		
-		double factor = normal.dotProduct(point.subtract(LIGHT).normalize());
-		
+		double factor = normal.dotProduct(point.subtract(LIGHT).normalize());	
 		if (factor < -1) factor = 1;
 		else if (factor > 0) factor = 0;
 		else factor = Math.abs(factor);
-		
-		red = intensity * red * factor;
-		green = intensity * green * factor;
-		blue = intensity * blue * factor;
+		return factor*intensity;
+	}
+	
+	private static Color getLight(Color color, double factor){
+		double red = color.getRed();
+		double green = color.getGreen();
+		double blue = color.getBlue();
+		red = red * factor;
+		green = green * factor;
+		blue = blue * factor;
 		return Color.color(red, green, blue);
 	}
 	
@@ -859,8 +910,10 @@ public class Rendering3D extends Application{
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			List<Point3D> points = new ArrayList<>();
+			List<Point3D> normals = new ArrayList<>();
 			Map<Integer, Color> colors = new HashMap<>();
 			List<int[]> faces = new ArrayList<>();
+			List<Point3D[]> normalsList = new ArrayList<>();
 			String line;
 			String currentMaterial = null;
 			while ((line = reader.readLine()) != null){
@@ -874,13 +927,32 @@ public class Rendering3D extends Application{
 					if (parray.length == 6){
 						colors.put(colors.size() == 0 ? 0 : Collections.max(colors.keySet())+1, Color.color(parray[3], parray[4], parray[5]));
 					} 
+				} else if (line.startsWith("vn ")){
+					String[] pieces = line.split(" ");
+					double[] narray = new double[pieces.length-1];
+					for (int i = 0; i < narray.length; i++){
+						narray[i] = Double.parseDouble(line.split(" ")[i+1]);
+					}
+					normals.add(new Point3D(narray[0], narray[1], narray[2]));
 				} else if (line.startsWith("f ")){
 					String[] pieces = line.split(" ");
 					int[] farray = new int[pieces.length-1];
+					int[] narray = null;
 					for (int i = 0; i < farray.length; i++){
-						farray[i] = Integer.parseInt(line.split(" ")[i+1].split("/")[0])-1;
+						String[] lineArray = line.split(" ")[i+1].split("/");
+						farray[i] = Integer.parseInt(lineArray[0])-1;
+						if (lineArray.length == 3){
+							if (narray == null) narray = new int[pieces.length-1];
+							narray[i] = Integer.parseInt(lineArray[2])-1;
+						}
 					}
 					faces.add(new int[]{farray[0], farray[1], farray[2]});
+					if (narray != null){
+						normalsList.add(new Point3D[]{normals.get(narray[0]), normals.get(narray[1]), normals.get(narray[2])});
+						if (farray.length == 4){ // Squares
+							normalsList.add(new Point3D[]{normals.get(narray[0]), normals.get(narray[2]), normals.get(narray[3])});
+						}
+					}
 					if (farray.length == 4){ // Squares
 						faces.add(new int[]{farray[0], farray[2], farray[3]});
 					}
@@ -906,11 +978,15 @@ public class Rendering3D extends Application{
 			}
 			
 			int[][] fs = new int[faces.size()][3];
+			Point3D[][] ns = new Point3D[normalsList.size()][3];
 			for (int i = 0; i < fs.length; i++){
 				fs[i] = faces.get(i);
 			}
+			for (int i = 0; i < ns.length; i++){
+				ns[i] = normalsList.get(i);
+			}
 			
-			return new Cube(null, ps, fs, null, null, cs.length == 0 ? null : cs);
+			return new Cube(null, ps, fs, null, null, cs.length == 0 ? null : cs, ns.length == 0 ? null : ns);
 			
 		} catch (IOException ex){
 			ex.printStackTrace();
