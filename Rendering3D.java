@@ -47,6 +47,7 @@ public class Rendering3D extends Application{
 		private Point3D[] points;
 		private double[][][] projected;
 		private Color[][] vertexColors;
+		private Color[][] facesColors;
 		private int[][] faces;
 		private Color[] colors;
 		private Color color;
@@ -59,13 +60,14 @@ public class Rendering3D extends Application{
 		private Color[][] vertexCol;
 		private double crx, cry, crz;
 		
-		public Cube(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, Color[] colors, Point3D[][] ns){
+		public Cube(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, Color[] colors, Point3D[][] ns, Color[][] fcs){
 			this.color = Color.WHITE; //Color.color(Math.random(), Math.random(), Math.random());
 			this.image = image;
 			this.points = points;
 			this.projected = new double[faces.length][3][3];
 			this.faces = faces;
 			this.colors = colors;
+			this.facesColors = fcs;
 			this.textureVertex = textureCoords;
 			this.textureFaces = vertexFaces;
 			this.normals = ns == null ? new Point3D[faces.length][3] : ns;
@@ -250,7 +252,7 @@ public class Rendering3D extends Application{
 				}
 
 				if (!SHOW_LINES){
-					if (this.colors == null){
+					if (this.colors == null && this.facesColors == null){
 						Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(1/projected[i][0][2]);
 						Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(1/projected[i][1][2]);
 						Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(1/projected[i][2][2]);
@@ -263,14 +265,16 @@ public class Rendering3D extends Application{
 								t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(),
 								projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, this.image);
 					} else {
-						
 						projected[i][0][2] = 1/projected[i][0][2];
 						projected[i][1][2] = 1/projected[i][1][2];
 						projected[i][2][2] = 1/projected[i][2][2];
 						
+						Color c1 = this.facesColors != null ? this.facesColors[i][0] : this.vertexColors[i][0];
+						Color c2 = this.facesColors != null ? this.facesColors[i][1] : this.vertexColors[i][1];
+						Color c3 = this.facesColors != null ? this.facesColors[i][2] : this.vertexColors[i][2];
+						
 						renderColoredTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
-								this.vertexColors[i][0], this.vertexColors[i][1], this.vertexColors[i][2],
-								projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc);
+								c1, c3, c3, projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc);
 					}
 				}
 			}
@@ -713,7 +717,7 @@ public class Rendering3D extends Application{
 						{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 						{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 						{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
-					}, null, null));
+					}, null, null, null));
 				}
 			}
 		}*/
@@ -955,6 +959,7 @@ public class Rendering3D extends Application{
 			List<Point3D> points = new ArrayList<>();
 			List<Point3D> normals = new ArrayList<>();
 			Map<Integer, Color> colors = new HashMap<>();
+			List<Color[]> facesColors = new ArrayList<>();
 			List<int[]> faces = new ArrayList<>();
 			List<Point3D[]> normalsList = new ArrayList<>();
 			String line;
@@ -1000,12 +1005,9 @@ public class Rendering3D extends Application{
 						faces.add(new int[]{farray[0], farray[2], farray[3]});
 					}
 					if (mtllib != null){
-						colors.put(farray[0], Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]));
-						colors.put(farray[1], Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]));
-						colors.put(farray[2], Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]));
-						if (farray.length == 4){
-							colors.put(farray[3], Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]));
-						}
+						facesColors.add(new Color[]{Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]), 
+							Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]), 
+							Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2])});
 					}
 				} else if (line.startsWith("usemtl")){
 					currentMaterial = line.split(" ")[1];
@@ -1014,10 +1016,16 @@ public class Rendering3D extends Application{
 			reader.close();
 			
 			Point3D[] ps = new Point3D[points.size()];
-			Color[] cs = new Color[points.size()];
+			Color[] cs = new Color[colors.size()];
+			Color[][] fcs = new Color[facesColors.size()][3];
 			for (int i = 0; i < ps.length; i++){
 				ps[i] = points.get(i);
-				if (colors.size() > 0) cs[i] = colors.get(i);
+				if (colors.size() > 0){
+					cs[i] = colors.get(i);
+				}
+			}
+			for (int i = 0; i < fcs.length; i++){
+				fcs[i] = facesColors.get(i);
 			}
 			
 			int[][] fs = new int[faces.size()][3];
@@ -1028,8 +1036,8 @@ public class Rendering3D extends Application{
 			for (int i = 0; i < ns.length; i++){
 				ns[i] = normalsList.get(i);
 			}
-			
-			return new Cube(null, ps, fs, null, null, cs.length == 0 ? null : cs, ns.length == 0 ? null : ns);
+
+			return new Cube(null, ps, fs, null, null, cs.length == 0 ? null : cs, ns.length == 0 ? null : ns, fcs.length == 0 ? null : fcs);
 			
 		} catch (IOException ex){
 			ex.printStackTrace();
