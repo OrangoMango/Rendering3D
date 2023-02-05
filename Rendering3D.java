@@ -31,19 +31,19 @@ public class Rendering3D extends Application{
 		{0, 0, 2/(zFar-zNear), -2*zNear/(zFar-zNear)-1},
 		{0, 0, 1, 0}
 	};
-	private static Point3D LIGHT = new Point3D(0, -5, -5);
+	private static Point3D LIGHT = new Point3D(0, -2, -10);
 	
 	private List<Cube> cubes = new ArrayList<>();
 	private static double cx, cy, cz, rx, ry;
-	private static boolean SHOW_LINES = false;
-	private boolean followLight = false;
+	private static boolean SHOW_LINES = false, LIGHT_AVAILABLE = true;
+	private boolean followLight = false, lightRotation = true;
 	private double mouseX, mouseY, mouseOldX, mouseOldY;
 	private static double[][] depthBuffer = new double[WIDTH][HEIGHT];
 	private static final Image COAL_IMAGE = new Image(Rendering3D.class.getResourceAsStream("coal.png"));
 	private static final Image DIRT_IMAGE = new Image(Rendering3D.class.getResourceAsStream("dirt.png"));
 	private static final Image STONE_IMAGE = new Image(Rendering3D.class.getResourceAsStream("stone.png"));
 	
-	private static class Cube {
+	private static class Cube{
 		private Point3D[] points;
 		private double[][][] projected;
 		private Color[][] vertexColors;
@@ -57,6 +57,7 @@ public class Rendering3D extends Application{
 		private Image image;
 		private Point3D[][] trianglePoints;
 		private Color[][] vertexCol;
+		private double crx, cry, crz;
 		
 		public Cube(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, Color[] colors, Point3D[][] ns){
 			this.color = Color.WHITE; //Color.color(Math.random(), Math.random(), Math.random());
@@ -68,6 +69,30 @@ public class Rendering3D extends Application{
 			this.textureVertex = textureCoords;
 			this.textureFaces = vertexFaces;
 			this.normals = ns == null ? new Point3D[faces.length][3] : ns;
+		}
+		
+		public void setRotation(double crx, double cry, double crz){
+			this.crx = crx;
+			this.cry = cry;
+			this.crz = crz;
+			for (int i = 0; i < this.normals.length; i++){
+				// Rotate normals
+				Point3D n1 = this.normals[i][0];
+				Point3D n2 = this.normals[i][1];
+				Point3D n3 = this.normals[i][2];
+				double[] rn1 = multiply(getRotateX(this.crx), new double[]{n1.getX(), n1.getY(), n1.getZ()});
+				double[] rn2 = multiply(getRotateX(this.crx), new double[]{n2.getX(), n2.getY(), n2.getZ()});
+				double[] rn3 = multiply(getRotateX(this.crx), new double[]{n3.getX(), n3.getY(), n3.getZ()});
+				rn1 = multiply(getRotateY(this.cry), rn1);
+				rn2 = multiply(getRotateY(this.cry), rn2);
+				rn3 = multiply(getRotateY(this.cry), rn3);
+				rn1 = multiply(getRotateZ(this.crz), rn1);
+				rn2 = multiply(getRotateZ(this.crz), rn2);
+				rn3 = multiply(getRotateZ(this.crz), rn3);
+				this.normals[i][0] = new Point3D(rn1[0], rn1[1], rn1[2]);
+				this.normals[i][1] = new Point3D(rn2[0], rn2[1], rn2[2]);
+				this.normals[i][2] = new Point3D(rn3[0], rn3[1], rn3[2]);
+			}
 		}
 		
 		public Point3D[] getPoints(){
@@ -125,20 +150,20 @@ public class Rendering3D extends Application{
 				p3 = multiply(getScale(factor, factor, factor), p3);*/
 				
 				// Rotate
-				p1 = multiply(getRotateX(this.angle), p1);
-				p2 = multiply(getRotateX(this.angle), p2);
-				p3 = multiply(getRotateX(this.angle), p3);
-				p1 = multiply(getRotateY(this.angle), p1);
-				p2 = multiply(getRotateY(this.angle), p2);
-				p3 = multiply(getRotateY(this.angle), p3);
-				p1 = multiply(getRotateZ(this.angle), p1);
-				p2 = multiply(getRotateZ(this.angle), p2);
-				p3 = multiply(getRotateZ(this.angle), p3);
-				
+				p1 = multiply(getRotateX(this.angle+this.crx), p1);
+				p2 = multiply(getRotateX(this.angle+this.crx), p2);
+				p3 = multiply(getRotateX(this.angle+this.crx), p3);
+				p1 = multiply(getRotateY(this.angle+this.cry), p1);
+				p2 = multiply(getRotateY(this.angle+this.cry), p2);
+				p3 = multiply(getRotateY(this.angle+this.cry), p3);
+				p1 = multiply(getRotateZ(this.angle+this.crz), p1);
+				p2 = multiply(getRotateZ(this.angle+this.crz), p2);
+				p3 = multiply(getRotateZ(this.angle+this.crz), p3);
+	
 				// Translate
-				p1 = multiply(getTranslation(0, 0, 8), p1);
-				p2 = multiply(getTranslation(0, 0, 8), p2);
-				p3 = multiply(getTranslation(0, 0, 8), p3);
+				//p1 = multiply(getTranslation(0, 0, 8), p1);
+				//p2 = multiply(getTranslation(0, 0, 8), p2);
+				//p3 = multiply(getTranslation(0, 0, 8), p3);
 				
 				Point3D point1 = new Point3D(p1[0], p1[1], p1[2]);
 				Point3D point2 = new Point3D(p2[0], p2[1], p2[2]);
@@ -693,8 +718,10 @@ public class Rendering3D extends Application{
 			}
 		}*/
 		
-		//cubes.add(loadCubeFromFile(new File("model.obj"), 0, 5, 0, 0.05));
-		cubes.add(loadCubeFromFile(new File("bus.obj"), 0, 0, 0, 0.1));
+		Cube model = loadCubeFromFile(new File("model.obj"), 0, 0, 0, 0.05);
+		model.setRotation(Math.PI/2, 0, 0);
+		cubes.add(model);
+		//cubes.add(loadCubeFromFile(new File("bus.obj"), 0, 0, 0, 0.1));
 		
 		Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
 		loop.setCycleCount(Animation.INDEFINITE);
@@ -755,6 +782,12 @@ public class Rendering3D extends Application{
 		} else if (this.keys.getOrDefault(KeyCode.F2, false)){
 			followLight = !followLight;
 			this.keys.put(KeyCode.F2, false);
+		} else if (this.keys.getOrDefault(KeyCode.F3, false)){
+			LIGHT_AVAILABLE = !LIGHT_AVAILABLE;
+			this.keys.put(KeyCode.F3, false);
+		} else if (this.keys.getOrDefault(KeyCode.F4, false)){
+			lightRotation = !lightRotation;
+			this.keys.put(KeyCode.F4, false);
 		} else if (this.keys.getOrDefault(KeyCode.R, false)){
 			cx = 0;
 			cy = 0;
@@ -770,8 +803,10 @@ public class Rendering3D extends Application{
 		}
 		
 		double lspeed = 5;
-		double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{LIGHT.getX(), LIGHT.getY(), LIGHT.getZ()});
-		LIGHT = new Point3D(rotationV[0], rotationV[1], rotationV[2]);
+		if (lightRotation){
+			double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{LIGHT.getX(), LIGHT.getY(), LIGHT.getZ()});
+			LIGHT = new Point3D(rotationV[0], rotationV[1], rotationV[2]);
+		}
 		if (followLight){
 			cx = LIGHT.getX();
 			cy = LIGHT.getY();
@@ -781,7 +816,7 @@ public class Rendering3D extends Application{
 		//LIGHT = new Point3D(cx, cy, cz);
 		
 		gc.setFill(Color.WHITE);
-		gc.fillText(String.format("%.2f %.2f FPS:%d (%d)\nCx: %.2f Cy: %.2f Cz: %.2f\nLight: %s", Math.toDegrees(rx), Math.toDegrees(ry), fps, FPS, cx, cy, cz, LIGHT), 30, 30);
+		gc.fillText(String.format("%.2f %.2f FPS:%d (%d)\nCx: %.2f Cy: %.2f Cz: %.2f\nLight: %s\nSHOW_LINES:%s followLight:%s lights:%s lightRotation:%s", Math.toDegrees(rx), Math.toDegrees(ry), fps, FPS, cx, cy, cz, LIGHT, SHOW_LINES, followLight, LIGHT_AVAILABLE, lightRotation), 30, 30);
 	}
 	
 	private static double[][] getRotateX(double angle){
@@ -872,9 +907,11 @@ public class Rendering3D extends Application{
 		double red = color.getRed();
 		double green = color.getGreen();
 		double blue = color.getBlue();
-		red = red * factor;
-		green = green * factor;
-		blue = blue * factor;
+		if (LIGHT_AVAILABLE){
+			red = red * factor;
+			green = green * factor;
+			blue = blue * factor;
+		}
 		return Color.color(red, green, blue);
 	}
 	
