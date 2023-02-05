@@ -19,7 +19,7 @@ public class Rendering3D extends Application{
 	private static final int HEIGHT = 600;
 	private Map<KeyCode, Boolean> keys = new HashMap<>();
 	private volatile int frames, fps;
-	private static final int FPS = 10;
+	private static final int FPS = 5;
 	
 	private static double aspectRatio = HEIGHT/WIDTH;
 	private static double fov = Math.toRadians(45);
