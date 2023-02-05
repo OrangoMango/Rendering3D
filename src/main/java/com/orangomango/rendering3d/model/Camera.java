@@ -58,6 +58,10 @@ public class Camera{
 		return this.rx;
 	}
 	
+	public void setRx(double rx){
+		this.rx = rx;
+	}
+	
 	public double getRy(){
 		return this.ry;
 	}
@@ -69,6 +73,19 @@ public class Camera{
 	@Override
 	public String toString(){
 		return String.format("Cx: %.2f Cy: %.2f Cz: %.2f", this.cx, this.cy, this.cz);
+	}
+	
+	public double[][] getInverseProjectionMatrix(){
+		double aspectRatio = MainApplication.HEIGHT/MainApplication.WIDTH;
+		double fov = Math.toRadians(45);
+		double zFar = 100;
+		double zNear = 1;
+		return new double[][]{
+			{Math.tan(fov/2)/aspectRatio, 0, 0, 0},
+			{0, Math.tan(fov/2), 0, 0},
+			{0, 0, 0, 1},
+			{0, 0, (zNear-zFar)/(zFar+zNear), 2/(zFar+zNear)}
+		};
 	}
 	
 	public double[][] getProjectionMatrix(){

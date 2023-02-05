@@ -12,7 +12,6 @@ import java.io.*;
 import static com.orangomango.rendering3d.MainApplication.*;
 
 public class Mesh{
-	private Camera camera;
 	private Point3D[] points;
 	private double[][][] projected;
 	private Color[][] vertexColors;
@@ -30,8 +29,7 @@ public class Mesh{
 	private double crx, cry, crz;
 	public boolean showLines;
 	
-	public Mesh(Camera camera, Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, Color[] colors, Point3D[][] ns, Color[][] fcs){
-		this.camera = camera;
+	public Mesh(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, Color[] colors, Point3D[][] ns, Color[][] fcs){
 		this.color = Color.WHITE; //Color.color(Math.random(), Math.random(), Math.random());
 		this.image = image;
 		this.points = points;
@@ -105,7 +103,7 @@ public class Mesh{
 		this.projected[f][tr] = point;
 	}
 	
-	public void evaluate(){
+	public void evaluate(Camera camera){
 		int i = 0;
 		this.vertexColors = new Color[this.faces.length][3];
 		for (Point3D[] points : getTrianglePoints(vertexColors)){
@@ -192,9 +190,9 @@ public class Mesh{
 				px3 *= 0.5*WIDTH;
 				py3 *= 0.5*HEIGHT;
 				
-				setProjectedPoint(i, 0, new double[]{px1, py1, p1[3]});
-				setProjectedPoint(i, 1, new double[]{px2, py2, p2[3]});
-				setProjectedPoint(i, 2, new double[]{px3, py3, p3[3]});
+				setProjectedPoint(i, 0, new double[]{px1, py1, pz1, p1[3]});
+				setProjectedPoint(i, 1, new double[]{px2, py2, pz2, p2[3]});
+				setProjectedPoint(i, 2, new double[]{px3, py3, pz3, p3[3]});
 			} else {
 				setProjectedPoint(i, 0, null);
 				setProjectedPoint(i, 1, null);
@@ -206,7 +204,7 @@ public class Mesh{
 		//this.angle += 0.01*40/FPS;
 	}
 	
-	public void render(GraphicsContext gc){
+	public void render(Camera camera, GraphicsContext gc){
 		if (this.showLines){
 			gc.setStroke(this.color);
 			gc.setLineWidth(1);
@@ -219,41 +217,152 @@ public class Mesh{
 			Point2D p2 = new Point2D(projected[i][1][0], projected[i][1][1]);
 			Point2D p3 = new Point2D(projected[i][2][0], projected[i][2][1]);
 			
-			if (this.showLines){
-				gc.strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-				gc.strokeLine(p2.getX(), p2.getY(), p3.getX(), p3.getY());
-				gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
+			if (gc == null){
+				calculateDepthBuffer((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
+									projected[i][0][3], projected[i][1][3], projected[i][2][3], camera);
 			} else {
-				if (this.colors == null && this.facesColors == null){
-					Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(1/projected[i][0][2]);
-					Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(1/projected[i][1][2]);
-					Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(1/projected[i][2][2]);
-					
-					projected[i][0][2] = 1/projected[i][0][2];
-					projected[i][1][2] = 1/projected[i][1][2];
-					projected[i][2][2] = 1/projected[i][2][2];
-					
-					renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
-							t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(),
-							projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, this.image);
+				if (this.showLines){
+					gc.strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+					gc.strokeLine(p2.getX(), p2.getY(), p3.getX(), p3.getY());
+					gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
 				} else {
-					projected[i][0][2] = 1/projected[i][0][2];
-					projected[i][1][2] = 1/projected[i][1][2];
-					projected[i][2][2] = 1/projected[i][2][2];
+					if (this.colors == null && this.facesColors == null){
+						Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(1/projected[i][0][3]);
+						Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(1/projected[i][1][3]);
+						Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(1/projected[i][2][3]);
+						
+						projected[i][0][3] = 1/projected[i][0][3];
+						projected[i][1][3] = 1/projected[i][1][3];
+						projected[i][2][3] = 1/projected[i][2][3];
+						
+						renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
+								t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(),
+								projected[i][0][3], projected[i][1][3], projected[i][2][3], i, gc, camera, this.image);
+					} else {
+						projected[i][0][3] = 1/projected[i][0][3];
+						projected[i][1][3] = 1/projected[i][1][3];
+						projected[i][2][3] = 1/projected[i][2][3];
+						
+						Color c1 = this.facesColors != null ? this.facesColors[i][0] : this.vertexColors[i][0];
+						Color c2 = this.facesColors != null ? this.facesColors[i][1] : this.vertexColors[i][1];
+						Color c3 = this.facesColors != null ? this.facesColors[i][2] : this.vertexColors[i][2];
+						
+						renderColoredTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
+								c1, c3, c3, projected[i][0][3], projected[i][1][3], projected[i][2][3], i, gc, camera);
+					}
+				}
+			}
+		}
+	}
+	
+	private void calculateDepthBuffer(int x1, int y1, int x2, int y2, int x3, int y3, double w1, double w2, double w3, Camera camera){
+		if (y2 < y1){
+			y1 = swap(y2, y2 = y1);
+			x1 = swap(x2, x2 = x1);
+			w1 = swap(w2, w2 = w1);
+		}
+		if (y3 < y1){
+			y1 = swap(y3, y3 = y1);
+			x1 = swap(x3, x3 = x1);
+			w1 = swap(w3, w3 = w1);
+		}
+		if (y3 < y2){
+			y2 = swap(y3, y3 = y2);
+			x2 = swap(x3, x3 = x2);
+			w2 = swap(w3, w3 = w2);
+		}
+		
+		int dx1 = x2-x1;
+		int dy1 = y2-y1;
+		double dw1 = w2-w1;
+		
+		int dx2 = x3-x1;
+		int dy2 = y3-y1;
+		double dw2 = w3-w1;
+		
+		double col_w;
+		
+		double dax_step = 0, dbx_step = 0, dw1_step = 0, dw2_step = 0;
+		
+		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
+		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
+		
+		if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
+		if (dy2 != 0) dw2_step = dw2/Math.abs(dy2);
+		
+		if (dy1 != 0){
+			for (int i = y1; i <= y2; i++){
+				int ax = x1+(int)((i-y1)*dax_step);
+				int bx = x1+(int)((i-y1)*dbx_step);
+				
+				double col_sw = w1+(i-y1)*dw1_step;
+				double col_ew = w1+(i-y1)*dw2_step;
+				
+				if (ax > bx){
+					ax = swap(bx, bx = ax);
+					col_sw = swap(col_ew, col_ew = col_sw);
+				}
+				
+				col_w = col_sw;
+				
+				double tstep = 1.0/(bx-ax);
+				double t = 0.0;
+				
+				for (int j = ax; j < bx; j++){
+					col_w = (1-t)*col_sw+t*col_ew;
 					
-					Color c1 = this.facesColors != null ? this.facesColors[i][0] : this.vertexColors[i][0];
-					Color c2 = this.facesColors != null ? this.facesColors[i][1] : this.vertexColors[i][1];
-					Color c3 = this.facesColors != null ? this.facesColors[i][2] : this.vertexColors[i][2];
+					if (camera.depthBuffer[j][i] <= col_w){
+						camera.depthBuffer[j][i] = col_w;
+					}
+
+					t += tstep;
+				}
+			}
+		}
+		
+		dx1 = x3-x2;
+		dy1 = y3-y2;
+		dw1 = w3-w2;
+		
+		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
+		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
+		
+		dw1_step = 0;
+		if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
+		
+		if (dy1 != 0){
+			for (int i = y2; i <= y3; i++){
+				int ax = x2+(int)((i-y2)*dax_step);
+				int bx = x1+(int)((i-y1)*dbx_step);
+				
+				double col_sw = w2+(i-y2)*dw1_step;
+				double col_ew = w1+(i-y1)*dw2_step;
+				
+				if (ax > bx){
+					ax = swap(bx, bx = ax);
+					col_sw = swap(col_ew, col_ew = col_sw);
+				}
+				
+				col_w = col_sw;
+				
+				double tstep = 1.0/(bx-ax);
+				double t = 0.0;
+				
+				for (int j = ax; j < bx; j++){
+					col_w = (1-t)*col_sw+t*col_ew;
 					
-					renderColoredTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
-							c1, c3, c3, projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc);
+					if (camera.depthBuffer[j][i] <= col_w){
+						camera.depthBuffer[j][i] = col_w;
+					}
+
+					t += tstep;
 				}
 			}
 		}
 	}
 	
 	private void renderColoredTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Color c1, Color c2, Color c3, 
-											double w1, double w2, double w3, int index, GraphicsContext gc){
+											double w1, double w2, double w3, int index, GraphicsContext gc, Camera camera){
 											
 		double l1 = LIGHT.getLightIntensity(this.normals[index][0], this.trianglePoints[index][0]);
 		double l2 = LIGHT.getLightIntensity(this.normals[index][1], this.trianglePoints[index][1]);
@@ -360,7 +469,7 @@ public class Mesh{
 					
 					if (camera.depthBuffer[j][i] <= col_w){
 						camera.depthBuffer[j][i] = col_w;
-						gc.getPixelWriter().setColor(j, i, Light.getLight(Color.color(col_r, col_g, col_b), Math.max(col_l, 0)));
+						if (gc != null) gc.getPixelWriter().setColor(j, i, Light.getLight(Color.color(col_r, col_g, col_b), Math.max(col_l, 0)));
 					}
 
 					t += tstep;
@@ -430,7 +539,7 @@ public class Mesh{
 					
 					if (camera.depthBuffer[j][i] <= col_w){
 						camera.depthBuffer[j][i] = col_w;
-						gc.getPixelWriter().setColor(j, i, Light.getLight(Color.color(col_r, col_g, col_b), Math.max(col_l, 0)));
+						if (gc != null) gc.getPixelWriter().setColor(j, i, Light.getLight(Color.color(col_r, col_g, col_b), Math.max(col_l, 0)));
 					}
 
 					t += tstep;
@@ -440,7 +549,7 @@ public class Mesh{
 	}
 	
 	private void renderTriangle(int x1, int y1, int x2, int y2, int x3, int y3, double u1, double v1, double u2, double v2, double u3, double v3, 
-								double w1, double w2, double w3, int index, GraphicsContext gc, Image image){
+								double w1, double w2, double w3, int index, GraphicsContext gc, Camera camera, Image image){
 		
 		double l1 = LIGHT.getLightIntensity(this.normals[index][0], this.trianglePoints[index][0]);
 		double l2 = LIGHT.getLightIntensity(this.normals[index][1], this.trianglePoints[index][1]);
@@ -546,7 +655,7 @@ public class Mesh{
 					if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
 					if (camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
-						gc.getPixelWriter().setColor(j, i, Light.getLight(image.getPixelReader().getColor(pix_x, pix_y), Math.max(tex_l, 0)));
+						if (gc != null) gc.getPixelWriter().setColor(j, i, Light.getLight(image.getPixelReader().getColor(pix_x, pix_y), Math.max(tex_l, 0)));
 					}
 					
 					t += tstep;
@@ -614,7 +723,7 @@ public class Mesh{
 					if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
 					if (camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
-						gc.getPixelWriter().setColor(j, i, Light.getLight(image.getPixelReader().getColor(pix_x, pix_y), Math.max(tex_l, 0)));
+						if (gc != null) gc.getPixelWriter().setColor(j, i, Light.getLight(image.getPixelReader().getColor(pix_x, pix_y), Math.max(tex_l, 0)));
 					}
 					
 					t += tstep;
@@ -654,7 +763,7 @@ public class Mesh{
 		}
 	}
 	
-	public static Mesh loadFromFile(Camera camera, File file, double x, double y, double z, double scale){
+	public static Mesh loadFromFile(File file, double x, double y, double z, double scale){
 		Map<String, double[]> mtllib = loadMaterialLib(new File(file.getAbsolutePath().replaceAll("\\.[^.]+$", "")+".mtl"));
 		
 		try {
@@ -740,7 +849,7 @@ public class Mesh{
 				ns[i] = normalsList.get(i);
 			}
 
-			return new Mesh(camera, null, ps, fs, null, null, cs.length == 0 ? null : cs, ns.length == 0 ? null : ns, fcs.length == 0 ? null : fcs);
+			return new Mesh(null, ps, fs, null, null, cs.length == 0 ? null : cs, ns.length == 0 ? null : ns, fcs.length == 0 ? null : fcs);
 			
 		} catch (IOException ex){
 			ex.printStackTrace();

@@ -26,7 +26,8 @@ public class MainApplication extends Application{
 	private Map<KeyCode, Boolean> keys = new HashMap<>();
 	private volatile int frames, fps;
 	private static final int FPS = 5;
-	public static Light LIGHT = new Light(-5, -3, -8);
+	//public static Light LIGHT = new Light(-5, -3, -8);
+	public static Light LIGHT = new Light(0, 0, -35);
 	
 	public static boolean SHOW_LINES = false, LIGHT_AVAILABLE = true, FOLLOW_LIGHT = false, LIGHT_ROTATION = false;
 	
@@ -65,9 +66,14 @@ public class MainApplication extends Application{
 			this.mouseOldY = e.getY();
 		});
 		canvas.setOnMouseDragged(e -> {
-			//rx += (mouseOldY-e.getY())/100;
-			//ry += Math.toRadians(e.getX()-mouseOldX);
-			this.camera.setRy(this.camera.getRy()+Math.toRadians(e.getX()-mouseOldX));
+			switch (e.getButton()){
+				case PRIMARY:
+					this.camera.setRy(this.camera.getRy()+Math.toRadians(e.getX()-mouseOldX));
+					break;
+				case SECONDARY:
+					this.camera.setRx(this.camera.getRx()+Math.toRadians(mouseOldY-e.getY()));
+					break;
+			}
 			this.mouseOldX = e.getX();
 			this.mouseOldY = e.getY();
 		});
@@ -80,7 +86,7 @@ public class MainApplication extends Application{
 		for (int i = 0; i < 1; i++){
 			for (int j = 0; j < 1; j++){
 				for (int k = 0; k < 1; k++){
-					objects.add(new Mesh(this.camera, switch(random.nextInt(3)){
+					objects.add(new Mesh(switch(random.nextInt(3)){
 						case 0 -> COAL_IMAGE;
 						case 1 -> DIRT_IMAGE;
 						case 2 -> STONE_IMAGE;
@@ -106,9 +112,10 @@ public class MainApplication extends Application{
 		}*/
 		
 		try {
-			Mesh model = Mesh.loadFromFile(this.camera, new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05);
-			model.setRotation(Math.PI/2, 0, 0);
-			objects.add(model);
+			//Mesh model = Mesh.loadFromFile(this.camera, new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05);
+			//model.setRotation(Math.PI/2, 0, 0);
+			//objects.add(model);
+			objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane.obj").toURI()), 0, 0.5, 0, 0.5));
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}
@@ -172,10 +179,18 @@ public class MainApplication extends Application{
 			this.keys.put(KeyCode.R, true);
 		}
 		
+		Camera test = new Camera(LIGHT.getPosition().getX(), LIGHT.getPosition().getY(), LIGHT.getPosition().getZ());
+		test.setRy(Math.atan2(test.getZ(), test.getX())+Math.PI/2);
 		for (Mesh object : objects){
+			object.showLines = false;
+			object.evaluate(test);
+			object.render(test, null);
+			
+			double[][] shadowMap = test.depthBuffer;
+			
 			object.showLines = SHOW_LINES;
-			object.evaluate();
-			object.render(gc);
+			object.evaluate(this.camera);
+			object.render(this.camera, gc);
 		}
 		
 		double lspeed = 5;
@@ -270,5 +285,13 @@ public class MainApplication extends Application{
 		}
 
 		return out;
+	}
+	
+	public static void main(String[] args){
+		System.out.println("F1 -> SHOW_LINES");
+		System.out.println("F2 -> FOLLOW_LIGHT");
+		System.out.println("F3 -> LIGHT_AVAILABLE");
+		System.out.println("F4 -> ROTATE_LIGHT");
+		launch(args);
 	}
 }
