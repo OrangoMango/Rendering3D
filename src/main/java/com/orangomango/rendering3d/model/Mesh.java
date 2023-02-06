@@ -190,9 +190,9 @@ public class Mesh{
 				px3 *= 0.5*WIDTH;
 				py3 *= 0.5*HEIGHT;
 				
-				setProjectedPoint(i, 0, new double[]{px1, py1, pz1, p1[3]});
-				setProjectedPoint(i, 1, new double[]{px2, py2, pz2, p2[3]});
-				setProjectedPoint(i, 2, new double[]{px3, py3, pz3, p3[3]});
+				setProjectedPoint(i, 0, new double[]{px1, py1, p1[3]});
+				setProjectedPoint(i, 1, new double[]{px2, py2, p2[3]});
+				setProjectedPoint(i, 2, new double[]{px3, py3, p3[3]});
 			} else {
 				setProjectedPoint(i, 0, null);
 				setProjectedPoint(i, 1, null);
@@ -219,7 +219,7 @@ public class Mesh{
 			
 			if (gc == null){
 				calculateDepthBuffer((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
-									projected[i][0][3], projected[i][1][3], projected[i][2][3], camera);
+									projected[i][0][2], projected[i][1][2], projected[i][2][2], camera);
 			} else {
 				if (this.showLines){
 					gc.strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
@@ -227,28 +227,28 @@ public class Mesh{
 					gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
 				} else {
 					if (this.colors == null && this.facesColors == null){
-						Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(1/projected[i][0][3]);
-						Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(1/projected[i][1][3]);
-						Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(1/projected[i][2][3]);
+						Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(1/projected[i][0][2]);
+						Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(1/projected[i][1][2]);
+						Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(1/projected[i][2][2]);
 						
-						projected[i][0][3] = 1/projected[i][0][3];
-						projected[i][1][3] = 1/projected[i][1][3];
-						projected[i][2][3] = 1/projected[i][2][3];
+						projected[i][0][2] = 1/projected[i][0][2];
+						projected[i][1][2] = 1/projected[i][1][2];
+						projected[i][2][2] = 1/projected[i][2][2];
 						
 						renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
 								t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(),
-								projected[i][0][3], projected[i][1][3], projected[i][2][3], i, gc, camera, this.image);
+								projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera, this.image);
 					} else {
-						projected[i][0][3] = 1/projected[i][0][3];
-						projected[i][1][3] = 1/projected[i][1][3];
-						projected[i][2][3] = 1/projected[i][2][3];
+						projected[i][0][2] = 1/projected[i][0][2];
+						projected[i][1][2] = 1/projected[i][1][2];
+						projected[i][2][2] = 1/projected[i][2][2];
 						
 						Color c1 = this.facesColors != null ? this.facesColors[i][0] : this.vertexColors[i][0];
 						Color c2 = this.facesColors != null ? this.facesColors[i][1] : this.vertexColors[i][1];
 						Color c3 = this.facesColors != null ? this.facesColors[i][2] : this.vertexColors[i][2];
 						
 						renderColoredTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
-								c1, c3, c3, projected[i][0][3], projected[i][1][3], projected[i][2][3], i, gc, camera);
+								c1, c3, c3, projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera);
 					}
 				}
 			}

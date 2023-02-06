@@ -8,6 +8,11 @@ public class Camera{
 	private double cx, cy, cz, rx, ry;
 	public double[][] depthBuffer = new double[MainApplication.WIDTH][MainApplication.HEIGHT];
 	
+	public double aspectRatio = MainApplication.HEIGHT/MainApplication.WIDTH;
+	public double fov = Math.toRadians(45);
+	public double zFar = 100;
+	public double zNear = 1;
+	
 	public Camera(double x, double y, double z){
 		this.cx = x;
 		this.cy = y;
@@ -75,7 +80,7 @@ public class Camera{
 		return String.format("Cx: %.2f Cy: %.2f Cz: %.2f", this.cx, this.cy, this.cz);
 	}
 	
-	public double[][] getInverseProjectionMatrix(){
+	/*public double[][] getInverseProjectionMatrix(){
 		double aspectRatio = MainApplication.HEIGHT/MainApplication.WIDTH;
 		double fov = Math.toRadians(45);
 		double zFar = 100;
@@ -86,13 +91,9 @@ public class Camera{
 			{0, 0, 0, 1},
 			{0, 0, (zNear-zFar)/(zFar+zNear), 2/(zFar+zNear)}
 		};
-	}
+	}*/
 	
 	public double[][] getProjectionMatrix(){
-		double aspectRatio = MainApplication.HEIGHT/MainApplication.WIDTH;
-		double fov = Math.toRadians(45);
-		double zFar = 100;
-		double zNear = 1;
 		return new double[][]{
 			{aspectRatio*1/Math.tan(fov/2), 0, 0, 0},
 			{0, 1/Math.tan(fov/2), 0, 0},

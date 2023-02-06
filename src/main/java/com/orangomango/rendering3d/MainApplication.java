@@ -181,12 +181,11 @@ public class MainApplication extends Application{
 		
 		Camera test = new Camera(LIGHT.getPosition().getX(), LIGHT.getPosition().getY(), LIGHT.getPosition().getZ());
 		test.setRy(Math.atan2(test.getZ(), test.getX())+Math.PI/2);
+		test.clearDepthBuffer();
 		for (Mesh object : objects){
 			object.showLines = false;
 			object.evaluate(test);
 			object.render(test, null);
-			
-			double[][] shadowMap = test.depthBuffer;
 			
 			object.showLines = SHOW_LINES;
 			object.evaluate(this.camera);
@@ -285,6 +284,32 @@ public class MainApplication extends Application{
 		}
 
 		return out;
+	}
+	
+	private static List<Point3D> getPoints(Camera camera){
+		double[][] depthBuffer = camera.depthBuffer;
+		List<Point3D> points = new ArrayList<>();
+		for (int i = 0; i < depthBuffer.length; i++){
+			for (int j = 0; j < depthBuffer[i].length; j++){
+				double w = 1/depthBuffer[i][j];
+				double x = i*w;
+				double y = j*w;
+				x = x*Math.tan(camera.fov/2)/camera.aspectRatio;
+				y = y*Math.tan(camera.fov/2);
+				points.add(new Point3D(x, y, w));
+			}
+		}
+		return points;
+	}
+	
+	private static double[][] convertDepthBuffer(Camera cam1, Camera cam2){
+		List<Point3D> p1 = getPoints(cam1);
+		double[][] depthBuffer = new double[cam2.depthBuffer.length][cam2.depthBuffer[0].length];
+		for (Point3D p : p1){
+			double[] out = multiply(cam2.getProjectionMatrix(), new double[]{p.getX(), p.getY(), p.getZ()});
+			depthBuffer[(int)Math.round(out[0])][(int)Math.round(out[1])] = 1/out[3];
+		}
+		return depthBuffer;
 	}
 	
 	public static void main(String[] args){
