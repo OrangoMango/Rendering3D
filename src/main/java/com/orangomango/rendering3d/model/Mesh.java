@@ -107,7 +107,7 @@ public class Mesh{
 		int i = 0;
 		this.vertexColors = new Color[this.faces.length][3];
 		for (Point3D[] points : getTrianglePoints(vertexColors)){
-			double[][] cam = multiply(multiply(getTranslation(-camera.getX(), -camera.getY(), -camera.getZ()), multiply(getRotateX(camera.getRx()), getRotateY(camera.getRy()))), camera.getProjectionMatrix());
+			double[][] cam = camera.getProjectionMatrix(false);
 			
 			// Apply transforms
 			double[] p1 = new double[]{points[0].getX(), points[0].getY(), points[0].getZ(), 1};
@@ -204,7 +204,7 @@ public class Mesh{
 		//this.angle += 0.01*40/FPS;
 	}
 	
-	public void render(Camera camera, GraphicsContext gc){
+	public void render(Camera camera, GraphicsContext gc, Camera cam2){
 		if (this.showLines){
 			gc.setStroke(this.color);
 			gc.setLineWidth(1);
@@ -248,7 +248,7 @@ public class Mesh{
 						Color c3 = this.facesColors != null ? this.facesColors[i][2] : this.vertexColors[i][2];
 						
 						renderColoredTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
-								c1, c3, c3, projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera);
+								c1, c3, c3, projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera, cam2);
 					}
 				}
 			}
@@ -362,12 +362,14 @@ public class Mesh{
 	}
 	
 	private void renderColoredTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Color c1, Color c2, Color c3, 
-											double w1, double w2, double w3, int index, GraphicsContext gc, Camera camera){
+											double w1, double w2, double w3, int index, GraphicsContext gc, Camera camera, Camera cam2){
 											
 		double l1 = LIGHT.getLightIntensity(this.normals[index][0], this.trianglePoints[index][0]);
 		double l2 = LIGHT.getLightIntensity(this.normals[index][1], this.trianglePoints[index][1]);
 		double l3 = LIGHT.getLightIntensity(this.normals[index][2], this.trianglePoints[index][2]);
-											
+		
+		if (cam2 != null) cam2.clearCache();
+										
 		if (y2 < y1){
 			y1 = swap(y2, y2 = y1);
 			x1 = swap(x2, x2 = x1);
@@ -469,7 +471,21 @@ public class Mesh{
 					
 					if (camera.depthBuffer[j][i] <= col_w){
 						camera.depthBuffer[j][i] = col_w;
-						if (gc != null) gc.getPixelWriter().setColor(j, i, Light.getLight(Color.color(col_r, col_g, col_b), Math.max(col_l, 0)));
+						if (gc != null){
+							Color color = Color.color(col_r, col_g, col_b);
+							if (cam2 != null){
+								double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
+								int index_x = (int)Math.round((shadow[0]+1)*0.5*WIDTH);
+								int index_y = (int)Math.round((shadow[1]+1)*0.5*HEIGHT);
+								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
+									double depth = cam2.depthBuffer[index_x][index_y];
+									if (shadow[2] < depth){
+										color = color.darker();
+									}
+								}
+							}
+							gc.getPixelWriter().setColor(j, i, Light.getLight(color, Math.max(col_l, 0)));
+						}
 					}
 
 					t += tstep;
@@ -539,7 +555,21 @@ public class Mesh{
 					
 					if (camera.depthBuffer[j][i] <= col_w){
 						camera.depthBuffer[j][i] = col_w;
-						if (gc != null) gc.getPixelWriter().setColor(j, i, Light.getLight(Color.color(col_r, col_g, col_b), Math.max(col_l, 0)));
+						if (gc != null){
+							Color color = Color.color(col_r, col_g, col_b);
+							if (cam2 != null){
+								double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
+								int index_x = (int)Math.round((shadow[0]+1)*0.5*WIDTH);
+								int index_y = (int)Math.round((shadow[1]+1)*0.5*HEIGHT);
+								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
+									double depth = cam2.depthBuffer[index_x][index_y];
+									if (shadow[2] < depth){
+										color = color.darker();
+									}
+								}
+							}
+							gc.getPixelWriter().setColor(j, i, Light.getLight(color, Math.max(col_l, 0)));
+						}
 					}
 
 					t += tstep;

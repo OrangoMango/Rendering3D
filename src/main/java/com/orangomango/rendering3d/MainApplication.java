@@ -115,7 +115,7 @@ public class MainApplication extends Application{
 			//Mesh model = Mesh.loadFromFile(this.camera, new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05);
 			//model.setRotation(Math.PI/2, 0, 0);
 			//objects.add(model);
-			objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane.obj").toURI()), 0, 0.5, 0, 0.5));
+			objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane2.obj").toURI()), 0, 0.5, 0, 0.5));
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}
@@ -185,11 +185,11 @@ public class MainApplication extends Application{
 		for (Mesh object : objects){
 			object.showLines = false;
 			object.evaluate(test);
-			object.render(test, null);
+			object.render(test, null, null);
 			
 			object.showLines = SHOW_LINES;
 			object.evaluate(this.camera);
-			object.render(this.camera, gc);
+			object.render(this.camera, gc, test);
 		}
 		
 		double lspeed = 5;
@@ -286,7 +286,7 @@ public class MainApplication extends Application{
 		return out;
 	}
 	
-	private static List<Point3D> getPoints(Camera camera){
+	/*private static List<Point3D> getPoints(Camera camera){
 		double[][] depthBuffer = camera.depthBuffer;
 		List<Point3D> points = new ArrayList<>();
 		for (int i = 0; i < depthBuffer.length; i++){
@@ -310,9 +310,55 @@ public class MainApplication extends Application{
 			depthBuffer[(int)Math.round(out[0])][(int)Math.round(out[1])] = 1/out[3];
 		}
 		return depthBuffer;
+	}*/
+	
+	public static double[] convertPoint(double[] point, Camera cam1, Camera cam2){
+		double w = 1/point[2];
+		double x = (point[0]*2/WIDTH-1)*w*Math.tan(cam1.fov/2)/cam1.aspectRatio;
+		double y = (point[1]*2/HEIGHT-1)*w*Math.tan(cam1.fov/2);
+		//System.out.println("Inte: "+w+" "+x+" "+y);
+		double[] out = multiply(cam2.getProjectionMatrix(true), new double[]{x, y, w});
+		return new double[]{out[0]/out[3], out[1]/out[3], out[3]};
 	}
 	
 	public static void main(String[] args){
+		/*Camera cam1 = new Camera(0, 0, 0);
+		Camera cam2 = new Camera(1, 0, 1);
+		cam2.setRy(-Math.PI/2);
+		
+		Point3D a = new Point3D(0, 0, 1);
+		System.out.println(a);
+		
+		double[] conv = multiply(cam1.getProjectionMatrix(true), new double[]{a.getX(), a.getY(), a.getZ(), 1});
+		System.out.println(Arrays.toString(conv));
+		
+		double x = (conv[0]/conv[3]+1)*0.5*WIDTH;
+		double y = (conv[1]/conv[3]+1)*0.5*HEIGHT;
+		double w = 1/conv[3];
+		
+		System.out.println(x+" "+y+" "+w);
+		
+		double[] np = convertPoint(new double[]{x, y, w}, cam1, cam2);
+		System.out.println(Arrays.toString(np));
+		
+		System.out.println("---------------");
+		
+		Point3D b = new Point3D(np[0], np[1], np[2]);
+		System.out.println(b);
+
+		//conv = multiply(cam2.getProjectionMatrix(true), new double[]{b.getX(), b.getY(), b.getZ(), 1});
+		//System.out.println(Arrays.toString(conv));
+		
+		x = (conv[0]/conv[3]+1)*0.5*WIDTH;
+		y = (conv[1]/conv[3]+1)*0.5*HEIGHT;
+		w = 1/conv[3];
+		System.out.println(x+" "+y+" "+w);
+		
+		np = convertPoint(new double[]{x, y, w}, cam2, cam1);
+		System.out.println(Arrays.toString(np));
+		
+		System.exit(0);*/
+		
 		System.out.println("F1 -> SHOW_LINES");
 		System.out.println("F2 -> FOLLOW_LIGHT");
 		System.out.println("F3 -> LIGHT_AVAILABLE");
