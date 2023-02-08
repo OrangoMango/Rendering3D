@@ -479,7 +479,7 @@ public class Mesh{
 								int index_y = (int)Math.round((shadow[1]+1)*0.5*HEIGHT);
 								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
 									double depth = cam2.depthBuffer[index_x][index_y];
-									if (shadow[2] < depth){
+									if (1/shadow[2] < depth){
 										color = color.darker();
 									}
 								}
@@ -563,7 +563,7 @@ public class Mesh{
 								int index_y = (int)Math.round((shadow[1]+1)*0.5*HEIGHT);
 								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
 									double depth = cam2.depthBuffer[index_x][index_y];
-									if (shadow[2] < depth){
+									if (1/shadow[2] < depth){
 										color = color.darker();
 									}
 								}

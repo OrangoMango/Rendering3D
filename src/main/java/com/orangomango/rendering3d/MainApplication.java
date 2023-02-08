@@ -317,8 +317,8 @@ public class MainApplication extends Application{
 		double x = (point[0]*2/WIDTH-1)*w*Math.tan(cam1.fov/2)/cam1.aspectRatio;
 		double y = (point[1]*2/HEIGHT-1)*w*Math.tan(cam1.fov/2);
 		//System.out.println("Inte: "+w+" "+x+" "+y);
-		double[] out = multiply(cam2.getProjectionMatrix(true), new double[]{x, y, w});
-		return new double[]{out[0]/out[3], out[1]/out[3], out[3]};
+		double[] out = multiply(cam2.getProjectionMatrix(true), new double[]{x, y, w, 1});
+		return new double[]{out[0]/(out[3] == 0 ? 1 : out[3]), out[1]/(out[3] == 0 ? 1 : out[3]), out[3]};
 	}
 	
 	public static void main(String[] args){
