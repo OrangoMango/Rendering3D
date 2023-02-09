@@ -25,7 +25,7 @@ public class MainApplication extends Application{
 	public static final int HEIGHT = 600;
 	private Map<KeyCode, Boolean> keys = new HashMap<>();
 	private volatile int frames, fps;
-	private static final int FPS = 5;
+	private static final int FPS = 15;
 	//public static Light LIGHT = new Light(-5, -3, -8);
 	public static Light LIGHT = new Light(0, 0, -35);
 	
@@ -178,18 +178,11 @@ public class MainApplication extends Application{
 			this.camera.reset();
 			this.keys.put(KeyCode.R, true);
 		}
-		
-		Camera test = new Camera(LIGHT.getPosition().getX(), LIGHT.getPosition().getY(), LIGHT.getPosition().getZ());
-		test.setRy(Math.atan2(test.getZ(), test.getX())+Math.PI/2);
-		test.clearDepthBuffer();
+
 		for (Mesh object : objects){
-			object.showLines = false;
-			object.evaluate(test);
-			object.render(test, null, null);
-			
 			object.showLines = SHOW_LINES;
 			object.evaluate(this.camera);
-			object.render(this.camera, gc, test);
+			object.render(this.camera, gc);
 		}
 		
 		double lspeed = 5;
@@ -286,79 +279,7 @@ public class MainApplication extends Application{
 		return out;
 	}
 	
-	/*private static List<Point3D> getPoints(Camera camera){
-		double[][] depthBuffer = camera.depthBuffer;
-		List<Point3D> points = new ArrayList<>();
-		for (int i = 0; i < depthBuffer.length; i++){
-			for (int j = 0; j < depthBuffer[i].length; j++){
-				double w = 1/depthBuffer[i][j];
-				double x = i*w;
-				double y = j*w;
-				x = x*Math.tan(camera.fov/2)/camera.aspectRatio;
-				y = y*Math.tan(camera.fov/2);
-				points.add(new Point3D(x, y, w));
-			}
-		}
-		return points;
-	}
-	
-	private static double[][] convertDepthBuffer(Camera cam1, Camera cam2){
-		List<Point3D> p1 = getPoints(cam1);
-		double[][] depthBuffer = new double[cam2.depthBuffer.length][cam2.depthBuffer[0].length];
-		for (Point3D p : p1){
-			double[] out = multiply(cam2.getProjectionMatrix(), new double[]{p.getX(), p.getY(), p.getZ()});
-			depthBuffer[(int)Math.round(out[0])][(int)Math.round(out[1])] = 1/out[3];
-		}
-		return depthBuffer;
-	}*/
-	
-	public static double[] convertPoint(double[] point, Camera cam1, Camera cam2){
-		double w = 1/point[2];
-		double x = (point[0]*2/WIDTH-1)*w*Math.tan(cam1.fov/2)/cam1.aspectRatio;
-		double y = (point[1]*2/HEIGHT-1)*w*Math.tan(cam1.fov/2);
-		//System.out.println("Inte: "+w+" "+x+" "+y);
-		double[] out = multiply(cam2.getProjectionMatrix(true), new double[]{x, y, w, 1});
-		return new double[]{out[0]/(out[3] == 0 ? 1 : out[3]), out[1]/(out[3] == 0 ? 1 : out[3]), out[3]};
-	}
-	
 	public static void main(String[] args){
-		/*Camera cam1 = new Camera(0, 0, 0);
-		Camera cam2 = new Camera(1, 0, 1);
-		cam2.setRy(-Math.PI/2);
-		
-		Point3D a = new Point3D(0, 0, 1);
-		System.out.println(a);
-		
-		double[] conv = multiply(cam1.getProjectionMatrix(true), new double[]{a.getX(), a.getY(), a.getZ(), 1});
-		System.out.println(Arrays.toString(conv));
-		
-		double x = (conv[0]/conv[3]+1)*0.5*WIDTH;
-		double y = (conv[1]/conv[3]+1)*0.5*HEIGHT;
-		double w = 1/conv[3];
-		
-		System.out.println(x+" "+y+" "+w);
-		
-		double[] np = convertPoint(new double[]{x, y, w}, cam1, cam2);
-		System.out.println(Arrays.toString(np));
-		
-		System.out.println("---------------");
-		
-		Point3D b = new Point3D(np[0], np[1], np[2]);
-		System.out.println(b);
-
-		//conv = multiply(cam2.getProjectionMatrix(true), new double[]{b.getX(), b.getY(), b.getZ(), 1});
-		//System.out.println(Arrays.toString(conv));
-		
-		x = (conv[0]/conv[3]+1)*0.5*WIDTH;
-		y = (conv[1]/conv[3]+1)*0.5*HEIGHT;
-		w = 1/conv[3];
-		System.out.println(x+" "+y+" "+w);
-		
-		np = convertPoint(new double[]{x, y, w}, cam2, cam1);
-		System.out.println(Arrays.toString(np));
-		
-		System.exit(0);*/
-		
 		System.out.println("F1 -> SHOW_LINES");
 		System.out.println("F2 -> FOLLOW_LIGHT");
 		System.out.println("F3 -> LIGHT_AVAILABLE");

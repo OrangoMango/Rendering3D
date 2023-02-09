@@ -13,8 +13,6 @@ public class Camera{
 	public double zFar = 100;
 	public double zNear = 1;
 	
-	private double[][] cache;
-	
 	public Camera(double x, double y, double z){
 		this.cx = x;
 		this.cy = y;
@@ -29,10 +27,6 @@ public class Camera{
 	
 	public void clearDepthBuffer(){
 		this.depthBuffer = new double[MainApplication.WIDTH][MainApplication.HEIGHT];
-	}
-	
-	public void clearCache(){
-		this.cache = null;
 	}
 	
 	public void move(double x, double y, double z){
@@ -99,15 +93,12 @@ public class Camera{
 		};
 	}*/
 	
-	public double[][] getProjectionMatrix(boolean s){
-		if (this.cache != null && s) return this.cache;
-		double[][] mat = new double[][]{
+	public double[][] getProjectionMatrix(){
+		return new double[][]{
 			{aspectRatio*1/Math.tan(fov/2), 0, 0, 0},
 			{0, 1/Math.tan(fov/2), 0, 0},
 			{0, 0, 2/(zFar-zNear), -2*zNear/(zFar-zNear)-1},
 			{0, 0, 1, 0}
 		};
-		this.cache = MainApplication.multiply(MainApplication.multiply(MainApplication.getTranslation(-getX(), -getY(), -getZ()), MainApplication.multiply(MainApplication.getRotateX(getRx()), MainApplication.getRotateY(getRy()))), mat);
-		return this.cache;
 	}
 }
