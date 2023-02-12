@@ -25,7 +25,7 @@ public class MainApplication extends Application{
 	public static final int HEIGHT = 600;
 	private Map<KeyCode, Boolean> keys = new HashMap<>();
 	private volatile int frames, fps;
-	private static final int FPS = 15;
+	private static final int FPS = 2;
 	//public static Light LIGHT = new Light(-5, -3, -8);
 	public static Light LIGHT = new Light(0, 0, -35);
 	
@@ -164,25 +164,35 @@ public class MainApplication extends Application{
 			this.keys.put(KeyCode.Z, false);
 		} else if (this.keys.getOrDefault(KeyCode.F1, false)){
 			SHOW_LINES = !SHOW_LINES;
+			System.out.println("F1");
 			this.keys.put(KeyCode.F1, false);
 		} else if (this.keys.getOrDefault(KeyCode.F2, false)){
 			FOLLOW_LIGHT = !FOLLOW_LIGHT;
+			System.out.println("F2");
 			this.keys.put(KeyCode.F2, false);
 		} else if (this.keys.getOrDefault(KeyCode.F3, false)){
 			LIGHT_AVAILABLE = !LIGHT_AVAILABLE;
+			System.out.println("F3");
 			this.keys.put(KeyCode.F3, false);
 		} else if (this.keys.getOrDefault(KeyCode.F4, false)){
 			LIGHT_ROTATION = !LIGHT_ROTATION;
+			System.out.println("F4");
 			this.keys.put(KeyCode.F4, false);
 		} else if (this.keys.getOrDefault(KeyCode.R, false)){
 			this.camera.reset();
 			this.keys.put(KeyCode.R, true);
 		}
 
+		Camera test = new Camera(LIGHT.getPosition().getX(), LIGHT.getPosition().getY(), LIGHT.getPosition().getZ());
+		test.setRy(Math.atan2(test.getZ(), test.getX())+Math.PI/2);
 		for (Mesh object : objects){
+			object.showLines = false;
+			object.evaluate(test);
+			object.render(test, null, null);
+			
 			object.showLines = SHOW_LINES;
 			object.evaluate(this.camera);
-			object.render(this.camera, gc);
+			object.render(this.camera, gc, test);
 		}
 		
 		double lspeed = 5;
@@ -196,8 +206,49 @@ public class MainApplication extends Application{
 		}
 		//LIGHT = new Light(this.camera.getPosition());
 		
+		/*gc.save();
+		gc.setGlobalAlpha(0.6);
+		gc.setFill(Color.WHITE);
+		gc.fillRect(0, 0, WIDTH, HEIGHT);
+		for (int i = 0; i < WIDTH; i++){
+			for (int j = 0; j < HEIGHT; j++){
+				double w = test.depthBuffer[i][j];
+				//gc.setFill(Color.color(w, w, w));
+				gc.getPixelWriter().setColor(i, j, Color.color(w/50, w/50, w/50)); //gc.fillRect(i, j, 1, 1);
+			}
+		}
+		gc.restore();*/
+		
 		gc.setFill(Color.WHITE);
 		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d (%d)\nLight: %s", this.fps, FPS, LIGHT.getPosition()), 30, 30);
+	}
+	
+	public static double[] convertPoint(double[] point, Camera cam1, Camera cam2){
+		double w = 1/point[2];
+		double x = (point[0]*2/WIDTH-1)*w;
+		double y = (point[1]*2/HEIGHT-1)*w;
+		
+		x *= Math.tan(cam1.fov/2)/cam1.aspectRatio;
+		y *= Math.tan(cam1.fov/2);
+		
+		double[] rotation = multiply(getRotateY(cam1.getRy()), new double[]{x, y, w, 1});
+		x = rotation[0];
+		y = rotation[1];
+		w = rotation[2];
+
+		double[] translation = multiply(getTranslation(cam1.getX(), cam1.getY(), cam1.getZ()), new double[]{x, y, w, 1});
+		x = translation[0];
+		y = translation[1];
+		w = translation[2];
+		
+		double[] out = multiply(Camera.getCompleteMatrix(cam2), new double[]{x, y, w, 1});
+		out[0] /= out[3];
+		out[1] /= out[3];
+		
+		out[0] = (out[0]+1)*0.5*WIDTH;
+		out[1] = (out[1]+1)*0.5*HEIGHT;
+		
+		return new double[]{out[0], out[1], 1/out[3]};
 	}
 	
 	public static <T> T swap(T a, T b){
@@ -279,7 +330,7 @@ public class MainApplication extends Application{
 		return out;
 	}
 	
-	public static void main(String[] args){
+	public static void main(String[] args){		
 		System.out.println("F1 -> SHOW_LINES");
 		System.out.println("F2 -> FOLLOW_LIGHT");
 		System.out.println("F3 -> LIGHT_AVAILABLE");

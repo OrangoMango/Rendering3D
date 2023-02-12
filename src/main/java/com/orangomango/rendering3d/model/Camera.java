@@ -43,9 +43,9 @@ public class Camera{
 		this.ry = 0;
 	}
 	
-	public Point3D getPosition(){
+	/*public Point3D getPosition(){
 		return new Point3D(this.cx, this.cy, this.cz);
-	}
+	}*/
 	
 	public double getX(){
 		return this.cx;
@@ -92,6 +92,11 @@ public class Camera{
 			{0, 0, (zNear-zFar)/(zFar+zNear), 2/(zFar+zNear)}
 		};
 	}*/
+	
+	public static double[][] getCompleteMatrix(Camera camera){
+		return MainApplication.multiply(MainApplication.multiply(MainApplication.getTranslation(-camera.getX(), -camera.getY(), -camera.getZ()), 
+							MainApplication.multiply(MainApplication.getRotateX(camera.getRx()), MainApplication.getRotateY(camera.getRy()))), camera.getProjectionMatrix());
+	}
 	
 	public double[][] getProjectionMatrix(){
 		return new double[][]{
