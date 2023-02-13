@@ -80,7 +80,9 @@ public class MainApplication extends Application{
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		pane.getChildren().add(canvas);
 		
-		this.camera = new Camera(0, 0, 0);
+		this.camera = new Camera(-15, 0, 30);
+		this.camera.lookAtCenter();
+		LIGHT_ROTATION = true;
 		
 		/*Random random = new Random();
 		for (int i = 0; i < 1; i++){
@@ -184,7 +186,7 @@ public class MainApplication extends Application{
 		}
 
 		Camera test = new Camera(LIGHT.getPosition().getX(), LIGHT.getPosition().getY(), LIGHT.getPosition().getZ());
-		test.setRy(Math.atan2(test.getZ(), test.getX())+Math.PI/2);
+		test.lookAtCenter();
 		for (Mesh object : objects){
 			object.showLines = false;
 			object.evaluate(test);
@@ -202,7 +204,7 @@ public class MainApplication extends Application{
 		}
 		if (FOLLOW_LIGHT){
 			this.camera.setPos(LIGHT.getPosition());
-			this.camera.setRy(Math.atan2(this.camera.getZ(), this.camera.getX())+Math.PI/2);
+			this.camera.lookAtCenter();
 		}
 		//LIGHT = new Light(this.camera.getPosition());
 		
@@ -225,13 +227,13 @@ public class MainApplication extends Application{
 	
 	public static double[] convertPoint(double[] point, Camera cam1, Camera cam2){
 		double w = 1/point[2];
-		double x = (point[0]*2/WIDTH-1)*w;
-		double y = (point[1]*2/HEIGHT-1)*w;
+		double x = (point[0]*2/WIDTH-1)*(w == 0 ? 1 : w);
+		double y = (point[1]*2/HEIGHT-1)*(w == 0 ? 1 : w);
 		
 		x *= Math.tan(cam1.fov/2)/cam1.aspectRatio;
 		y *= Math.tan(cam1.fov/2);
 		
-		double[] rotation = multiply(getRotateY(cam1.getRy()), new double[]{x, y, w, 1});
+		double[] rotation = multiply(getRotateY(-cam1.getRy()), new double[]{x, y, w, 1});
 		x = rotation[0];
 		y = rotation[1];
 		w = rotation[2];
@@ -242,8 +244,8 @@ public class MainApplication extends Application{
 		w = translation[2];
 		
 		double[] out = multiply(Camera.getCompleteMatrix(cam2), new double[]{x, y, w, 1});
-		out[0] /= out[3];
-		out[1] /= out[3];
+		out[0] /= out[3] == 0 ? 1 : out[3];
+		out[1] /= out[3] == 0 ? 1 : out[3];
 		
 		out[0] = (out[0]+1)*0.5*WIDTH;
 		out[1] = (out[1]+1)*0.5*HEIGHT;

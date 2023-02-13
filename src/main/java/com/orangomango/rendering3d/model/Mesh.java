@@ -190,9 +190,9 @@ public class Mesh{
 				px3 *= 0.5*WIDTH;
 				py3 *= 0.5*HEIGHT;
 				
-				setProjectedPoint(i, 0, new double[]{px1, py1, p1[3]});
-				setProjectedPoint(i, 1, new double[]{px2, py2, p2[3]});
-				setProjectedPoint(i, 2, new double[]{px3, py3, p3[3]});
+				setProjectedPoint(i, 0, new double[]{px1, py1, 1/p1[3]});
+				setProjectedPoint(i, 1, new double[]{px2, py2, 1/p2[3]});
+				setProjectedPoint(i, 2, new double[]{px3, py3, 1/p3[3]});
 			} else {
 				setProjectedPoint(i, 0, null);
 				setProjectedPoint(i, 1, null);
@@ -230,25 +230,17 @@ public class Mesh{
 						Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(1/projected[i][0][2]);
 						Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(1/projected[i][1][2]);
 						Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(1/projected[i][2][2]);
-						
-						projected[i][0][2] = 1/projected[i][0][2];
-						projected[i][1][2] = 1/projected[i][1][2];
-						projected[i][2][2] = 1/projected[i][2][2];
-						
+
 						renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
 								t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(),
 								projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera, this.image);
 					} else {
-						projected[i][0][2] = 1/projected[i][0][2];
-						projected[i][1][2] = 1/projected[i][1][2];
-						projected[i][2][2] = 1/projected[i][2][2];
-						
 						Color c1 = this.facesColors != null ? this.facesColors[i][0] : this.vertexColors[i][0];
 						Color c2 = this.facesColors != null ? this.facesColors[i][1] : this.vertexColors[i][1];
 						Color c3 = this.facesColors != null ? this.facesColors[i][2] : this.vertexColors[i][2];
-						
+
 						renderColoredTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
-								c1, c3, c3, projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera, cam2);
+								c1, c2, c3, projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera, cam2);
 					}
 				}
 			}
@@ -475,15 +467,15 @@ public class Mesh{
 								double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
 								int index_x = (int)Math.round(shadow[0]);
 								int index_y = (int)Math.round(shadow[1]);
-								/*if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
+								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
 									double depth = cam2.depthBuffer[index_x][index_y];
-									if (shadow[2] < depth){
+									if (Math.abs(shadow[2]-depth) > 0.0005){
 										color = color.darker();
 									}
-								}*/
-								gc.getPixelWriter().setColor(index_x, index_y, color);
+								}
+								//gc.getPixelWriter().setColor(index_x, index_y, color);
 							}
-							//gc.getPixelWriter().setColor(j, i, Light.getLight(color, Math.max(col_l, 0)));
+							gc.getPixelWriter().setColor(j, i, Light.getLight(color, Math.max(col_l, 0)));
 						}
 					}
 
@@ -560,15 +552,15 @@ public class Mesh{
 								double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
 								int index_x = (int)Math.round(shadow[0]);
 								int index_y = (int)Math.round(shadow[1]);
-								/*if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
+								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
 									double depth = cam2.depthBuffer[index_x][index_y];
-									if (shadow[2] < depth){
+									if (Math.abs(shadow[2]-depth) > 0.0005){
 										color = color.darker();
 									}
-								}*/
-								gc.getPixelWriter().setColor(index_x, index_y, color);
+								}
+								//gc.getPixelWriter().setColor(index_x, index_y, color);
 							}
-							//gc.getPixelWriter().setColor(j, i, Light.getLight(color, Math.max(col_l, 0)));
+							gc.getPixelWriter().setColor(j, i, Light.getLight(color, Math.max(col_l, 0)));
 						}
 					}
 
