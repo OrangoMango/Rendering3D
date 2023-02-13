@@ -117,7 +117,7 @@ public class MainApplication extends Application{
 			//Mesh model = Mesh.loadFromFile(this.camera, new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05);
 			//model.setRotation(Math.PI/2, 0, 0);
 			//objects.add(model);
-			objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane2.obj").toURI()), 0, 0.5, 0, 0.5));
+			objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane.obj").toURI()), 0, 0.5, 0, 0.5));
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}
@@ -134,6 +134,7 @@ public class MainApplication extends Application{
 		};
 		timer.start();
 		
+		stage.setResizable(false);
 		stage.setScene(new Scene(pane, WIDTH, HEIGHT));
 		stage.show();
 	}
