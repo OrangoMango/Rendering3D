@@ -14,6 +14,7 @@ public class Camera{
 	public double zNear = 1;
 	
 	private double[][] savedMatrix = null;
+	public boolean stateChanged = true;
 	
 	public Camera(double x, double y, double z){
 		this.cx = x;
@@ -22,7 +23,7 @@ public class Camera{
 	}
 	
 	public void setPos(Point3D p){
-		this.savedMatrix = null;
+		this.stateChanged = true;
 		this.cx = p.getX();
 		this.cy = p.getY();
 		this.cz = p.getZ();
@@ -33,14 +34,14 @@ public class Camera{
 	}
 	
 	public void move(double x, double y, double z){
-		this.savedMatrix = null;
+		this.stateChanged = true;
 		this.cx += x;
 		this.cy += y;
 		this.cz += z;
 	}
 	
 	public void reset(){
-		this.savedMatrix = null;
+		this.stateChanged = true;
 		this.cx = 0;
 		this.cy = 0;
 		this.cz = 0;
@@ -69,7 +70,7 @@ public class Camera{
 	}
 	
 	public void setRx(double rx){
-		if (this.rx != rx) this.savedMatrix = null;
+		if (this.rx != rx) this.stateChanged = true;
 		this.rx = rx;
 	}
 	
@@ -78,7 +79,7 @@ public class Camera{
 	}
 	
 	public void setRy(double ry){
-		if (this.ry != ry) this.savedMatrix = null;
+		if (this.ry != ry) this.stateChanged = true;
 		this.ry = ry;
 	}
 	
@@ -88,9 +89,10 @@ public class Camera{
 	}
 	
 	public double[][] getCompleteMatrix(){
-		if (this.savedMatrix == null){
+		if (this.stateChanged){
 			this.savedMatrix = MainApplication.multiply(MainApplication.multiply(MainApplication.getTranslation(-getX(), -getY(), -getZ()), 
 				MainApplication.multiply(MainApplication.getRotateX(getRx()), MainApplication.getRotateY(getRy()))), getProjectionMatrix());
+			this.stateChanged = false;
 		}
 		return this.savedMatrix;
 	}

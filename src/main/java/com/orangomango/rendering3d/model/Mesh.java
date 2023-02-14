@@ -28,6 +28,8 @@ public class Mesh{
 	private double crx, cry, crz;
 	public boolean showLines;
 	
+	public Map<Camera, double[][][]> cache = new HashMap<>();
+	
 	public Mesh(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, Color[] colors, Point3D[][] ns, Color[][] fcs){
 		this.color = Color.WHITE; //Color.color(Math.random(), Math.random(), Math.random());
 		this.image = image;
@@ -149,12 +151,26 @@ public class Mesh{
 			// --------------------------------------
 			
 			double dot = normal.dotProduct(point1.subtract(camera.getX(), camera.getY(), camera.getZ()));
+			double[][][] proj = this.cache.getOrDefault(camera, null);
+			if (proj == null){
+				proj = new double[this.faces.length][3][];
+				this.cache.put(camera, proj);
+			}
 			
 			if (dot < 0){					
 				// Project 3D -> 2D
-				p1 = multiply(cam, p1);
-				p2 = multiply(cam, p2);
-				p3 = multiply(cam, p3);
+				if (proj[i][0] == null){
+					proj[i][0] = multiply(cam, p1);
+				}
+				if (proj[i][1] == null){
+					proj[i][1] = multiply(cam, p2);
+				}
+				if (proj[i][2] == null){
+					proj[i][2] = multiply(cam, p3);
+				}
+				p1 = proj[i][0];
+				p2 = proj[i][1];
+				p3 = proj[i][2];
 				
 				// Scale
 				double px1 = p1[0]/(p1[3] == 0 ? 1 : p1[3]);
@@ -202,7 +218,7 @@ public class Mesh{
 		}
 	}
 	
-	public void render(Camera camera, GraphicsContext gc, Camera cam2){
+	public void render(Camera camera, List<Light> lights, GraphicsContext gc){
 		if (this.showLines){
 			gc.setStroke(this.color);
 			gc.setLineWidth(1);
@@ -231,14 +247,14 @@ public class Mesh{
 
 						renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
 								t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(),
-								projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera, this.image);
+								projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera, lights, this.image);
 					} else {
 						Color c1 = this.facesColors != null ? this.facesColors[i][0] : this.vertexColors[i][0];
 						Color c2 = this.facesColors != null ? this.facesColors[i][1] : this.vertexColors[i][1];
 						Color c3 = this.facesColors != null ? this.facesColors[i][2] : this.vertexColors[i][2];
 
 						renderColoredTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
-								c1, c2, c3, projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera, cam2);
+								c1, c2, c3, projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera, lights);
 					}
 				}
 			}
@@ -352,11 +368,17 @@ public class Mesh{
 	}
 	
 	private void renderColoredTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Color c1, Color c2, Color c3, 
-											double w1, double w2, double w3, int index, GraphicsContext gc, Camera camera, Camera cam2){
-											
-		double l1 = LIGHT.getLightIntensity(this.normals[index][0], this.trianglePoints[index][0]);
-		double l2 = LIGHT.getLightIntensity(this.normals[index][1], this.trianglePoints[index][1]);
-		double l3 = LIGHT.getLightIntensity(this.normals[index][2], this.trianglePoints[index][2]);
+											double w1, double w2, double w3, int index, GraphicsContext gc, Camera camera, List<Light> lights){
+	
+		double l1 = 0, l2 = 0, l3 = 0;
+		for (Light light : lights){
+			l1 += light.getLightIntensity(this.normals[index][0], this.trianglePoints[index][0]);
+			l2 += light.getLightIntensity(this.normals[index][1], this.trianglePoints[index][1]);
+			l3 += light.getLightIntensity(this.normals[index][2], this.trianglePoints[index][2]);
+		}
+		l1 = Math.min(1, l1);
+		l2 = Math.min(1, l2);
+		l3 = Math.min(1, l3);
 										
 		if (y2 < y1){
 			y1 = swap(y2, y2 = y1);
@@ -461,14 +483,17 @@ public class Mesh{
 						camera.depthBuffer[j][i] = col_w;
 						if (gc != null){
 							Color color = Color.color(col_r, col_g, col_b);
-							if (cam2 != null){
-								double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
-								int index_x = (int)Math.round(shadow[0]);
-								int index_y = (int)Math.round(shadow[1]);
-								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
-									double depth = cam2.depthBuffer[index_x][index_y];
-									if (Math.abs(shadow[2]-depth) > 0.0005){
-										color = color.darker();
+							if (SHADOWS){
+								for (Light light : lights){
+									Camera cam2 = light.getCamera();
+									double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
+									int index_x = (int)Math.round(shadow[0]);
+									int index_y = (int)Math.round(shadow[1]);
+									if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
+										double depth = cam2.depthBuffer[index_x][index_y];
+										if (Math.abs(shadow[2]-depth) > 0.0005){
+											color = color.darker();
+										}
 									}
 								}
 							}
@@ -545,14 +570,17 @@ public class Mesh{
 						camera.depthBuffer[j][i] = col_w;
 						if (gc != null){
 							Color color = Color.color(col_r, col_g, col_b);
-							if (cam2 != null){
-								double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
-								int index_x = (int)Math.round(shadow[0]);
-								int index_y = (int)Math.round(shadow[1]);
-								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
-									double depth = cam2.depthBuffer[index_x][index_y];
-									if (Math.abs(shadow[2]-depth) > 0.0005){
-										color = color.darker();
+							if (SHADOWS){
+								for (Light light : lights){
+									Camera cam2 = light.getCamera();
+									double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
+									int index_x = (int)Math.round(shadow[0]);
+									int index_y = (int)Math.round(shadow[1]);
+									if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
+										double depth = cam2.depthBuffer[index_x][index_y];
+										if (Math.abs(shadow[2]-depth) > 0.0005){
+											color = color.darker();
+										}
 									}
 								}
 							}
@@ -567,11 +595,11 @@ public class Mesh{
 	}
 	
 	private void renderTriangle(int x1, int y1, int x2, int y2, int x3, int y3, double u1, double v1, double u2, double v2, double u3, double v3, 
-								double w1, double w2, double w3, int index, GraphicsContext gc, Camera camera, Image image){
+								double w1, double w2, double w3, int index, GraphicsContext gc, Camera camera, List<Light> lights, Image image){
 		
-		double l1 = LIGHT.getLightIntensity(this.normals[index][0], this.trianglePoints[index][0]);
-		double l2 = LIGHT.getLightIntensity(this.normals[index][1], this.trianglePoints[index][1]);
-		double l3 = LIGHT.getLightIntensity(this.normals[index][2], this.trianglePoints[index][2]);
+		double l1 = lights.get(0).getLightIntensity(this.normals[index][0], this.trianglePoints[index][0]);
+		double l2 = lights.get(0).getLightIntensity(this.normals[index][1], this.trianglePoints[index][1]);
+		double l3 = lights.get(0).getLightIntensity(this.normals[index][2], this.trianglePoints[index][2]);
 
 		if (y2 < y1){
 			y1 = swap(y2, y2 = y1);

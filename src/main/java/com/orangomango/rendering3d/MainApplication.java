@@ -27,9 +27,9 @@ public class MainApplication extends Application{
 	private volatile int frames, fps;
 	private static final int FPS = 6;
 	//public static Light LIGHT = new Light(-5, -3, -8);
-	public static Light LIGHT = new Light(0, 0, -35);
+	private List<Light> sceneLights = new ArrayList<>();
 	
-	public static boolean SHOW_LINES = false, LIGHT_AVAILABLE = true, FOLLOW_LIGHT = false, LIGHT_ROTATION = false;
+	public static boolean SHOW_LINES = false, LIGHT_AVAILABLE = true, FOLLOW_LIGHT = false, LIGHT_ROTATION = false, SHADOWS = true;
 	
 	private static final Image COAL_IMAGE = new Image(MainApplication.class.getResourceAsStream("/coal.png"));
 	private static final Image DIRT_IMAGE = new Image(MainApplication.class.getResourceAsStream("/dirt.png"));
@@ -83,6 +83,8 @@ public class MainApplication extends Application{
 		this.camera = new Camera(-15, 0, 30);
 		this.camera.lookAtCenter();
 		LIGHT_ROTATION = true;
+		
+		sceneLights.add(new Light(0, 0, -35));
 		
 		/*Random random = new Random();
 		for (int i = 0; i < 1; i++){
@@ -183,40 +185,54 @@ public class MainApplication extends Application{
 			this.keys.put(KeyCode.F4, false);
 		} else if (this.keys.getOrDefault(KeyCode.F5, false)){
 			LIGHT_ROTATION = false;
-			LIGHT = new Light(this.camera.getX(), this.camera.getY(), this.camera.getZ());
-			LIGHT.setRy(this.camera.getRy());
+			sceneLights.get(0).setPos(this.camera.getX(), this.camera.getY(), this.camera.getZ());
+			sceneLights.get(0).setRy(this.camera.getRy());
 			System.out.println("F5");
 			this.keys.put(KeyCode.F5, false);
+		} else if (this.keys.getOrDefault(KeyCode.F6, false)){
+			SHADOWS = !SHADOWS;
+			System.out.println("F6");
+			this.keys.put(KeyCode.F6, false);
 		} else if (this.keys.getOrDefault(KeyCode.R, false)){
 			this.camera.reset();
 			this.keys.put(KeyCode.R, false);
 		}
 
-		Camera lightCamera = new Camera(LIGHT.getPosition().getX(), LIGHT.getPosition().getY(), LIGHT.getPosition().getZ());
-		lightCamera.setRy(LIGHT.getRy());
+		if (SHADOWS){
+			for (Light light : sceneLights){
+				Camera lightCamera = light.getCamera();
+				lightCamera.clearDepthBuffer();
+				for (Mesh object : objects){
+					object.showLines = false;
+					object.evaluate(lightCamera);
+					object.render(lightCamera, null, null);
+					object.cache.remove(lightCamera);
+				}
+			}
+		}
+
 		for (Mesh object : objects){
-			object.showLines = false;
-			object.evaluate(lightCamera);
-			object.render(lightCamera, null, null);
-			
+			if (this.camera.stateChanged) object.cache.remove(this.camera);
 			object.showLines = SHOW_LINES;
 			object.evaluate(this.camera);
-			object.render(this.camera, gc, lightCamera);
+			object.render(this.camera, sceneLights, gc);
 		}
 		
 		double lspeed = 5;
 		if (LIGHT_ROTATION){
-			double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{LIGHT.getPosition().getX(), LIGHT.getPosition().getY(), LIGHT.getPosition().getZ()});
-			LIGHT = new Light(rotationV[0], rotationV[1], rotationV[2]);
-			LIGHT.lookAtCenter();
+			for (Light light : sceneLights){
+				double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{light.getPosition().getX(), light.getPosition().getY(), light.getPosition().getZ()});
+				light.setPos(rotationV[0], rotationV[1], rotationV[2]);
+				light.lookAtCenter();
+			}
 		}
 		if (FOLLOW_LIGHT){
-			this.camera.setPos(LIGHT.getPosition());
+			this.camera.setPos(sceneLights.get(0).getPosition());
 			this.camera.lookAtCenter();
 		}
 		
 		gc.setFill(Color.WHITE);
-		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d (%d)\nLight: %s", this.fps, FPS, LIGHT.getPosition()), 30, 30);
+		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d (%d)\nLight: %s", this.fps, FPS, sceneLights.get(0).getPosition()), 30, 30);
 	}
 	
 	public static double[] convertPoint(double[] point, Camera cam1, Camera cam2){
@@ -332,6 +348,7 @@ public class MainApplication extends Application{
 		System.out.println("F3 -> LIGHT_AVAILABLE");
 		System.out.println("F4 -> ROTATE_LIGHT");
 		System.out.println("F5 -> PLACE_LIGHT_AT_CAMERA");
+		System.out.println("F6 -> SHADOWS");
 		launch(args);
 	}
 }

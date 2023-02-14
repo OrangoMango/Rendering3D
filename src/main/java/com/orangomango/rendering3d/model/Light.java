@@ -7,12 +7,18 @@ import static com.orangomango.rendering3d.MainApplication.LIGHT_AVAILABLE;
 
 public class Light{
 	private double x, y, z;
-	private double ry;
+	private double rx, ry;
+	private Camera camera;
 	
 	public Light(double x, double y, double z){
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		this.camera = new Camera(this.x, this.y, this.z);
+	}
+	
+	public Camera getCamera(){
+		return this.camera;
 	}
 	
 	public Point3D getPosition(){
@@ -21,14 +27,23 @@ public class Light{
 	
 	public void setRy(double ry){
 		this.ry = ry;
+		this.camera.setRy(this.ry);
 	}
 	
 	public double getRy(){
 		return this.ry;
 	}
 	
+	public void setPos(double x, double y, double z){
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.camera.setPos(new Point3D(x, y, z));
+	}
+	
 	public void lookAtCenter(){
 		setRy(Math.atan2(getPosition().getZ(), getPosition().getX())+Math.PI/2);
+		this.camera.lookAtCenter();
 	}
 	
 	public double getLightIntensity(Point3D normal, Point3D point){
