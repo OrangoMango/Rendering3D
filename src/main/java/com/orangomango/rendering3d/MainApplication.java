@@ -181,15 +181,15 @@ public class MainApplication extends Application{
 			LIGHT_ROTATION = !LIGHT_ROTATION;
 			System.out.println("F4");
 			this.keys.put(KeyCode.F4, false);
-		} else if (this.keys.getOrDefault(KeyCode.R, false)){
-			this.camera.reset();
-			this.keys.put(KeyCode.R, false);
-		} else if (this.keys.getOrDefault(KeyCode.Q, false)){
+		} else if (this.keys.getOrDefault(KeyCode.F5, false)){
 			LIGHT_ROTATION = false;
 			LIGHT = new Light(this.camera.getX(), this.camera.getY(), this.camera.getZ());
 			LIGHT.setRy(this.camera.getRy());
-			System.out.println("Q");
-			this.keys.put(KeyCode.Q, false);
+			System.out.println("F5");
+			this.keys.put(KeyCode.F5, false);
+		} else if (this.keys.getOrDefault(KeyCode.R, false)){
+			this.camera.reset();
+			this.keys.put(KeyCode.R, false);
 		}
 
 		Camera lightCamera = new Camera(LIGHT.getPosition().getX(), LIGHT.getPosition().getY(), LIGHT.getPosition().getZ());
@@ -331,7 +331,7 @@ public class MainApplication extends Application{
 		System.out.println("F2 -> FOLLOW_LIGHT");
 		System.out.println("F3 -> LIGHT_AVAILABLE");
 		System.out.println("F4 -> ROTATE_LIGHT");
-		System.out.println("Q -> PLACE_LIGHT_AT_CAMERA");
+		System.out.println("F5 -> PLACE_LIGHT_AT_CAMERA");
 		launch(args);
 	}
 }
