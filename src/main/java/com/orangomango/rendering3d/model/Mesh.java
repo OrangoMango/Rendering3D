@@ -473,7 +473,6 @@ public class Mesh{
 										color = color.darker();
 									}
 								}
-								//gc.getPixelWriter().setColor(index_x, index_y, color);
 							}
 							gc.getPixelWriter().setColor(j, i, Light.getLight(color, Math.max(col_l, 0)));
 						}
@@ -558,7 +557,6 @@ public class Mesh{
 										color = color.darker();
 									}
 								}
-								//gc.getPixelWriter().setColor(index_x, index_y, color);
 							}
 							gc.getPixelWriter().setColor(j, i, Light.getLight(color, Math.max(col_l, 0)));
 						}

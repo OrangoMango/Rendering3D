@@ -117,7 +117,7 @@ public class MainApplication extends Application{
 			//Mesh model = Mesh.loadFromFile(this.camera, new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05);
 			//model.setRotation(Math.PI/2, 0, 0);
 			//objects.add(model);
-			objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane.obj").toURI()), 0, 0.5, 0, 0.5));
+			objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5));
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}
@@ -183,44 +183,37 @@ public class MainApplication extends Application{
 			this.keys.put(KeyCode.F4, false);
 		} else if (this.keys.getOrDefault(KeyCode.R, false)){
 			this.camera.reset();
-			this.keys.put(KeyCode.R, true);
+			this.keys.put(KeyCode.R, false);
+		} else if (this.keys.getOrDefault(KeyCode.Q, false)){
+			LIGHT_ROTATION = false;
+			LIGHT = new Light(this.camera.getX(), this.camera.getY(), this.camera.getZ());
+			LIGHT.setRy(this.camera.getRy());
+			System.out.println("Q");
+			this.keys.put(KeyCode.Q, false);
 		}
 
-		Camera test = new Camera(LIGHT.getPosition().getX(), LIGHT.getPosition().getY(), LIGHT.getPosition().getZ());
-		test.lookAtCenter();
+		Camera lightCamera = new Camera(LIGHT.getPosition().getX(), LIGHT.getPosition().getY(), LIGHT.getPosition().getZ());
+		lightCamera.setRy(LIGHT.getRy());
 		for (Mesh object : objects){
 			object.showLines = false;
-			object.evaluate(test);
-			object.render(test, null, null);
+			object.evaluate(lightCamera);
+			object.render(lightCamera, null, null);
 			
 			object.showLines = SHOW_LINES;
 			object.evaluate(this.camera);
-			object.render(this.camera, gc, test);
+			object.render(this.camera, gc, lightCamera);
 		}
 		
 		double lspeed = 5;
 		if (LIGHT_ROTATION){
 			double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{LIGHT.getPosition().getX(), LIGHT.getPosition().getY(), LIGHT.getPosition().getZ()});
 			LIGHT = new Light(rotationV[0], rotationV[1], rotationV[2]);
+			LIGHT.lookAtCenter();
 		}
 		if (FOLLOW_LIGHT){
 			this.camera.setPos(LIGHT.getPosition());
 			this.camera.lookAtCenter();
 		}
-		//LIGHT = new Light(this.camera.getPosition());
-		
-		/*gc.save();
-		gc.setGlobalAlpha(0.6);
-		gc.setFill(Color.WHITE);
-		gc.fillRect(0, 0, WIDTH, HEIGHT);
-		for (int i = 0; i < WIDTH; i++){
-			for (int j = 0; j < HEIGHT; j++){
-				double w = test.depthBuffer[i][j];
-				//gc.setFill(Color.color(w, w, w));
-				gc.getPixelWriter().setColor(i, j, Color.color(w/50, w/50, w/50)); //gc.fillRect(i, j, 1, 1);
-			}
-		}
-		gc.restore();*/
 		
 		gc.setFill(Color.WHITE);
 		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d (%d)\nLight: %s", this.fps, FPS, LIGHT.getPosition()), 30, 30);
@@ -338,6 +331,7 @@ public class MainApplication extends Application{
 		System.out.println("F2 -> FOLLOW_LIGHT");
 		System.out.println("F3 -> LIGHT_AVAILABLE");
 		System.out.println("F4 -> ROTATE_LIGHT");
+		System.out.println("Q -> PLACE_LIGHT_AT_CAMERA");
 		launch(args);
 	}
 }

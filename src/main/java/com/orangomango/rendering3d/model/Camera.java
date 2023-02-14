@@ -47,10 +47,6 @@ public class Camera{
 		setRy(Math.atan2(getZ(), getX())+Math.PI/2);
 	}
 	
-	/*public Point3D getPosition(){
-		return new Point3D(this.cx, this.cy, this.cz);
-	}*/
-	
 	public double getX(){
 		return this.cx;
 	}
