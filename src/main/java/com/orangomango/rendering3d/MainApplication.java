@@ -25,7 +25,7 @@ public class MainApplication extends Application{
 	public static final int HEIGHT = 600;
 	private Map<KeyCode, Boolean> keys = new HashMap<>();
 	private volatile int frames, fps;
-	private static final int FPS = 2;
+	private static final int FPS = 6;
 	//public static Light LIGHT = new Light(-5, -3, -8);
 	public static Light LIGHT = new Light(0, 0, -35);
 	
@@ -237,7 +237,7 @@ public class MainApplication extends Application{
 		y = translation[1];
 		w = translation[2];
 		
-		double[] out = multiply(Camera.getCompleteMatrix(cam2), new double[]{x, y, w, 1});
+		double[] out = multiply(cam2.getCompleteMatrix(), new double[]{x, y, w, 1});
 		out[0] /= out[3] == 0 ? 1 : out[3];
 		out[1] /= out[3] == 0 ? 1 : out[3];
 		

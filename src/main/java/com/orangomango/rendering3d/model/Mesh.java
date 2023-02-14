@@ -19,7 +19,6 @@ public class Mesh{
 	private int[][] faces;
 	private Color[] colors;
 	private Color color;
-	private double angle;
 	private Point2D[] textureVertex;
 	private int[][] textureFaces;
 	private Point3D[][] normals;
@@ -107,7 +106,7 @@ public class Mesh{
 		int i = 0;
 		this.vertexColors = new Color[this.faces.length][3];
 		for (Point3D[] points : getTrianglePoints(vertexColors)){
-			double[][] cam = Camera.getCompleteMatrix(camera);
+			double[][] cam = camera.getCompleteMatrix();
 			
 			// Apply transforms
 			double[] p1 = new double[]{points[0].getX(), points[0].getY(), points[0].getZ(), 1};
@@ -121,15 +120,15 @@ public class Mesh{
 			p3 = multiply(getScale(factor, factor, factor), p3);*/
 			
 			// Rotate
-			p1 = multiply(getRotateX(this.angle+this.crx), p1);
-			p2 = multiply(getRotateX(this.angle+this.crx), p2);
-			p3 = multiply(getRotateX(this.angle+this.crx), p3);
-			p1 = multiply(getRotateY(this.angle+this.cry), p1);
-			p2 = multiply(getRotateY(this.angle+this.cry), p2);
-			p3 = multiply(getRotateY(this.angle+this.cry), p3);
-			p1 = multiply(getRotateZ(this.angle+this.crz), p1);
-			p2 = multiply(getRotateZ(this.angle+this.crz), p2);
-			p3 = multiply(getRotateZ(this.angle+this.crz), p3);
+			/*p1 = multiply(getRotateX(this.crx), p1);
+			p2 = multiply(getRotateX(this.crx), p2);
+			p3 = multiply(getRotateX(this.crx), p3);
+			p1 = multiply(getRotateY(this.cry), p1);
+			p2 = multiply(getRotateY(this.cry), p2);
+			p3 = multiply(getRotateY(this.cry), p3);
+			p1 = multiply(getRotateZ(this.crz), p1);
+			p2 = multiply(getRotateZ(this.crz), p2);
+			p3 = multiply(getRotateZ(this.crz), p3);*/
 
 			// Translate
 			//p1 = multiply(getTranslation(0, 0, 8), p1);
@@ -201,7 +200,6 @@ public class Mesh{
 			
 			i++;
 		}
-		//this.angle += 0.01*40/FPS;
 	}
 	
 	public void render(Camera camera, GraphicsContext gc, Camera cam2){

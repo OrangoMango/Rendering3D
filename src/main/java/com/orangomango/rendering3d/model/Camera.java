@@ -13,6 +13,8 @@ public class Camera{
 	public double zFar = 100;
 	public double zNear = 1;
 	
+	private double[][] savedMatrix = null;
+	
 	public Camera(double x, double y, double z){
 		this.cx = x;
 		this.cy = y;
@@ -20,6 +22,7 @@ public class Camera{
 	}
 	
 	public void setPos(Point3D p){
+		this.savedMatrix = null;
 		this.cx = p.getX();
 		this.cy = p.getY();
 		this.cz = p.getZ();
@@ -30,12 +33,14 @@ public class Camera{
 	}
 	
 	public void move(double x, double y, double z){
+		this.savedMatrix = null;
 		this.cx += x;
 		this.cy += y;
 		this.cz += z;
 	}
 	
 	public void reset(){
+		this.savedMatrix = null;
 		this.cx = 0;
 		this.cy = 0;
 		this.cz = 0;
@@ -64,6 +69,7 @@ public class Camera{
 	}
 	
 	public void setRx(double rx){
+		if (this.rx != rx) this.savedMatrix = null;
 		this.rx = rx;
 	}
 	
@@ -72,6 +78,7 @@ public class Camera{
 	}
 	
 	public void setRy(double ry){
+		if (this.ry != ry) this.savedMatrix = null;
 		this.ry = ry;
 	}
 	
@@ -80,22 +87,12 @@ public class Camera{
 		return String.format("Cx: %.2f Cy: %.2f Cz: %.2f", this.cx, this.cy, this.cz);
 	}
 	
-	/*public double[][] getInverseProjectionMatrix(){
-		double aspectRatio = MainApplication.HEIGHT/MainApplication.WIDTH;
-		double fov = Math.toRadians(45);
-		double zFar = 100;
-		double zNear = 1;
-		return new double[][]{
-			{Math.tan(fov/2)/aspectRatio, 0, 0, 0},
-			{0, Math.tan(fov/2), 0, 0},
-			{0, 0, 0, 1},
-			{0, 0, (zNear-zFar)/(zFar+zNear), 2/(zFar+zNear)}
-		};
-	}*/
-	
-	public static double[][] getCompleteMatrix(Camera camera){
-		return MainApplication.multiply(MainApplication.multiply(MainApplication.getTranslation(-camera.getX(), -camera.getY(), -camera.getZ()), 
-							MainApplication.multiply(MainApplication.getRotateX(camera.getRx()), MainApplication.getRotateY(camera.getRy()))), camera.getProjectionMatrix());
+	public double[][] getCompleteMatrix(){
+		if (this.savedMatrix == null){
+			this.savedMatrix = MainApplication.multiply(MainApplication.multiply(MainApplication.getTranslation(-getX(), -getY(), -getZ()), 
+				MainApplication.multiply(MainApplication.getRotateX(getRx()), MainApplication.getRotateY(getRy()))), getProjectionMatrix());
+		}
+		return this.savedMatrix;
 	}
 	
 	public double[][] getProjectionMatrix(){
