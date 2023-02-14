@@ -80,9 +80,11 @@ public class MainApplication extends Application{
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		pane.getChildren().add(canvas);
 		
-		this.camera = new Camera(-15, 0, 30);
+		//this.camera = new Camera(-15, 0, 30);
+		this.camera = new Camera(0, -35, 0);
 		this.camera.lookAtCenter();
 		LIGHT_ROTATION = true;
+		SHADOWS = false;
 		
 		sceneLights.add(new Light(0, 0, -35));
 		
@@ -119,7 +121,7 @@ public class MainApplication extends Application{
 			//Mesh model = Mesh.loadFromFile(this.camera, new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05);
 			//model.setRotation(Math.PI/2, 0, 0);
 			//objects.add(model);
-			objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5));
+			objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, -15, 0, 0.5));
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}
@@ -196,6 +198,10 @@ public class MainApplication extends Application{
 		} else if (this.keys.getOrDefault(KeyCode.R, false)){
 			this.camera.reset();
 			this.keys.put(KeyCode.R, false);
+		} else if (this.keys.getOrDefault(KeyCode.L, false)){
+			this.camera.lookAtCenter();
+			System.out.println("L");
+			this.keys.put(KeyCode.L, false);
 		}
 
 		if (SHADOWS){
@@ -221,7 +227,7 @@ public class MainApplication extends Application{
 		double lspeed = 5;
 		if (LIGHT_ROTATION){
 			for (Light light : sceneLights){
-				double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{light.getPosition().getX(), light.getPosition().getY(), light.getPosition().getZ()});
+				double[] rotationV = multiply(getRotateX(0.01*40/FPS), new double[]{light.getPosition().getX(), light.getPosition().getY(), light.getPosition().getZ()});
 				light.setPos(rotationV[0], rotationV[1], rotationV[2]);
 				light.lookAtCenter();
 			}
@@ -244,6 +250,11 @@ public class MainApplication extends Application{
 		y *= Math.tan(cam1.fov/2);
 		
 		double[] rotation = multiply(getRotateY(-cam1.getRy()), new double[]{x, y, w, 1});
+		x = rotation[0];
+		y = rotation[1];
+		w = rotation[2];
+		
+		rotation = multiply(getRotateX(-cam1.getRx()), new double[]{x, y, w, 1});
 		x = rotation[0];
 		y = rotation[1];
 		w = rotation[2];

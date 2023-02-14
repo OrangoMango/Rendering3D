@@ -50,6 +50,7 @@ public class Camera{
 	}
 	
 	public void lookAtCenter(){
+		setRx(Math.atan(getY()/getZ()));
 		setRy(Math.atan2(getZ(), getX())+Math.PI/2);
 	}
 	
@@ -85,7 +86,7 @@ public class Camera{
 	
 	@Override
 	public String toString(){
-		return String.format("Cx: %.2f Cy: %.2f Cz: %.2f", this.cx, this.cy, this.cz);
+		return String.format("Cx: %.2f Cy: %.2f Cz: %.2f | Rx: %.2f Ry: %.2f", this.cx, this.cy, this.cz, this.rx, this.ry);
 	}
 	
 	public double[][] getCompleteMatrix(){

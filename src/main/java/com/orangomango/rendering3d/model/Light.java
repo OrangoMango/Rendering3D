@@ -25,6 +25,15 @@ public class Light{
 		return new Point3D(this.x, this.y, this.z);
 	}
 	
+	public void setRx(double rx){
+		this.rx = rx;
+		this.camera.setRx(this.rx);
+	}
+	
+	public double getRx(){
+		return this.rx;
+	}
+	
 	public void setRy(double ry){
 		this.ry = ry;
 		this.camera.setRy(this.ry);
@@ -42,6 +51,7 @@ public class Light{
 	}
 	
 	public void lookAtCenter(){
+		setRx(Math.atan(getPosition().getY()/getPosition().getZ()));
 		setRy(Math.atan2(getPosition().getZ(), getPosition().getX())+Math.PI/2);
 		this.camera.lookAtCenter();
 	}
