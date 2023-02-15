@@ -182,9 +182,11 @@ public class Mesh{
 				double pz1 = p1[2];
 				double pz2 = p2[2];
 				double pz3 = p3[2];
-				if (px1 > 1 || px1 < -1 || py1 > 1 || py1 < -1 || pz1 > 1 || pz1 < -1
-				 || px2 > 1 || px2 < -1 || py2 > 1 || py2 < -1 || pz2 > 1 || pz2 < -1
-				 || px3 > 1 || px3 < -1 || py3 > 1 || py3 < -1 || pz3 > 1 || pz3 < -1){
+				
+				double bound = 1.5;
+				if (px1 > bound || px1 < -bound || py1 > bound || py1 < -bound || pz1 > bound || pz1 < -bound
+				 || px2 > bound || px2 < -bound || py2 > bound || py2 < -bound || pz2 > bound || pz2 < -bound
+				 || px3 > bound || px3 < -bound || py3 > bound || py3 < -bound || pz3 > bound || pz3 < -bound){
 					setProjectedPoint(i, 0, null);
 					setProjectedPoint(i, 1, null);
 					setProjectedPoint(i, 2, null);
@@ -317,7 +319,7 @@ public class Mesh{
 				for (int j = ax; j < bx; j++){
 					col_w = (1-t)*col_sw+t*col_ew;
 					
-					if (camera.depthBuffer[j][i] <= col_w){
+					if (isInScene(j, i) && camera.depthBuffer[j][i] <= col_w){
 						camera.depthBuffer[j][i] = col_w;
 					}
 
@@ -357,7 +359,7 @@ public class Mesh{
 				for (int j = ax; j < bx; j++){
 					col_w = (1-t)*col_sw+t*col_ew;
 					
-					if (camera.depthBuffer[j][i] <= col_w){
+					if (isInScene(j, i) && camera.depthBuffer[j][i] <= col_w){
 						camera.depthBuffer[j][i] = col_w;
 					}
 
@@ -479,7 +481,7 @@ public class Mesh{
 					col_w = (1-t)*col_sw+t*col_ew;
 					col_l = (1-t)*col_sl+t*col_el;
 					
-					if (camera.depthBuffer[j][i] <= col_w){
+					if (isInScene(j, i) && camera.depthBuffer[j][i] <= col_w){
 						camera.depthBuffer[j][i] = col_w;
 						if (gc != null){
 							Color color = Color.color(col_r, col_g, col_b);
@@ -566,7 +568,7 @@ public class Mesh{
 					col_w = (1-t)*col_sw+t*col_ew;
 					col_l = (1-t)*col_sl+t*col_el;
 					
-					if (camera.depthBuffer[j][i] <= col_w){
+					if (isInScene(j, i) && camera.depthBuffer[j][i] <= col_w){
 						camera.depthBuffer[j][i] = col_w;
 						if (gc != null){
 							Color color = Color.color(col_r, col_g, col_b);
@@ -699,7 +701,7 @@ public class Mesh{
 					
 					if (pix_x < 0) pix_x = (int)image.getWidth()-pix_x;
 					if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
-					if (camera.depthBuffer[j][i] <= tex_w){
+					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
 						if (gc != null) gc.getPixelWriter().setColor(j, i, Light.getLight(image.getPixelReader().getColor(pix_x, pix_y), Math.max(tex_l, 0)));
 					}
@@ -767,7 +769,7 @@ public class Mesh{
 					
 					if (pix_x < 0) pix_x = (int)image.getWidth()-pix_x;
 					if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
-					if (camera.depthBuffer[j][i] <= tex_w){
+					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
 						if (gc != null) gc.getPixelWriter().setColor(j, i, Light.getLight(image.getPixelReader().getColor(pix_x, pix_y), Math.max(tex_l, 0)));
 					}

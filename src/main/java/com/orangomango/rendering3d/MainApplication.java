@@ -353,6 +353,10 @@ public class MainApplication extends Application{
 		return out;
 	}
 	
+	public static boolean isInScene(int x, int y){
+		return x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT;
+	}
+	
 	public static void main(String[] args){		
 		System.out.println("F1 -> SHOW_LINES");
 		System.out.println("F2 -> FOLLOW_LIGHT");
