@@ -80,10 +80,10 @@ public class MainApplication extends Application{
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		pane.getChildren().add(canvas);
 		
-		//this.camera = new Camera(-15, 0, 30);
-		this.camera = new Camera(0, -35, 0);
+		this.camera = new Camera(-15, 0, 30);
+		//this.camera = new Camera(0, -35, 0);
 		this.camera.lookAtCenter();
-		LIGHT_ROTATION = true;
+		//LIGHT_ROTATION = true;
 		SHADOWS = false;
 		
 		sceneLights.add(new Light(0, 0, -35));
@@ -121,7 +121,7 @@ public class MainApplication extends Application{
 			//Mesh model = Mesh.loadFromFile(this.camera, new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05);
 			//model.setRotation(Math.PI/2, 0, 0);
 			//objects.add(model);
-			objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, -15, 0, 0.5));
+			objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5));
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}
@@ -227,7 +227,7 @@ public class MainApplication extends Application{
 		double lspeed = 5;
 		if (LIGHT_ROTATION){
 			for (Light light : sceneLights){
-				double[] rotationV = multiply(getRotateX(0.01*40/FPS), new double[]{light.getPosition().getX(), light.getPosition().getY(), light.getPosition().getZ()});
+				double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{light.getPosition().getX(), light.getPosition().getY(), light.getPosition().getZ()});
 				light.setPos(rotationV[0], rotationV[1], rotationV[2]);
 				light.lookAtCenter();
 			}

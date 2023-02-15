@@ -50,7 +50,7 @@ public class Camera{
 	}
 	
 	public void lookAtCenter(){
-		setRx(Math.atan(getY()/getZ()));
+		//setRx(Math.atan(getY()/getZ()));
 		setRy(Math.atan2(getZ(), getX())+Math.PI/2);
 	}
 	

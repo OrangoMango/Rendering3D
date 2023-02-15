@@ -51,7 +51,7 @@ public class Light{
 	}
 	
 	public void lookAtCenter(){
-		setRx(Math.atan(getPosition().getY()/getPosition().getZ()));
+		//setRx(Math.atan(getPosition().getY()/getPosition().getZ()));
 		setRy(Math.atan2(getPosition().getZ(), getPosition().getX())+Math.PI/2);
 		this.camera.lookAtCenter();
 	}
