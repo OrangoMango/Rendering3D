@@ -183,7 +183,7 @@ public class Mesh{
 				double pz2 = p2[2];
 				double pz3 = p3[2];
 				
-				double bound = 1.5;
+				double bound = 1.7;
 				if (px1 > bound || px1 < -bound || py1 > bound || py1 < -bound || pz1 > bound || pz1 < -bound
 				 || px2 > bound || px2 < -bound || py2 > bound || py2 < -bound || pz2 > bound || pz2 < -bound
 				 || px3 > bound || px3 < -bound || py3 > bound || py3 < -bound || pz3 > bound || pz3 < -bound){
@@ -493,7 +493,7 @@ public class Mesh{
 									int index_y = (int)Math.round(shadow[1]);
 									if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
 										double depth = cam2.depthBuffer[index_x][index_y];
-										if (Math.abs(shadow[2]-depth) > 0.0007){
+										if (Math.abs(shadow[2]-depth) > 0.0005){
 											color = color.darker();
 										}
 									}
@@ -580,7 +580,7 @@ public class Mesh{
 									int index_y = (int)Math.round(shadow[1]);
 									if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
 										double depth = cam2.depthBuffer[index_x][index_y];
-										if (Math.abs(shadow[2]-depth) > 0.0007){
+										if (Math.abs(shadow[2]-depth) > 0.0005){
 											color = color.darker();
 										}
 									}

@@ -209,10 +209,10 @@ public class MainApplication extends Application{
 				Camera lightCamera = light.getCamera();
 				lightCamera.clearDepthBuffer();
 				for (Mesh object : objects){
+					if (lightCamera.stateChanged) object.cache.remove(lightCamera);
 					object.showLines = false;
 					object.evaluate(lightCamera);
 					object.render(lightCamera, null, null);
-					object.cache.remove(lightCamera);
 				}
 			}
 		}
