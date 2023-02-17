@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.image.Image;
 import javafx.animation.*;
 import javafx.util.Duration;
@@ -21,8 +22,8 @@ import com.orangomango.rendering3d.model.Mesh;
 import com.orangomango.rendering3d.model.Light;
 
 public class MainApplication extends Application{
-	public static final int WIDTH = 600;
-	public static final int HEIGHT = 600;
+	public static final int WIDTH = 320;
+	public static final int HEIGHT = 180;
 	private Map<KeyCode, Boolean> keys = new HashMap<>();
 	private volatile int frames, fps;
 	private static final int FPS = 6;
@@ -238,7 +239,8 @@ public class MainApplication extends Application{
 		}
 		
 		gc.setFill(Color.WHITE);
-		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d (%d)\nLight: %s", this.fps, FPS, sceneLights.get(0).getPosition()), 30, 30);
+		gc.setFont(new Font("sans-serif", 9));
+		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d (%d)\nLight: %s", this.fps, FPS, sceneLights.get(0).getPosition()), 0.05*WIDTH, 0.05*WIDTH);
 	}
 	
 	public static double[] convertPoint(double[] point, Camera cam1, Camera cam2){

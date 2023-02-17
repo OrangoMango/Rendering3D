@@ -8,7 +8,7 @@ public class Camera{
 	private double cx, cy, cz, rx, ry;
 	public double[][] depthBuffer = new double[MainApplication.WIDTH][MainApplication.HEIGHT];
 	
-	public double aspectRatio = MainApplication.HEIGHT/MainApplication.WIDTH;
+	public double aspectRatio = (double)MainApplication.HEIGHT/MainApplication.WIDTH;
 	public double fov = Math.toRadians(45);
 	public double zFar = 100;
 	public double zNear = 1;
