@@ -28,7 +28,8 @@ public class MainApplication extends Application{
 		
 		engine.setCamera(camera);
 		
-		engine.getLights().add(new Light(-5, -1, -5));
+		//engine.getLights().add(new Light(-5, -1, -5));
+		engine.getLights().add(new Light(-15, 0, 30));
 		
 		//Random random = new Random();
 		/*for (int i = 0; i < 1; i++){
@@ -63,11 +64,11 @@ public class MainApplication extends Application{
 			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05, null, null);
 			//model.setRotation(Math.PI/2, 0, 0);
 			//engine.getObjects().add(model);
-			//objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5));
+			engine.getObjects().add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5, null, null));
 			
-			Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null, null);
-			model.setRotation(0, 0, Math.PI);
-			engine.getObjects().add(model);
+			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null, null);
+			//model.setRotation(0, 0, Math.PI);
+			//engine.getObjects().add(model);
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}

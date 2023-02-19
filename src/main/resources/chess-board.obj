@@ -1,6 +1,6 @@
 # Blender 3.3.0
 # www.blender.org
-mtllib Chess.mtl
+mtllib chess-board.mtl
 o ChessBoard
 v -30.258278 -0.305666 -30.258278
 v -30.258278 -0.305669 30.258278

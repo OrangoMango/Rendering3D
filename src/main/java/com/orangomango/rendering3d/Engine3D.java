@@ -19,7 +19,7 @@ import com.orangomango.rendering3d.model.Light;
 
 public class Engine3D{
 	private int width, height;
-	private static final int FPS = 12;
+	private static final int FPS = 6;
 	private volatile int frames, fps;
 	private Map<KeyCode, Boolean> keys = new HashMap<>();
 	private double mouseX, mouseY, mouseOldX, mouseOldY;
