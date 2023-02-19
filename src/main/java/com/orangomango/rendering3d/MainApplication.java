@@ -22,12 +22,11 @@ import com.orangomango.rendering3d.model.Mesh;
 import com.orangomango.rendering3d.model.Light;
 
 public class MainApplication extends Application{
-	public static final int WIDTH = 320;
-	public static final int HEIGHT = 180;
+	public static final int WIDTH = 600; //320;
+	public static final int HEIGHT = 600; //180;
 	private Map<KeyCode, Boolean> keys = new HashMap<>();
 	private volatile int frames, fps;
 	private static final int FPS = 6;
-	//public static Light LIGHT = new Light(-5, -3, -8);
 	private List<Light> sceneLights = new ArrayList<>();
 	
 	public static boolean SHOW_LINES = false, LIGHT_AVAILABLE = true, FOLLOW_LIGHT = false, LIGHT_ROTATION = false, SHADOWS = true;
@@ -39,6 +38,9 @@ public class MainApplication extends Application{
 	private double mouseX, mouseY, mouseOldX, mouseOldY;
 	private Camera camera;
 	private List<Mesh> objects = new ArrayList<>();
+	
+	private List<Mesh> chessModels = new ArrayList<>();
+	private int chessIndex = 0;
 	
 	@Override
 	public void start(Stage stage){
@@ -81,16 +83,19 @@ public class MainApplication extends Application{
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		pane.getChildren().add(canvas);
 		
-		this.camera = new Camera(-15, 0, 30);
+		//this.camera = new Camera(-15, 0, 30);
 		//this.camera = new Camera(0, -35, 0);
+		this.camera = new Camera(0, 0, -5);
 		this.camera.lookAtCenter();
 		//LIGHT_ROTATION = true;
+		SHOW_LINES = true;
 		SHADOWS = false;
 		
-		sceneLights.add(new Light(0, 0, -35));
+		//sceneLights.add(new Light(0, 0, -35));
+		sceneLights.add(new Light(-5, 0, -5));
 		
-		/*Random random = new Random();
-		for (int i = 0; i < 1; i++){
+		Random random = new Random();
+		/*for (int i = 0; i < 1; i++){
 			for (int j = 0; j < 1; j++){
 				for (int k = 0; k < 1; k++){
 					objects.add(new Mesh(switch(random.nextInt(3)){
@@ -122,7 +127,18 @@ public class MainApplication extends Application{
 			//Mesh model = Mesh.loadFromFile(this.camera, new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05);
 			//model.setRotation(Math.PI/2, 0, 0);
 			//objects.add(model);
-			objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5));
+			//objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5));
+			
+			/*for (String chessObject : new String[]{"Bishop", "King", "Knight", "Pawn", "Queen", "Rook"}){
+				Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null, chessObject);
+				model.setRotation(0, 0, Math.PI);
+				this.chessModels.add(model);
+			}
+			objects.add(this.chessModels.get(0));*/
+			
+			Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null, null);
+			model.setRotation(0, 0, Math.PI);
+			objects.add(model);
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}
@@ -196,6 +212,14 @@ public class MainApplication extends Application{
 			SHADOWS = !SHADOWS;
 			System.out.println("F6");
 			this.keys.put(KeyCode.F6, false);
+		} else if (this.keys.getOrDefault(KeyCode.F7, false)){
+			chessIndex++;
+			if (chessIndex >= this.chessModels.size()){
+				chessIndex = 0;
+			}
+			this.objects.set(0, this.chessModels.get(chessIndex));
+			System.out.println("F7");
+			this.keys.put(KeyCode.F7, false);
 		} else if (this.keys.getOrDefault(KeyCode.R, false)){
 			this.camera.reset();
 			this.keys.put(KeyCode.R, false);

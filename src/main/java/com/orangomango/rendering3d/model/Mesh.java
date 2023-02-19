@@ -29,6 +29,7 @@ public class Mesh{
 	public boolean showLines;
 	
 	public Map<Camera, double[][][]> cache = new HashMap<>();
+	private double[][][][] rotationCache;
 	
 	public Mesh(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, Color[] colors, Point3D[][] ns, Color[][] fcs){
 		this.color = Color.WHITE; //Color.color(Math.random(), Math.random(), Math.random());
@@ -41,6 +42,8 @@ public class Mesh{
 		this.textureVertex = textureCoords;
 		this.textureFaces = vertexFaces;
 		this.normals = ns == null ? new Point3D[faces.length][3] : ns;
+		
+		this.rotationCache = new double[faces.length][3][3][];
 	}
 	
 	public void setRotation(double crx, double cry, double crz){
@@ -52,6 +55,9 @@ public class Mesh{
 			Point3D n1 = this.normals[i][0];
 			Point3D n2 = this.normals[i][1];
 			Point3D n3 = this.normals[i][2];
+			
+			if (n1 == null || n2 == null || n3 == null) continue;
+			
 			double[] rn1 = multiply(getRotateX(this.crx), new double[]{n1.getX(), n1.getY(), n1.getZ()});
 			double[] rn2 = multiply(getRotateX(this.crx), new double[]{n2.getX(), n2.getY(), n2.getZ()});
 			double[] rn3 = multiply(getRotateX(this.crx), new double[]{n3.getX(), n3.getY(), n3.getZ()});
@@ -115,6 +121,8 @@ public class Mesh{
 			double[] p2 = new double[]{points[1].getX(), points[1].getY(), points[1].getZ(), 1};
 			double[] p3 = new double[]{points[2].getX(), points[2].getY(), points[2].getZ(), 1};
 			
+			double[][][] proj = this.cache.getOrDefault(camera, null);
+			
 			// Scale
 			/*double factor = 0.1; //0.1;
 			p1 = multiply(getScale(factor, factor, factor), p1);
@@ -122,15 +130,46 @@ public class Mesh{
 			p3 = multiply(getScale(factor, factor, factor), p3);*/
 			
 			// Rotate
-			/*p1 = multiply(getRotateX(this.crx), p1);
-			p2 = multiply(getRotateX(this.crx), p2);
-			p3 = multiply(getRotateX(this.crx), p3);
-			p1 = multiply(getRotateY(this.cry), p1);
-			p2 = multiply(getRotateY(this.cry), p2);
-			p3 = multiply(getRotateY(this.cry), p3);
-			p1 = multiply(getRotateZ(this.crz), p1);
-			p2 = multiply(getRotateZ(this.crz), p2);
-			p3 = multiply(getRotateZ(this.crz), p3);*/
+			double[][][] rCache = this.rotationCache[i];
+			if (rCache[0][0] == null){
+				rCache[0][0] = multiply(getRotateX(this.crx), p1);
+			}
+			if (rCache[0][1] == null){
+				rCache[0][1] = multiply(getRotateY(this.cry), p1);
+			}
+			if (rCache[0][2] == null){
+				rCache[0][2] = multiply(getRotateZ(this.crz), p1);
+			}
+			
+			if (rCache[1][0] == null){
+				rCache[1][0] = multiply(getRotateX(this.crx), p2);
+			}
+			if (rCache[1][1] == null){
+				rCache[1][1] = multiply(getRotateY(this.cry), p2);
+			}
+			if (rCache[1][2] == null){
+				rCache[1][2] = multiply(getRotateZ(this.crz), p2);
+			}
+			
+			if (rCache[2][0] == null){
+				rCache[2][0] = multiply(getRotateX(this.crx), p3);
+			}
+			if (rCache[2][1] == null){
+				rCache[2][1] = multiply(getRotateY(this.cry), p3);
+			}
+			if (rCache[2][2] == null){
+				rCache[2][2] = multiply(getRotateZ(this.crz), p3);
+			}
+			
+			p1 = rCache[0][0];
+			p2 = rCache[1][0];
+			p3 = rCache[2][0];
+			p1 = rCache[0][1];
+			p2 = rCache[1][1];
+			p3 = rCache[2][1];
+			p1 = rCache[0][2];
+			p2 = rCache[1][2];
+			p3 = rCache[2][2];
 
 			// Translate
 			//p1 = multiply(getTranslation(0, 0, 8), p1);
@@ -140,18 +179,17 @@ public class Mesh{
 			Point3D point1 = new Point3D(p1[0], p1[1], p1[2]);
 			Point3D point2 = new Point3D(p2[0], p2[1], p2[2]);
 			Point3D point3 = new Point3D(p3[0], p3[1], p3[2]);
-			
-			Point3D normal = point2.subtract(point1).crossProduct(point3.subtract(point1));
-			normal.normalize();
-			
-			// --------------- TEST -----------------
+		
+			Point3D normal = this.normals[i][0]; //point1.crossProduct(point2);
+			//normal.normalize();
+		
+			// --------------- TEST -----------------	
 			//this.normals[i][0] = normal;
 			//this.normals[i][1] = normal;
 			//this.normals[i][2] = normal;
 			// --------------------------------------
 			
 			double dot = normal.dotProduct(point1.subtract(camera.getX(), camera.getY(), camera.getZ()));
-			double[][][] proj = this.cache.getOrDefault(camera, null);
 			if (proj == null){
 				proj = new double[this.faces.length][3][];
 				this.cache.put(camera, proj);
@@ -183,7 +221,7 @@ public class Mesh{
 				double pz2 = p2[2];
 				double pz3 = p3[2];
 				
-				double bound = 1.7;
+				double bound = 1;
 				if (px1 > bound || px1 < -bound || py1 > bound || py1 < -bound || pz1 > bound || pz1 < -bound
 				 || px2 > bound || px2 < -bound || py2 > bound || py2 < -bound || pz2 > bound || pz2 < -bound
 				 || px3 > bound || px3 < -bound || py3 > bound || py3 < -bound || pz3 > bound || pz3 < -bound){
@@ -789,19 +827,22 @@ public class Mesh{
 			String name = null;
 			double[] current = null;
 			while ((line = reader.readLine()) != null){
-				if (line.startsWith("newmtl")){
+				if (line.toLowerCase().startsWith("newmtl")){
 					if (name != null){
 						output.put(name, current);
 					}
 					name = line.split(" ")[1];
 					current = new double[3];
-				} else if (line.startsWith("Kd") && current != null){
+				} else if (line.toLowerCase().startsWith("kd") && current != null){
 					current[0] = Double.parseDouble(line.split(" ")[1]);
 					current[1] = Double.parseDouble(line.split(" ")[2]);
 					current[2] = Double.parseDouble(line.split(" ")[3]);
-				} else if (line.startsWith("D") && current != null){
+				} else if (line.toLowerCase().startsWith("d") && current != null){
 					// nothing
 				}
+			}
+			if (name != null){
+				output.put(name, current);
 			}
 			reader.close();
 			return output;
@@ -811,8 +852,8 @@ public class Mesh{
 		}
 	}
 	
-	public static Mesh loadFromFile(File file, double x, double y, double z, double scale){
-		Map<String, double[]> mtllib = loadMaterialLib(new File(file.getAbsolutePath().replaceAll("\\.[^.]+$", "")+".mtl"));
+	public static Mesh loadFromFile(File file, double x, double y, double z, double scale, String mtlName, String singleObject){
+		Map<String, double[]> mtllib = loadMaterialLib(new File(mtlName == null ? file.getAbsolutePath().replaceAll("\\.[^.]+$", "")+".mtl" : mtlName));
 		
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -824,6 +865,7 @@ public class Mesh{
 			List<Point3D[]> normalsList = new ArrayList<>();
 			String line;
 			String currentMaterial = null;
+			String currentObject = null;
 			while ((line = reader.readLine()) != null){
 				if (line.startsWith("v ")){
 					String[] pieces = line.split(" ");
@@ -854,23 +896,36 @@ public class Mesh{
 							narray[i] = Integer.parseInt(lineArray[2])-1;
 						}
 					}
-					faces.add(new int[]{farray[0], farray[1], farray[2]});
 					if (narray != null){
-						normalsList.add(new Point3D[]{normals.get(narray[0]), normals.get(narray[1]), normals.get(narray[2])});
-						if (farray.length == 4){ // Squares
-							normalsList.add(new Point3D[]{normals.get(narray[0]), normals.get(narray[2]), normals.get(narray[3])});
+						for (int i = 1 ; i <= narray.length-2; i++){
+							normalsList.add(new Point3D[]{normals.get(narray[0]), normals.get(narray[i]), normals.get(narray[i+1])});
 						}
 					}
-					if (farray.length == 4){ // Squares
-						faces.add(new int[]{farray[0], farray[2], farray[3]});
+					
+					for (int i = 1; i <= farray.length-2; i++){
+						faces.add(new int[]{farray[0], farray[i], farray[i+1]});
 					}
+					
 					if (mtllib != null){
-						facesColors.add(new Color[]{Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]), 
-							Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]), 
-							Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2])});
+						for (int i = 0; i < farray.length; i++){
+							facesColors.add(new Color[]{Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]), 
+								Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]), 
+								Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2])});
+						}
 					}
-				} else if (line.startsWith("usemtl")){
+				} else if (line.startsWith("usemtl ")){
 					currentMaterial = line.split(" ")[1];
+				} else if (line.startsWith("o ")){
+					String now = currentObject;
+					currentObject = line.split(" ")[1];
+					if (now != null && singleObject != null && now.equals(singleObject)){
+						break;
+					}
+					if (singleObject != null){
+						faces.clear();
+						facesColors.clear();
+						normalsList.clear();
+					}
 				}
 			}
 			reader.close();
