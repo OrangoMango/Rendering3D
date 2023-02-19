@@ -14,9 +14,9 @@ public class MainApplication extends Application{
 	public static final int WIDTH = 600; //320;
 	public static final int HEIGHT = 600; //180;
 
-	private static final Image COAL_IMAGE = new Image(MainApplication.class.getResourceAsStream("/coal.png"));
-	private static final Image DIRT_IMAGE = new Image(MainApplication.class.getResourceAsStream("/dirt.png"));
-	private static final Image STONE_IMAGE = new Image(MainApplication.class.getResourceAsStream("/stone.png"));
+	//private static final Image COAL_IMAGE = new Image(MainApplication.class.getResourceAsStream("/coal.png"));
+	//private static final Image DIRT_IMAGE = new Image(MainApplication.class.getResourceAsStream("/dirt.png"));
+	//private static final Image STONE_IMAGE = new Image(MainApplication.class.getResourceAsStream("/stone.png"));
 	
 	@Override
 	public void start(Stage stage){		
@@ -28,7 +28,7 @@ public class MainApplication extends Application{
 		
 		engine.setCamera(camera);
 		
-		engine.getLights().add(new Light(-5, 0, -5));
+		engine.getLights().add(new Light(-5, -1, -5));
 		
 		//Random random = new Random();
 		/*for (int i = 0; i < 1; i++){
@@ -60,9 +60,9 @@ public class MainApplication extends Application{
 		}*/
 		
 		try {
-			//Mesh model = Mesh.loadFromFile(this.camera, new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05);
+			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05, null, null);
 			//model.setRotation(Math.PI/2, 0, 0);
-			//objects.add(model);
+			//engine.getObjects().add(model);
 			//objects.add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5));
 			
 			Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null, null);
@@ -76,8 +76,6 @@ public class MainApplication extends Application{
 		stage.setScene(engine.getScene());
 		stage.show();
 	}
-	
-	
 	
 	public static void main(String[] args){		
 		System.out.println("F1 -> SHOW_LINES");

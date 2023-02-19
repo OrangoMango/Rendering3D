@@ -29,10 +29,10 @@ public class Mesh{
 	public boolean showLines;
 	
 	public Map<Camera, double[][][]> cache = new HashMap<>();
-	private double[][][][] rotationCache;
+	private double[][][] rotationCache;
 	
 	public Mesh(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, Color[] colors, Point3D[][] ns, Color[][] fcs){
-		this.color = Color.WHITE; //Color.color(Math.random(), Math.random(), Math.random());
+		this.color = Color.RED; //Color.color(Math.random(), Math.random(), Math.random());
 		this.image = image;
 		this.points = points;
 		this.projected = new double[faces.length][3][3];
@@ -43,10 +43,11 @@ public class Mesh{
 		this.textureFaces = vertexFaces;
 		this.normals = ns == null ? new Point3D[faces.length][3] : ns;
 		
-		this.rotationCache = new double[faces.length][3][3][];
+		this.rotationCache = new double[faces.length][3][];
 	}
 	
 	public void setRotation(double crx, double cry, double crz){
+		this.rotationCache = new double[faces.length][3][];
 		this.crx = crx;
 		this.cry = cry;
 		this.crz = crz;
@@ -130,46 +131,26 @@ public class Mesh{
 			p3 = multiply(getScale(factor, factor, factor), p3);*/
 			
 			// Rotate
-			double[][][] rCache = this.rotationCache[i];
-			if (rCache[0][0] == null){
-				rCache[0][0] = multiply(getRotateX(this.crx), p1);
+			double[][] rCache = this.rotationCache[i];
+			if (rCache[0] == null){
+				rCache[0] = multiply(getRotateX(this.crx), p1);
+				rCache[0] = multiply(getRotateY(this.cry), rCache[0]);
+				rCache[0] = multiply(getRotateZ(this.crz), rCache[0]);
 			}
-			if (rCache[0][1] == null){
-				rCache[0][1] = multiply(getRotateY(this.cry), p1);
+			if (rCache[1] == null){
+				rCache[1] = multiply(getRotateX(this.crx), p2);
+				rCache[1] = multiply(getRotateY(this.cry), rCache[1]);
+				rCache[1] = multiply(getRotateZ(this.crz), rCache[1]);
 			}
-			if (rCache[0][2] == null){
-				rCache[0][2] = multiply(getRotateZ(this.crz), p1);
-			}
-			
-			if (rCache[1][0] == null){
-				rCache[1][0] = multiply(getRotateX(this.crx), p2);
-			}
-			if (rCache[1][1] == null){
-				rCache[1][1] = multiply(getRotateY(this.cry), p2);
-			}
-			if (rCache[1][2] == null){
-				rCache[1][2] = multiply(getRotateZ(this.crz), p2);
+			if (rCache[2] == null){
+				rCache[2] = multiply(getRotateX(this.crx), p3);
+				rCache[2] = multiply(getRotateY(this.cry), rCache[2]);
+				rCache[2] = multiply(getRotateZ(this.crz), rCache[2]);
 			}
 			
-			if (rCache[2][0] == null){
-				rCache[2][0] = multiply(getRotateX(this.crx), p3);
-			}
-			if (rCache[2][1] == null){
-				rCache[2][1] = multiply(getRotateY(this.cry), p3);
-			}
-			if (rCache[2][2] == null){
-				rCache[2][2] = multiply(getRotateZ(this.crz), p3);
-			}
-			
-			p1 = rCache[0][0];
-			p2 = rCache[1][0];
-			p3 = rCache[2][0];
-			p1 = rCache[0][1];
-			p2 = rCache[1][1];
-			p3 = rCache[2][1];
-			p1 = rCache[0][2];
-			p2 = rCache[1][2];
-			p3 = rCache[2][2];
+			p1 = rCache[0];
+			p2 = rCache[1];
+			p3 = rCache[2];
 
 			// Translate
 			//p1 = multiply(getTranslation(0, 0, 8), p1);
@@ -907,7 +888,7 @@ public class Mesh{
 					}
 					
 					if (mtllib != null){
-						for (int i = 0; i < farray.length; i++){
+						for (int i = 0; i <= farray.length-3; i++){
 							facesColors.add(new Color[]{Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]), 
 								Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]), 
 								Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2])});

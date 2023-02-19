@@ -106,7 +106,7 @@ public class Engine3D{
 	
 	private void update(GraphicsContext gc){
 		gc.clearRect(0, 0, width, height);
-		gc.setFill(Color.BLACK);
+		gc.setFill(Color.CYAN);
 		gc.fillRect(0, 0, width, height);
 		this.camera.clearDepthBuffer();
 		
@@ -198,7 +198,7 @@ public class Engine3D{
 			this.camera.lookAtCenter();
 		}
 		
-		gc.setFill(Color.WHITE);
+		gc.setFill(Color.BLACK);
 		gc.setFont(new Font("sans-serif", 9));
 		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d (%d)\nLight: %s", this.fps, FPS, sceneLights.get(0).getPosition()), 0.05*width, 0.05*height);
 	}
