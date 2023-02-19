@@ -2,13 +2,13 @@ package com.orangomango.rendering3d.model;
 
 import javafx.geometry.Point3D;
 
-import com.orangomango.rendering3d.MainApplication;
+import com.orangomango.rendering3d.Engine3D;
 
 public class Camera{
 	private double cx, cy, cz, rx, ry;
-	public double[][] depthBuffer = new double[MainApplication.WIDTH][MainApplication.HEIGHT];
+	public double[][] depthBuffer = new double[Engine3D.getInstance().getWidth()][Engine3D.getInstance().getHeight()];
 	
-	public double aspectRatio = (double)MainApplication.HEIGHT/MainApplication.WIDTH;
+	public double aspectRatio = (double)Engine3D.getInstance().getHeight()/Engine3D.getInstance().getWidth();
 	public double fov = Math.toRadians(45);
 	public double zFar = 100;
 	public double zNear = 1;
@@ -30,7 +30,7 @@ public class Camera{
 	}
 	
 	public void clearDepthBuffer(){
-		this.depthBuffer = new double[MainApplication.WIDTH][MainApplication.HEIGHT];
+		this.depthBuffer = new double[Engine3D.getInstance().getWidth()][Engine3D.getInstance().getHeight()];
 	}
 	
 	public void move(double x, double y, double z){
@@ -91,8 +91,8 @@ public class Camera{
 	
 	public double[][] getCompleteMatrix(){
 		if (this.stateChanged){
-			this.savedMatrix = MainApplication.multiply(MainApplication.multiply(MainApplication.getTranslation(-getX(), -getY(), -getZ()), 
-				MainApplication.multiply(MainApplication.getRotateX(getRx()), MainApplication.getRotateY(getRy()))), getProjectionMatrix());
+			this.savedMatrix = Engine3D.multiply(Engine3D.multiply(Engine3D.getTranslation(-getX(), -getY(), -getZ()), 
+				Engine3D.multiply(Engine3D.getRotateX(getRx()), Engine3D.getRotateY(getRy()))), getProjectionMatrix());
 			this.stateChanged = false;
 		}
 		return this.savedMatrix;

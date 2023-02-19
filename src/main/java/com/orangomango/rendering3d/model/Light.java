@@ -3,7 +3,7 @@ package com.orangomango.rendering3d.model;
 import javafx.geometry.Point3D;
 import javafx.scene.paint.Color;
 
-import static com.orangomango.rendering3d.MainApplication.LIGHT_AVAILABLE;
+import static com.orangomango.rendering3d.Engine3D.LIGHT_AVAILABLE;
 
 public class Light{
 	private double x, y, z;

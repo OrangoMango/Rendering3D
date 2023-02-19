@@ -9,7 +9,7 @@ import javafx.geometry.Point3D;
 import java.util.*;
 import java.io.*;
 
-import static com.orangomango.rendering3d.MainApplication.*;
+import static com.orangomango.rendering3d.Engine3D.*;
 
 public class Mesh{
 	private Point3D[] points;
@@ -234,16 +234,16 @@ public class Mesh{
 				
 				px1 += 1;
 				py1 += 1;
-				px1 *= 0.5*WIDTH;
-				py1 *= 0.5*HEIGHT;
+				px1 *= 0.5*getInstance().getWidth();
+				py1 *= 0.5*getInstance().getHeight();
 				px2 += 1;
 				py2 += 1;
-				px2 *= 0.5*WIDTH;
-				py2 *= 0.5*HEIGHT;
+				px2 *= 0.5*getInstance().getWidth();
+				py2 *= 0.5*getInstance().getHeight();
 				px3 += 1;
 				py3 += 1;
-				px3 *= 0.5*WIDTH;
-				py3 *= 0.5*HEIGHT;
+				px3 *= 0.5*getInstance().getWidth();
+				py3 *= 0.5*getInstance().getHeight();
 				
 				setProjectedPoint(i, 0, new double[]{px1, py1, 1/p1[3]});
 				setProjectedPoint(i, 1, new double[]{px2, py2, 1/p2[3]});
