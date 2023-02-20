@@ -4,6 +4,7 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.canvas.*;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.animation.*;
@@ -25,9 +26,10 @@ public class Engine3D{
 	private static final int FPS = 6;
 	private volatile int frames, fps;
 	private Map<KeyCode, Boolean> keys = new HashMap<>();
-	private double mouseX, mouseY, mouseOldX, mouseOldY;
 	private Robot robot;
 	private Stage stage;
+	
+	private static Image POINTER = new Image(Engine3D.class.getResourceAsStream("/pointer.png"));
 	
 	public static boolean SHOW_LINES = false, LIGHT_AVAILABLE = true, FOLLOW_LIGHT = false, LIGHT_ROTATION = false, SHADOWS = false;
 	
@@ -76,26 +78,37 @@ public class Engine3D{
 		canvas.setFocusTraversable(true);
 		canvas.setOnKeyPressed(e -> this.keys.put(e.getCode(), true));
 		canvas.setOnKeyReleased(e -> this.keys.put(e.getCode(), false));
-		/*canvas.setOnMousePressed(e -> {
-			this.mouseOldX = e.getX();
-			this.mouseOldY = e.getY();
-		});*/
-		/*canvas.setOnMouseMoved(e -> {
-			switch (e.getButton()){
-				case PRIMARY:
-					this.camera.setRy(this.camera.getRy()+Math.toRadians(e.getX()-mouseOldX));
-					break;
-				case SECONDARY:
-					this.camera.setRx(this.camera.getRx()+Math.toRadians(mouseOldY-e.getY()));
-					break;
-			}
+		canvas.setOnMousePressed(e -> {
+			double x = e.getX();
+			double y = e.getY();
+			double w = this.camera.depthBuffer[(int)Math.round(x)][(int)Math.round(y)];
+			double[] reverted = revertPoint(new double[]{x, y, w}, this.camera);
 			
-			this.camera.setRx(this.camera.getRx()-Math.toRadians(mouseOldY-e.getY()));
-			this.camera.setRy(this.camera.getRy()-Math.toRadians(e.getX()-mouseOldX));
+			double i = reverted[0];
+			double k = reverted[1];
+			double j = reverted[2];
 			
-			this.mouseOldX = e.getX();
-			this.mouseOldY = e.getY();
-		});*/
+			System.out.format("x=%.2f y=%.2f z=%.2f\n", i, k, j);
+			
+			double size = 1;
+			this.objects.add(new Mesh(MainApplication.COAL_IMAGE, new Point3D[]{
+				new Point3D(i, k, j), new Point3D(i, size+k, j), new Point3D(size+i, size+k, j),
+				new Point3D(size+i, k, j), new Point3D(i, k, size+j), new Point3D(i, size+k, size+j), 
+				new Point3D(size+i, size+k, size+j), new Point3D(size+i, k, size+j)}, new int[][]{
+					{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
+					{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
+					{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
+					{1, 6, 2}, {4, 0, 3}, {4, 3, 7}
+			}, new Point2D[]{
+				new Point2D(0, 1), new Point2D(0, 0), new Point2D(1, 0), new Point2D(1, 1)
+			}, new int[][]{
+				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
+			}, null, null, null));
+			
+		});
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		pane.getChildren().add(canvas);
 		
@@ -131,7 +144,7 @@ public class Engine3D{
 		gc.fillRect(0, 0, width, height);
 		this.camera.clearDepthBuffer();
 		
-		double speed = 0.3;
+		double speed = 0.6;
 		double ry = this.camera.getRy();
 		if (this.keys.getOrDefault(KeyCode.W, false)){
 			this.camera.move(speed*Math.cos(ry+Math.PI/2), 0, speed*Math.sin(ry+Math.PI/2));
@@ -192,8 +205,9 @@ public class Engine3D{
 			for (Light light : sceneLights){
 				Camera lightCamera = light.getCamera();
 				lightCamera.clearDepthBuffer();
+				boolean stateChanged = lightCamera.stateChanged;
 				for (Mesh object : objects){
-					if (lightCamera.stateChanged) object.cache.remove(lightCamera);
+					if (stateChanged) object.cache.remove(lightCamera);
 					object.showLines = false;
 					object.evaluate(lightCamera);
 					object.render(lightCamera, null, null);
@@ -201,15 +215,15 @@ public class Engine3D{
 			}
 		}
 		
+		double sensibility = 0.6;
 		Point2D mouse = this.robot.getMousePosition();
 		Point2D center = new Point2D(this.stage.getX()+this.width/2, this.stage.getY()+this.height/2);
-		this.camera.setRx(this.camera.getRx()-Math.toRadians(center.getY()-mouse.getY()));
-		this.camera.setRy(this.camera.getRy()-Math.toRadians(mouse.getX()-center.getX()));
-		//this.mouseOldX = mouse.getX();
-		//this.mouseOldY = mouse.getY();
+		this.camera.setRx(this.camera.getRx()-Math.toRadians((center.getY()-mouse.getY())*sensibility));
+		this.camera.setRy(this.camera.getRy()-Math.toRadians((mouse.getX()-center.getX())*sensibility));
 
+		boolean stateChanged = this.camera.stateChanged;
 		for (Mesh object : objects){
-			if (this.camera.stateChanged) object.cache.remove(this.camera);
+			if (stateChanged) object.cache.remove(this.camera);
 			object.showLines = SHOW_LINES;
 			object.evaluate(this.camera);
 			object.render(this.camera, sceneLights, gc);
@@ -228,12 +242,15 @@ public class Engine3D{
 			this.camera.lookAtCenter();
 		}
 		
+		double cursorSize = 26;
+		gc.drawImage(POINTER, this.width/2-cursorSize/2, this.height/2-cursorSize/2, cursorSize, cursorSize);
+		
 		gc.setFill(Color.BLACK);
 		gc.setFont(new Font("sans-serif", 9));
 		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d (%d)\nLight: %s", this.fps, FPS, sceneLights.get(0).getPosition()), 0.05*width, 0.05*height);
 	}
 	
-	public static double[] convertPoint(double[] point, Camera cam1, Camera cam2){
+	private static double[] revertPoint(double[] point, Camera cam1){
 		double w = 1/point[2];
 		double x = (point[0]*2/getInstance().getWidth()-1)*(w == 0 ? 1 : w);
 		double y = (point[1]*2/getInstance().getHeight()-1)*(w == 0 ? 1 : w);
@@ -255,6 +272,15 @@ public class Engine3D{
 		x = translation[0];
 		y = translation[1];
 		w = translation[2];
+		
+		return new double[]{x, y, w};
+	}
+	
+	public static double[] convertPoint(double[] point, Camera cam1, Camera cam2){
+		double[] reverted = revertPoint(point, cam1);
+		double x = reverted[0];
+		double y = reverted[1];
+		double w = reverted[2];
 		
 		double[] out = multiply(cam2.getCompleteMatrix(), new double[]{x, y, w, 1});
 		out[0] /= out[3] == 0 ? 1 : out[3];
@@ -347,6 +373,10 @@ public class Engine3D{
 	
 	public static boolean isInScene(int x, int y){
 		return x >= 0 && y >= 0 && x < getInstance().getWidth() && y < getInstance().getHeight();
+	}
+	
+	public static boolean isOutside(double p, double bound){
+		return p > bound || p < -bound;
 	}
 	
 	public List<Mesh> getObjects(){

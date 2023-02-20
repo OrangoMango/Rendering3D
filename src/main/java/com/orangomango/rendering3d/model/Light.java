@@ -10,6 +10,8 @@ public class Light{
 	private double rx, ry;
 	private Camera camera;
 	
+	private static final double AMBIENT_LIGHT = 0.08;
+	
 	public Light(double x, double y, double z){
 		this.x = x;
 		this.y = y;
@@ -62,7 +64,7 @@ public class Light{
 		if (factor < -1) factor = 1;
 		else if (factor > 0) factor = 0;
 		else factor = Math.abs(factor);
-		return factor*intensity;
+		return factor*intensity+AMBIENT_LIGHT;
 	}
 	
 	public static Color getLight(Color color, double factor){

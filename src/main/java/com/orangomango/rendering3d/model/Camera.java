@@ -11,7 +11,7 @@ public class Camera{
 	public double aspectRatio = (double)Engine3D.getInstance().getHeight()/Engine3D.getInstance().getWidth();
 	public double fov = Math.toRadians(45);
 	public double zFar = 100;
-	public double zNear = 1;
+	public double zNear = 0.1;
 	
 	private double[][] savedMatrix = null;
 	public boolean stateChanged = true;

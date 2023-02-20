@@ -14,7 +14,7 @@ public class MainApplication extends Application{
 	private static final int WIDTH = 640; //320;
 	private static final int HEIGHT = 360; //180;
 
-	//private static final Image COAL_IMAGE = new Image(MainApplication.class.getResourceAsStream("/coal.png"));
+	public static final Image COAL_IMAGE = new Image(MainApplication.class.getResourceAsStream("/coal.png"));
 	//private static final Image DIRT_IMAGE = new Image(MainApplication.class.getResourceAsStream("/dirt.png"));
 	//private static final Image STONE_IMAGE = new Image(MainApplication.class.getResourceAsStream("/stone.png"));
 	
@@ -23,7 +23,7 @@ public class MainApplication extends Application{
 		stage.setTitle("3D Graphics");
 		
 		Engine3D engine = new Engine3D(stage, WIDTH, HEIGHT);
-		Camera camera = new Camera(0, 0, -5);
+		Camera camera = new Camera(0, 7.5, -5);
 		camera.lookAtCenter();
 		
 		engine.setCamera(camera);

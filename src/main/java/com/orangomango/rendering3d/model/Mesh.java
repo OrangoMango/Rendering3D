@@ -161,14 +161,15 @@ public class Mesh{
 			Point3D point2 = new Point3D(p2[0], p2[1], p2[2]);
 			Point3D point3 = new Point3D(p3[0], p3[1], p3[2]);
 		
-			Point3D normal = this.normals[i][0]; //point1.crossProduct(point2);
-			//normal.normalize();
-		
-			// --------------- TEST -----------------	
-			//this.normals[i][0] = normal;
-			//this.normals[i][1] = normal;
-			//this.normals[i][2] = normal;
-			// --------------------------------------
+			Point3D normal = this.normals[i][0]; 
+
+			if (normal == null){
+				normal = point2.subtract(point1).crossProduct(point3.subtract(point1));
+				normal.normalize();
+				this.normals[i][0] = normal;
+				this.normals[i][1] = normal;
+				this.normals[i][2] = normal;
+			}
 			
 			double dot = normal.dotProduct(point1.subtract(camera.getX(), camera.getY(), camera.getZ()));
 			if (proj == null){
@@ -203,9 +204,10 @@ public class Mesh{
 				double pz3 = p3[2];
 				
 				double bound = 1;
-				if (px1 > bound || px1 < -bound || py1 > bound || py1 < -bound || pz1 > bound || pz1 < -bound
-				 || px2 > bound || px2 < -bound || py2 > bound || py2 < -bound || pz2 > bound || pz2 < -bound
-				 || px3 > bound || px3 < -bound || py3 > bound || py3 < -bound || pz3 > bound || pz3 < -bound){
+				
+				if ((isOutside(px1, bound) && isOutside(px2, bound) && isOutside(px3, bound))
+				 || (isOutside(py1, bound) && isOutside(py2, bound) && isOutside(py3, bound))
+				 || (isOutside(pz1, bound) && isOutside(pz2, bound) && isOutside(pz3, bound))){
 					setProjectedPoint(i, 0, null);
 					setProjectedPoint(i, 1, null);
 					setProjectedPoint(i, 2, null);
@@ -262,9 +264,9 @@ public class Mesh{
 					gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
 				} else {
 					if (this.colors == null && this.facesColors == null){
-						Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(1/projected[i][0][2]);
-						Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(1/projected[i][1][2]);
-						Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(1/projected[i][2][2]);
+						Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(projected[i][0][2]);
+						Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(projected[i][1][2]);
+						Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(projected[i][2][2]);
 
 						renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
 								t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(),
@@ -723,9 +725,9 @@ public class Mesh{
 					
 					int pix_x = (int)(tex_u/tex_w*(image.getWidth())) % ((int)image.getWidth());
 					int pix_y = (int)(tex_v/tex_w*(image.getHeight())) % ((int)image.getHeight());
-					
 					if (pix_x < 0) pix_x = (int)image.getWidth()-pix_x;
 					if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
+
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
 						if (gc != null){
@@ -807,10 +809,10 @@ public class Mesh{
 					tex_l = (1-t)*tex_sl+t*tex_el;
 					
 					int pix_x = (int)(tex_u/tex_w*(image.getWidth())) % ((int)image.getWidth());
-					int pix_y = (int)(tex_v/tex_w*(image.getHeight())) % ((int)image.getHeight());
-					
+					int pix_y = (int)(tex_v/tex_w*(image.getHeight())) % ((int)image.getHeight());					
 					if (pix_x < 0) pix_x = (int)image.getWidth()-pix_x;
 					if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
+
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
 						if (gc != null){
