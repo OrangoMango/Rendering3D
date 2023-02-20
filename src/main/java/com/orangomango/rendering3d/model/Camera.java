@@ -72,7 +72,7 @@ public class Camera{
 	
 	public void setRx(double rx){
 		if (this.rx != rx) this.stateChanged = true;
-		this.rx = rx;
+		this.rx = Math.max(-Math.PI/2, Math.min(Math.PI/2, rx));
 	}
 	
 	public double getRy(){
@@ -92,7 +92,7 @@ public class Camera{
 	public double[][] getCompleteMatrix(){
 		if (this.stateChanged){
 			this.savedMatrix = Engine3D.multiply(Engine3D.multiply(Engine3D.getTranslation(-getX(), -getY(), -getZ()), 
-				Engine3D.multiply(Engine3D.getRotateX(getRx()), Engine3D.getRotateY(getRy()))), getProjectionMatrix());
+				Engine3D.multiply(Engine3D.getRotateY(getRy()), Engine3D.getRotateX(getRx()))), getProjectionMatrix());
 			this.stateChanged = false;
 		}
 		return this.savedMatrix;

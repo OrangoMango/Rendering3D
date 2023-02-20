@@ -1,5 +1,6 @@
 package com.orangomango.rendering3d;
 
+import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.canvas.*;
@@ -10,6 +11,8 @@ import javafx.util.Duration;
 import javafx.scene.input.KeyCode;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
+import javafx.scene.Cursor;
+import javafx.scene.robot.Robot;
 
 import java.util.*;
 
@@ -23,6 +26,8 @@ public class Engine3D{
 	private volatile int frames, fps;
 	private Map<KeyCode, Boolean> keys = new HashMap<>();
 	private double mouseX, mouseY, mouseOldX, mouseOldY;
+	private Robot robot;
+	private Stage stage;
 	
 	public static boolean SHOW_LINES = false, LIGHT_AVAILABLE = true, FOLLOW_LIGHT = false, LIGHT_ROTATION = false, SHADOWS = false;
 	
@@ -32,7 +37,7 @@ public class Engine3D{
 	
 	private static Engine3D instance = null;
 	
-	public Engine3D(int w, int h){
+	public Engine3D(Stage stage, int w, int h){
 		if (instance == null){
 			instance = this;
 		} else {
@@ -41,6 +46,7 @@ public class Engine3D{
 		
 		this.width = w;
 		this.height = h;
+		this.stage = stage;
 		Thread counter = new Thread(() -> {
 			while (true){
 				try {
@@ -70,11 +76,11 @@ public class Engine3D{
 		canvas.setFocusTraversable(true);
 		canvas.setOnKeyPressed(e -> this.keys.put(e.getCode(), true));
 		canvas.setOnKeyReleased(e -> this.keys.put(e.getCode(), false));
-		canvas.setOnMousePressed(e -> {
+		/*canvas.setOnMousePressed(e -> {
 			this.mouseOldX = e.getX();
 			this.mouseOldY = e.getY();
-		});
-		canvas.setOnMouseDragged(e -> {
+		});*/
+		/*canvas.setOnMouseMoved(e -> {
 			switch (e.getButton()){
 				case PRIMARY:
 					this.camera.setRy(this.camera.getRy()+Math.toRadians(e.getX()-mouseOldX));
@@ -83,15 +89,27 @@ public class Engine3D{
 					this.camera.setRx(this.camera.getRx()+Math.toRadians(mouseOldY-e.getY()));
 					break;
 			}
+			
+			this.camera.setRx(this.camera.getRx()-Math.toRadians(mouseOldY-e.getY()));
+			this.camera.setRy(this.camera.getRy()-Math.toRadians(e.getX()-mouseOldX));
+			
 			this.mouseOldX = e.getX();
 			this.mouseOldY = e.getY();
-		});
+		});*/
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		pane.getChildren().add(canvas);
+		
+		this.robot = new Robot();
 		
 		Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
 		loop.setCycleCount(Animation.INDEFINITE);
 		loop.play();
+		
+		Timeline mouse = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS*2), e -> {
+			if (this.stage.isFocused()) this.robot.mouseMove(this.stage.getX()+this.width/2, this.stage.getY()+this.height/2);
+		}));
+		mouse.setCycleCount(Animation.INDEFINITE);
+		mouse.play();
 		
 		AnimationTimer timer = new AnimationTimer(){
 			@Override
@@ -101,7 +119,10 @@ public class Engine3D{
 		};
 		timer.start();
 		
-		return new Scene(pane, width, height);
+		Scene scene = new Scene(pane, width, height);
+		scene.setCursor(Cursor.NONE);
+		
+		return scene;
 	}
 	
 	private void update(GraphicsContext gc){
@@ -159,6 +180,8 @@ public class Engine3D{
 		} else if (this.keys.getOrDefault(KeyCode.R, false)){
 			this.camera.reset();
 			this.keys.put(KeyCode.R, false);
+		} else if (this.keys.getOrDefault(KeyCode.ESCAPE, false)){
+			System.exit(0);
 		} else if (this.keys.getOrDefault(KeyCode.L, false)){
 			this.camera.lookAtCenter();
 			System.out.println("L");
@@ -177,6 +200,13 @@ public class Engine3D{
 				}
 			}
 		}
+		
+		Point2D mouse = this.robot.getMousePosition();
+		Point2D center = new Point2D(this.stage.getX()+this.width/2, this.stage.getY()+this.height/2);
+		this.camera.setRx(this.camera.getRx()-Math.toRadians(center.getY()-mouse.getY()));
+		this.camera.setRy(this.camera.getRy()-Math.toRadians(mouse.getX()-center.getX()));
+		//this.mouseOldX = mouse.getX();
+		//this.mouseOldY = mouse.getY();
 
 		for (Mesh object : objects){
 			if (this.camera.stateChanged) object.cache.remove(this.camera);

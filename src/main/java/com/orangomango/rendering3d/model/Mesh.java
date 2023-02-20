@@ -618,9 +618,15 @@ public class Mesh{
 	private void renderTriangle(int x1, int y1, int x2, int y2, int x3, int y3, double u1, double v1, double u2, double v2, double u3, double v3, 
 								double w1, double w2, double w3, int index, GraphicsContext gc, Camera camera, List<Light> lights, Image image){
 		
-		double l1 = lights.get(0).getLightIntensity(this.normals[index][0], this.trianglePoints[index][0]);
-		double l2 = lights.get(0).getLightIntensity(this.normals[index][1], this.trianglePoints[index][1]);
-		double l3 = lights.get(0).getLightIntensity(this.normals[index][2], this.trianglePoints[index][2]);
+		double l1 = 0, l2 = 0, l3 = 0;
+		for (Light light : lights){
+			l1 += light.getLightIntensity(this.normals[index][0], this.trianglePoints[index][0]);
+			l2 += light.getLightIntensity(this.normals[index][1], this.trianglePoints[index][1]);
+			l3 += light.getLightIntensity(this.normals[index][2], this.trianglePoints[index][2]);
+		}
+		l1 = Math.min(1, l1);
+		l2 = Math.min(1, l2);
+		l3 = Math.min(1, l3);
 
 		if (y2 < y1){
 			y1 = swap(y2, y2 = y1);
@@ -722,7 +728,24 @@ public class Mesh{
 					if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
-						if (gc != null) gc.getPixelWriter().setColor(j, i, Light.getLight(image.getPixelReader().getColor(pix_x, pix_y), Math.max(tex_l, 0)));
+						if (gc != null){
+							Color color = image.getPixelReader().getColor(pix_x, pix_y);
+							if (SHADOWS){
+								for (Light light : lights){
+									Camera cam2 = light.getCamera();
+									double[] shadow = convertPoint(new double[]{j, i, tex_w}, camera, cam2);
+									int index_x = (int)Math.round(shadow[0]);
+									int index_y = (int)Math.round(shadow[1]);
+									if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
+										double depth = cam2.depthBuffer[index_x][index_y];
+										if (Math.abs(shadow[2]-depth) > 0.0005/camera.aspectRatio){
+											color = color.darker();
+										}
+									}
+								}
+							}
+							gc.getPixelWriter().setColor(j, i, Light.getLight(color, Math.max(tex_l, 0)));
+						}
 					}
 					
 					t += tstep;
@@ -790,7 +813,24 @@ public class Mesh{
 					if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
-						if (gc != null) gc.getPixelWriter().setColor(j, i, Light.getLight(image.getPixelReader().getColor(pix_x, pix_y), Math.max(tex_l, 0)));
+						if (gc != null){
+							Color color = image.getPixelReader().getColor(pix_x, pix_y);
+							if (SHADOWS){
+								for (Light light : lights){
+									Camera cam2 = light.getCamera();
+									double[] shadow = convertPoint(new double[]{j, i, tex_w}, camera, cam2);
+									int index_x = (int)Math.round(shadow[0]);
+									int index_y = (int)Math.round(shadow[1]);
+									if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
+										double depth = cam2.depthBuffer[index_x][index_y];
+										if (Math.abs(shadow[2]-depth) > 0.0005/camera.aspectRatio){
+											color = color.darker();
+										}
+									}
+								}
+							}
+							gc.getPixelWriter().setColor(j, i, Light.getLight(color, Math.max(tex_l, 0)));
+						}
 					}
 					
 					t += tstep;
@@ -888,7 +928,7 @@ public class Mesh{
 					}
 					
 					if (mtllib != null){
-						for (int i = 0; i <= farray.length-3; i++){
+						for (int i = 0; i < farray.length-2; i++){
 							facesColors.add(new Color[]{Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]), 
 								Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]), 
 								Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2])});

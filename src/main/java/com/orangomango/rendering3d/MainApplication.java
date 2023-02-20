@@ -11,8 +11,8 @@ import com.orangomango.rendering3d.model.Light;
 import com.orangomango.rendering3d.model.Mesh;
 
 public class MainApplication extends Application{
-	public static final int WIDTH = 600; //320;
-	public static final int HEIGHT = 600; //180;
+	private static final int WIDTH = 640; //320;
+	private static final int HEIGHT = 360; //180;
 
 	//private static final Image COAL_IMAGE = new Image(MainApplication.class.getResourceAsStream("/coal.png"));
 	//private static final Image DIRT_IMAGE = new Image(MainApplication.class.getResourceAsStream("/dirt.png"));
@@ -22,7 +22,7 @@ public class MainApplication extends Application{
 	public void start(Stage stage){		
 		stage.setTitle("3D Graphics");
 		
-		Engine3D engine = new Engine3D(WIDTH, HEIGHT);
+		Engine3D engine = new Engine3D(stage, WIDTH, HEIGHT);
 		Camera camera = new Camera(0, 0, -5);
 		camera.lookAtCenter();
 		
