@@ -11,8 +11,8 @@ import com.orangomango.rendering3d.model.Light;
 import com.orangomango.rendering3d.model.Mesh;
 
 public class MainApplication extends Application{
-	private static final int WIDTH = 640; //320;
-	private static final int HEIGHT = 360; //180;
+	private static final int WIDTH = 320;
+	private static final int HEIGHT = 180;
 
 	public static final Image COAL_IMAGE = new Image(MainApplication.class.getResourceAsStream("/coal.png"));
 	//private static final Image DIRT_IMAGE = new Image(MainApplication.class.getResourceAsStream("/dirt.png"));

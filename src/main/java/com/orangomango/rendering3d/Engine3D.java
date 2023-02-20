@@ -31,7 +31,13 @@ public class Engine3D{
 	
 	private static Image POINTER = new Image(Engine3D.class.getResourceAsStream("/pointer.png"));
 	
-	public static boolean SHOW_LINES = false, LIGHT_AVAILABLE = true, FOLLOW_LIGHT = false, LIGHT_ROTATION = false, SHADOWS = false;
+	public static boolean SHOW_LINES = false;
+	public static boolean LIGHT_AVAILABLE = true;
+	public static boolean FOLLOW_LIGHT = false;
+	public static boolean LIGHT_ROTATION = false;
+	public static boolean SHADOWS = false;
+	public static boolean SHOW_POINTER = true;
+	public static boolean DEBUG = true;
 	
 	private List<Mesh> objects = new ArrayList<>();
 	private List<Light> sceneLights = new ArrayList<>();
@@ -78,7 +84,7 @@ public class Engine3D{
 		canvas.setFocusTraversable(true);
 		canvas.setOnKeyPressed(e -> this.keys.put(e.getCode(), true));
 		canvas.setOnKeyReleased(e -> this.keys.put(e.getCode(), false));
-		canvas.setOnMousePressed(e -> {
+		/*canvas.setOnMousePressed(e -> {
 			double x = e.getX();
 			double y = e.getY();
 			double w = this.camera.depthBuffer[(int)Math.round(x)][(int)Math.round(y)];
@@ -108,11 +114,12 @@ public class Engine3D{
 				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
 			}, null, null, null));
 			
-		});
+		});*/
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		pane.getChildren().add(canvas);
 		
 		this.robot = new Robot();
+		Mesh.SHADOW_FACTOR /= this.width/640.0;
 		
 		Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
 		loop.setCycleCount(Animation.INDEFINITE);
@@ -144,61 +151,55 @@ public class Engine3D{
 		gc.fillRect(0, 0, width, height);
 		this.camera.clearDepthBuffer();
 		
-		double speed = 0.6;
+		double speed = 0.4;
 		double ry = this.camera.getRy();
 		if (this.keys.getOrDefault(KeyCode.W, false)){
 			this.camera.move(speed*Math.cos(ry+Math.PI/2), 0, speed*Math.sin(ry+Math.PI/2));
-			this.keys.put(KeyCode.W, false);
 		} else if (this.keys.getOrDefault(KeyCode.A, false)){
 			this.camera.move(speed*Math.cos(ry+Math.PI), 0, speed*Math.sin(ry+Math.PI));
-			this.keys.put(KeyCode.A, false);
 		} else if (this.keys.getOrDefault(KeyCode.S, false)){
 			this.camera.move(-speed*Math.cos(ry+Math.PI/2), 0, -speed*Math.sin(ry+Math.PI/2));
-			this.keys.put(KeyCode.S, false);
 		} else if (this.keys.getOrDefault(KeyCode.D, false)){
 			this.camera.move(-speed*Math.cos(ry+Math.PI), 0, -speed*Math.sin(ry+Math.PI));
-			this.keys.put(KeyCode.D, false);
 		} else if (this.keys.getOrDefault(KeyCode.SPACE, false)){
 			this.camera.move(0, -speed, 0);
-			this.keys.put(KeyCode.SPACE, false);
-		} else if (this.keys.getOrDefault(KeyCode.Z, false)){
+		} else if (this.keys.getOrDefault(KeyCode.SHIFT, false)){
 			this.camera.move(0, speed, 0);
-			this.keys.put(KeyCode.Z, false);
-		} else if (this.keys.getOrDefault(KeyCode.F1, false)){
-			SHOW_LINES = !SHOW_LINES;
-			System.out.println("F1");
-			this.keys.put(KeyCode.F1, false);
-		} else if (this.keys.getOrDefault(KeyCode.F2, false)){
-			FOLLOW_LIGHT = !FOLLOW_LIGHT;
-			System.out.println("F2");
-			this.keys.put(KeyCode.F2, false);
-		} else if (this.keys.getOrDefault(KeyCode.F3, false)){
-			LIGHT_AVAILABLE = !LIGHT_AVAILABLE;
-			System.out.println("F3");
-			this.keys.put(KeyCode.F3, false);
-		} else if (this.keys.getOrDefault(KeyCode.F4, false)){
-			LIGHT_ROTATION = !LIGHT_ROTATION;
-			System.out.println("F4");
-			this.keys.put(KeyCode.F4, false);
-		} else if (this.keys.getOrDefault(KeyCode.F5, false)){
-			LIGHT_ROTATION = false;
-			sceneLights.get(0).setPos(this.camera.getX(), this.camera.getY(), this.camera.getZ());
-			sceneLights.get(0).setRy(this.camera.getRy());
-			System.out.println("F5");
-			this.keys.put(KeyCode.F5, false);
-		} else if (this.keys.getOrDefault(KeyCode.F6, false)){
-			SHADOWS = !SHADOWS;
-			System.out.println("F6");
-			this.keys.put(KeyCode.F6, false);
 		} else if (this.keys.getOrDefault(KeyCode.R, false)){
 			this.camera.reset();
 			this.keys.put(KeyCode.R, false);
 		} else if (this.keys.getOrDefault(KeyCode.ESCAPE, false)){
 			System.exit(0);
-		} else if (this.keys.getOrDefault(KeyCode.L, false)){
-			this.camera.lookAtCenter();
-			System.out.println("L");
-			this.keys.put(KeyCode.L, false);
+		}
+		
+		if (DEBUG){
+			if (this.keys.getOrDefault(KeyCode.F1, false)){
+				SHOW_LINES = !SHOW_LINES;
+				System.out.println("F1");
+				this.keys.put(KeyCode.F1, false);
+			} else if (this.keys.getOrDefault(KeyCode.F2, false)){
+				FOLLOW_LIGHT = !FOLLOW_LIGHT;
+				System.out.println("F2");
+				this.keys.put(KeyCode.F2, false);
+			} else if (this.keys.getOrDefault(KeyCode.F3, false)){
+				LIGHT_AVAILABLE = !LIGHT_AVAILABLE;
+				System.out.println("F3");
+				this.keys.put(KeyCode.F3, false);
+			} else if (this.keys.getOrDefault(KeyCode.F4, false)){
+				LIGHT_ROTATION = !LIGHT_ROTATION;
+				System.out.println("F4");
+				this.keys.put(KeyCode.F4, false);
+			} else if (this.keys.getOrDefault(KeyCode.F5, false)){
+				LIGHT_ROTATION = false;
+				sceneLights.get(0).setPos(this.camera.getX(), this.camera.getY(), this.camera.getZ());
+				sceneLights.get(0).setRy(this.camera.getRy());
+				System.out.println("F5");
+				this.keys.put(KeyCode.F5, false);
+			} else if (this.keys.getOrDefault(KeyCode.F6, false)){
+				SHADOWS = !SHADOWS;
+				System.out.println("F6");
+				this.keys.put(KeyCode.F6, false);
+			}
 		}
 
 		if (SHADOWS){
@@ -214,7 +215,7 @@ public class Engine3D{
 				}
 			}
 		}
-		
+
 		double sensibility = 0.6;
 		Point2D mouse = this.robot.getMousePosition();
 		Point2D center = new Point2D(this.stage.getX()+this.width/2, this.stage.getY()+this.height/2);
@@ -242,11 +243,13 @@ public class Engine3D{
 			this.camera.lookAtCenter();
 		}
 		
-		double cursorSize = 26;
-		gc.drawImage(POINTER, this.width/2-cursorSize/2, this.height/2-cursorSize/2, cursorSize, cursorSize);
+		if (SHOW_POINTER){
+			double cursorSize = 26*this.camera.aspectRatio;
+			gc.drawImage(POINTER, this.width/2-cursorSize/2, this.height/2-cursorSize/2, cursorSize, cursorSize);
+		}
 		
 		gc.setFill(Color.BLACK);
-		gc.setFont(new Font("sans-serif", 9));
+		gc.setFont(new Font("sans-serif", 7));
 		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d (%d)\nLight: %s", this.fps, FPS, sceneLights.get(0).getPosition()), 0.05*width, 0.05*height);
 	}
 	
@@ -258,12 +261,12 @@ public class Engine3D{
 		x *= Math.tan(cam1.fov/2)/cam1.aspectRatio;
 		y *= Math.tan(cam1.fov/2);
 		
-		double[] rotation = multiply(getRotateY(-cam1.getRy()), new double[]{x, y, w, 1});
+		double[] rotation = multiply(getRotateX(-cam1.getRx()), new double[]{x, y, w, 1});
 		x = rotation[0];
 		y = rotation[1];
 		w = rotation[2];
 		
-		rotation = multiply(getRotateX(-cam1.getRx()), new double[]{x, y, w, 1});
+		rotation = multiply(getRotateY(-cam1.getRy()), new double[]{x, y, w, 1});
 		x = rotation[0];
 		y = rotation[1];
 		w = rotation[2];
