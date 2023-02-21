@@ -729,8 +729,8 @@ public class Mesh{
 					tex_w = (1-t)*tex_sw+t*tex_ew;
 					tex_l = (1-t)*tex_sl+t*tex_el;
 					
-					int pix_x = (int)Math.round(Math.round(tex_u/tex_w*100)/100*(image.getWidth()-1));
-					int pix_y = (int)Math.round(Math.round(tex_v/tex_w*100)/100*(image.getHeight()-1));
+					int pix_x = (int)Math.round(tex_u/tex_w*(image.getWidth()-1));
+					int pix_y = (int)Math.round(tex_v/tex_w*(image.getHeight()-1));
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
@@ -812,8 +812,8 @@ public class Mesh{
 					tex_w = (1-t)*tex_sw+t*tex_ew;
 					tex_l = (1-t)*tex_sl+t*tex_el;
 					
-					int pix_x = (int)Math.round(Math.round(tex_u/tex_w*100)/100*(image.getWidth()-1));
-					int pix_y = (int)Math.round(Math.round(tex_v/tex_w*100)/100*(image.getHeight()-1));
+					int pix_x = (int)Math.round(tex_u/tex_w*(image.getWidth()-1));
+					int pix_y = (int)Math.round(tex_v/tex_w*(image.getHeight()-1));
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
@@ -915,7 +915,7 @@ public class Mesh{
 					}
 					normals.add(new Point3D(narray[0], narray[1], narray[2]));
 				} else if (line.startsWith("vt ")){
-					vertexCoords.add(new Point2D(Double.parseDouble(line.split(" ")[1]), Double.parseDouble(line.split(" ")[2])));
+					vertexCoords.add(new Point2D(Double.parseDouble(line.split(" ")[1]), 1-Double.parseDouble(line.split(" ")[2])));
 				} else if (line.startsWith("f ")){
 					String[] pieces = line.split(" ");
 					int[] farray = new int[pieces.length-1];
@@ -924,11 +924,11 @@ public class Mesh{
 					for (int i = 0; i < farray.length; i++){
 						String[] lineArray = line.split(" ")[i+1].split("/");
 						farray[i] = Integer.parseInt(lineArray[0])-1;
-						if (lineArray.length >= 2 && !lineArray[1].equals("")){
-							if (tarray == null) tarray = new int[pieces.length-1];
-							tarray[i] = Integer.parseInt(lineArray[1])-1;
-						}
 						if (lineArray.length == 3){
+							if (!lineArray[1].equals("")){
+								if (tarray == null) tarray = new int[pieces.length-1];
+								tarray[i] = Integer.parseInt(lineArray[1])-1;
+							}
 							if (narray == null) narray = new int[pieces.length-1];
 							narray[i] = Integer.parseInt(lineArray[2])-1;
 						}
