@@ -265,19 +265,23 @@ public class Mesh{
 					gc.strokeLine(p2.getX(), p2.getY(), p3.getX(), p3.getY());
 					gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
 				} else {
-					if (this.colors == null && this.facesColors == null){
-						Point2D t1 = this.textureVertex[this.textureFaces[i][0]].multiply(projected[i][0][2]);
-						Point2D t2 = this.textureVertex[this.textureFaces[i][1]].multiply(projected[i][1][2]);
-						Point2D t3 = this.textureVertex[this.textureFaces[i][2]].multiply(projected[i][2][2]);
+					Color c1 = this.facesColors != null ? this.facesColors[i][0] : this.vertexColors[i][0];
+					Color c2 = this.facesColors != null ? this.facesColors[i][1] : this.vertexColors[i][1];
+					Color c3 = this.facesColors != null ? this.facesColors[i][2] : this.vertexColors[i][2];
+					
+					Point2D t1 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][0]];
+					Point2D t2 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][1]];
+					Point2D t3 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][2]];
 
+					if (t1 != null && t2 != null && t3 != null){
+						t1 = t1.multiply(projected[i][0][2]);
+						t2 = t2.multiply(projected[i][1][2]);
+						t3 = t3.multiply(projected[i][2][2]);
+						
 						renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
 								t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(),
 								projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera, lights, this.image);
 					} else {
-						Color c1 = this.facesColors != null ? this.facesColors[i][0] : this.vertexColors[i][0];
-						Color c2 = this.facesColors != null ? this.facesColors[i][1] : this.vertexColors[i][1];
-						Color c3 = this.facesColors != null ? this.facesColors[i][2] : this.vertexColors[i][2];
-
 						renderColoredTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
 								c1, c2, c3, projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera, lights);
 					}
@@ -725,10 +729,8 @@ public class Mesh{
 					tex_w = (1-t)*tex_sw+t*tex_ew;
 					tex_l = (1-t)*tex_sl+t*tex_el;
 					
-					int pix_x = (int)(tex_u/tex_w*(image.getWidth())) % ((int)image.getWidth());
-					int pix_y = (int)(tex_v/tex_w*(image.getHeight())) % ((int)image.getHeight());
-					if (pix_x < 0) pix_x = (int)image.getWidth()-pix_x;
-					if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
+					int pix_x = (int)Math.round(Math.round(tex_u/tex_w*100)/100*(image.getWidth()-1));
+					int pix_y = (int)Math.round(Math.round(tex_v/tex_w*100)/100*(image.getHeight()-1));
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
@@ -810,10 +812,8 @@ public class Mesh{
 					tex_w = (1-t)*tex_sw+t*tex_ew;
 					tex_l = (1-t)*tex_sl+t*tex_el;
 					
-					int pix_x = (int)(tex_u/tex_w*(image.getWidth())) % ((int)image.getWidth());
-					int pix_y = (int)(tex_v/tex_w*(image.getHeight())) % ((int)image.getHeight());					
-					if (pix_x < 0) pix_x = (int)image.getWidth()-pix_x;
-					if (pix_y < 0) pix_y = (int)image.getHeight()-pix_y;
+					int pix_x = (int)Math.round(Math.round(tex_u/tex_w*100)/100*(image.getWidth()-1));
+					int pix_y = (int)Math.round(Math.round(tex_v/tex_w*100)/100*(image.getHeight()-1));
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
@@ -877,22 +877,27 @@ public class Mesh{
 		}
 	}
 	
-	public static Mesh loadFromFile(File file, double x, double y, double z, double scale, String mtlName, String singleObject){
-		Map<String, double[]> mtllib = loadMaterialLib(new File(mtlName == null ? file.getAbsolutePath().replaceAll("\\.[^.]+$", "")+".mtl" : mtlName));
+	public static Mesh loadFromFile(File file, double x, double y, double z, double scale, String singleObject){
+		Map<String, double[]> mtllib = null;
+		Image image = new Image(Mesh.class.getResourceAsStream("/truck_red.jpg"));
 		
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			List<Point3D> points = new ArrayList<>();
 			List<Point3D> normals = new ArrayList<>();
+			List<Point2D> vertexCoords = new ArrayList<>(); // Texture vertices
 			Map<Integer, Color> colors = new HashMap<>();
 			List<Color[]> facesColors = new ArrayList<>();
 			List<int[]> faces = new ArrayList<>();
+			List<int[]> textureFaces = new ArrayList<>();
 			List<Point3D[]> normalsList = new ArrayList<>();
 			String line;
 			String currentMaterial = null;
 			String currentObject = null;
 			while ((line = reader.readLine()) != null){
-				if (line.startsWith("v ")){
+				if (line.startsWith("mtllib ")){
+					mtllib = loadMaterialLib(new File(file.getParent(), line.split(" ")[1]));
+				} if (line.startsWith("v ")){
 					String[] pieces = line.split(" ");
 					double[] parray = new double[pieces.length-1];
 					for (int i = 0; i < parray.length; i++){
@@ -909,13 +914,20 @@ public class Mesh{
 						narray[i] = Double.parseDouble(line.split(" ")[i+1]);
 					}
 					normals.add(new Point3D(narray[0], narray[1], narray[2]));
+				} else if (line.startsWith("vt ")){
+					vertexCoords.add(new Point2D(Double.parseDouble(line.split(" ")[1]), Double.parseDouble(line.split(" ")[2])));
 				} else if (line.startsWith("f ")){
 					String[] pieces = line.split(" ");
 					int[] farray = new int[pieces.length-1];
 					int[] narray = null;
+					int[] tarray = null;
 					for (int i = 0; i < farray.length; i++){
 						String[] lineArray = line.split(" ")[i+1].split("/");
 						farray[i] = Integer.parseInt(lineArray[0])-1;
+						if (lineArray.length >= 2 && !lineArray[1].equals("")){
+							if (tarray == null) tarray = new int[pieces.length-1];
+							tarray[i] = Integer.parseInt(lineArray[1])-1;
+						}
 						if (lineArray.length == 3){
 							if (narray == null) narray = new int[pieces.length-1];
 							narray[i] = Integer.parseInt(lineArray[2])-1;
@@ -929,6 +941,7 @@ public class Mesh{
 					
 					for (int i = 1; i <= farray.length-2; i++){
 						faces.add(new int[]{farray[0], farray[i], farray[i+1]});
+						textureFaces.add(tarray == null ? null : new int[]{tarray[0], tarray[i], tarray[i+1]});
 					}
 					
 					if (mtllib != null){
@@ -964,9 +977,6 @@ public class Mesh{
 					cs[i] = colors.get(i);
 				}
 			}
-			for (int i = 0; i < fcs.length; i++){
-				fcs[i] = facesColors.get(i);
-			}
 			
 			int[][] fs = new int[faces.size()][3];
 			Point3D[][] ns = new Point3D[normalsList.size()][3];
@@ -976,8 +986,22 @@ public class Mesh{
 			for (int i = 0; i < ns.length; i++){
 				ns[i] = normalsList.get(i);
 			}
+			
+			for (int i = 0; i < fcs.length; i++){
+				fcs[i] = facesColors.get(i);
+			}
+			
+			Point2D[] vc = new Point2D[vertexCoords.size()];
+			int[][] vf = new int[textureFaces.size()][3];
+			
+			for (int i = 0; i < vc.length; i++){
+				vc[i] = vertexCoords.get(i);
+			}
+			for (int i = 0; i < vf.length; i++){
+				vf[i] = textureFaces.get(i);
+			}
 
-			return new Mesh(null, ps, fs, null, null, cs.length == 0 ? null : cs, ns.length == 0 ? null : ns, fcs.length == 0 ? null : fcs);
+			return new Mesh(image, ps, fs, vc.length == 0 ? null : vc, vf.length == 0 ? null : vf, cs.length == 0 ? null : cs, ns.length == 0 ? null : ns, fcs.length == 0 ? null : fcs);
 			
 		} catch (IOException ex){
 			ex.printStackTrace();

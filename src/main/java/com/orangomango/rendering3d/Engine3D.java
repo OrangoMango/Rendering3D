@@ -97,7 +97,7 @@ public class Engine3D{
 			System.out.format("x=%.2f y=%.2f z=%.2f\n", i, k, j);
 			
 			double size = 1;
-			this.objects.add(new Mesh(MainApplication.COAL_IMAGE, new Point3D[]{
+			this.objects.set(0, new Mesh(MainApplication.COAL_IMAGE, new Point3D[]{
 				new Point3D(i, k, j), new Point3D(i, size+k, j), new Point3D(size+i, size+k, j),
 				new Point3D(size+i, k, j), new Point3D(i, k, size+j), new Point3D(i, size+k, size+j), 
 				new Point3D(size+i, size+k, size+j), new Point3D(size+i, k, size+j)}, new int[][]{
@@ -192,6 +192,7 @@ public class Engine3D{
 			} else if (this.keys.getOrDefault(KeyCode.F5, false)){
 				LIGHT_ROTATION = false;
 				sceneLights.get(0).setPos(this.camera.getX(), this.camera.getY(), this.camera.getZ());
+				sceneLights.get(0).setRx(this.camera.getRx());
 				sceneLights.get(0).setRy(this.camera.getRy());
 				System.out.println("F5");
 				this.keys.put(KeyCode.F5, false);

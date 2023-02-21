@@ -28,7 +28,7 @@ public class Light{
 	}
 	
 	public void setRx(double rx){
-		this.rx = rx;
+		this.rx = Math.max(-Math.PI/2, Math.min(Math.PI/2, rx));
 		this.camera.setRx(this.rx);
 	}
 	
@@ -53,7 +53,7 @@ public class Light{
 	}
 	
 	public void lookAtCenter(){
-		//setRx(Math.atan(getPosition().getY()/getPosition().getZ()));
+		setRx(Math.atan(getPosition().getY()/getPosition().getZ()));
 		setRy(Math.atan2(getPosition().getZ(), getPosition().getX())+Math.PI/2);
 		this.camera.lookAtCenter();
 	}

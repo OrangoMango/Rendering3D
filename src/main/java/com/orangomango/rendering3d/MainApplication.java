@@ -3,20 +3,23 @@ package com.orangomango.rendering3d;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.image.Image;
+import javafx.geometry.Point2D;
+import javafx.geometry.Point3D;
 
 import java.io.File;
+import java.util.Random;
 
 import com.orangomango.rendering3d.model.Camera;
 import com.orangomango.rendering3d.model.Light;
 import com.orangomango.rendering3d.model.Mesh;
 
 public class MainApplication extends Application{
-	private static final int WIDTH = 320;
-	private static final int HEIGHT = 180;
+	private static final int WIDTH = 640; //320;
+	private static final int HEIGHT = 360; //180;
 
 	public static final Image COAL_IMAGE = new Image(MainApplication.class.getResourceAsStream("/coal.png"));
-	//private static final Image DIRT_IMAGE = new Image(MainApplication.class.getResourceAsStream("/dirt.png"));
-	//private static final Image STONE_IMAGE = new Image(MainApplication.class.getResourceAsStream("/stone.png"));
+	private static final Image DIRT_IMAGE = new Image(MainApplication.class.getResourceAsStream("/dirt.png"));
+	private static final Image STONE_IMAGE = new Image(MainApplication.class.getResourceAsStream("/stone.png"));
 	
 	@Override
 	public void start(Stage stage){		
@@ -31,11 +34,11 @@ public class MainApplication extends Application{
 		//engine.getLights().add(new Light(-5, -1, -5));
 		engine.getLights().add(new Light(-15, 0, 30));
 		
-		//Random random = new Random();
-		/*for (int i = 0; i < 1; i++){
+		/*Random random = new Random();
+		for (int i = 0; i < 1; i++){
 			for (int j = 0; j < 1; j++){
 				for (int k = 0; k < 1; k++){
-					objects.add(new Mesh(switch(random.nextInt(3)){
+					engine.getObjects().add(new Mesh(switch(random.nextInt(3)){
 						case 0 -> COAL_IMAGE;
 						case 1 -> DIRT_IMAGE;
 						case 2 -> STONE_IMAGE;
@@ -61,12 +64,16 @@ public class MainApplication extends Application{
 		}*/
 		
 		try {
-			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05, null, null);
+			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05, null);
 			//model.setRotation(Math.PI/2, 0, 0);
 			//engine.getObjects().add(model);
-			engine.getObjects().add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5, null, null));
+			//engine.getObjects().add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5, null));
 			
-			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null, null);
+			Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/truck.obj").toURI()), 0, 0, 0, 0.05, null);
+			model.setRotation(Math.PI, 0, 0);
+			engine.getObjects().add(model);
+			
+			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null);
 			//model.setRotation(0, 0, Math.PI);
 			//engine.getObjects().add(model);
 		} catch (Exception ex){
