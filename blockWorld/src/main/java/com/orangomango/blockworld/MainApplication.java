@@ -27,7 +27,7 @@ public class MainApplication extends Application{
 		stage.setTitle("BlockWorld");
 		
 		Engine3D engine = new Engine3D(stage, WIDTH, HEIGHT);
-		Camera camera = new Camera(0, 0, 0);
+		Camera camera = new Camera(0, 0, -3);
 		camera.lookAtCenter();
 		
 		engine.setCamera(camera);
@@ -35,7 +35,7 @@ public class MainApplication extends Application{
 		
 		Random random = new Random();
 		for (int i = 0; i < 2; i++){
-			for (int j = 0; j < 2; j++){
+			for (int j = 0; j < 1; j++){
 				for (int k = 0; k < 1; k++){
 					engine.getObjects().add(new Mesh(switch(random.nextInt(3)){
 						case 0 -> COAL_IMAGE;
@@ -61,6 +61,9 @@ public class MainApplication extends Application{
 				}
 			}
 		}
+		
+		engine.getObjects().get(0).hiddenTriangles.add(Integer.valueOf(2));
+		engine.getObjects().get(0).hiddenTriangles.add(Integer.valueOf(3));
 		
 		stage.setResizable(false);
 		stage.setScene(engine.getScene());

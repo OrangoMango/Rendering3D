@@ -27,6 +27,7 @@ public class Mesh{
 	private Color[][] vertexCol;
 	private double crx, cry, crz;
 	public boolean showLines;
+	public List<Integer> hiddenTriangles = new ArrayList<>();
 	
 	public Map<Camera, double[][][]> cache = new HashMap<>();
 	private double[][][] rotationCache;
@@ -245,6 +246,8 @@ public class Mesh{
 
 		for (int i = 0; i < projected.length; i++){
 			if (projected[i][0] == null || projected[i][1] == null || projected[i][2] == null) continue;
+			
+			if (this.hiddenTriangles.contains(Integer.valueOf(i))) continue;
 
 			Point2D p1 = new Point2D(projected[i][0][0], projected[i][0][1]);
 			Point2D p2 = new Point2D(projected[i][1][0], projected[i][1][1]);
