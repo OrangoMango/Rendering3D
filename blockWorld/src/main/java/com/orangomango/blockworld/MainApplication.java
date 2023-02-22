@@ -1,4 +1,4 @@
-package com.orangomango.rendering3d;
+package com.orangomango.blockworld;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -12,27 +12,30 @@ import java.util.Random;
 import com.orangomango.rendering3d.model.Camera;
 import com.orangomango.rendering3d.model.Light;
 import com.orangomango.rendering3d.model.Mesh;
+import com.orangomango.rendering3d.Engine3D;
 
 public class MainApplication extends Application{
 	private static final int WIDTH = 640; //320;
 	private static final int HEIGHT = 360; //180;
 	
+	private static final Image COAL_IMAGE = new Image(MainApplication.class.getResourceAsStream("/coal.png"));
+	private static final Image DIRT_IMAGE = new Image(MainApplication.class.getResourceAsStream("/dirt.png"));
+	private static final Image STONE_IMAGE = new Image(MainApplication.class.getResourceAsStream("/stone.png"));
+	
 	@Override
 	public void start(Stage stage){		
-		stage.setTitle("3D Graphics");
+		stage.setTitle("BlockWorld");
 		
 		Engine3D engine = new Engine3D(stage, WIDTH, HEIGHT);
-		Camera camera = new Camera(0, 7.5, -5);
+		Camera camera = new Camera(0, 0, 0);
 		camera.lookAtCenter();
 		
 		engine.setCamera(camera);
+		engine.getLights().add(new Light(-5, 3, 5));
 		
-		//engine.getLights().add(new Light(-5, -1, -5));
-		engine.getLights().add(new Light(-15, 0, 30));
-		
-		/*Random random = new Random();
-		for (int i = 0; i < 1; i++){
-			for (int j = 0; j < 1; j++){
+		Random random = new Random();
+		for (int i = 0; i < 2; i++){
+			for (int j = 0; j < 2; j++){
 				for (int k = 0; k < 1; k++){
 					engine.getObjects().add(new Mesh(switch(random.nextInt(3)){
 						case 0 -> COAL_IMAGE;
@@ -41,7 +44,7 @@ public class MainApplication extends Application{
 						default -> null;
 					}, new Point3D[]{
 						new Point3D(i, k, j), new Point3D(i, 1+k, j), new Point3D(1+i, 1+k, j),
-						new Point3D(1+i, k, j), new Point3D(i, k, 1+j), new Point3D(i, 1+k, 1+j), 
+						new Point3D(1+i, k, j), new Point3D(i, k, 1+j), new Point3D(i, 1+k, 1+j),
 						new Point3D(1+i, 1+k, 1+j), new Point3D(1+i, k, 1+j)}, new int[][]{
 							{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
 							{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
@@ -57,23 +60,6 @@ public class MainApplication extends Application{
 					}, null, null, null));
 				}
 			}
-		}*/
-		
-		try {
-			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05, null, false);
-			//model.setRotation(Math.PI/2, 0, 0);
-			//engine.getObjects().add(model);
-			//engine.getObjects().add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5, null, false));
-			
-			Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/truck.obj").toURI()), 0, 0, 0, 0.05, null, true);
-			model.setRotation(Math.PI, 0, 0);
-			engine.getObjects().add(model);
-			
-			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null, false);
-			//model.setRotation(0, 0, Math.PI);
-			//engine.getObjects().add(model);
-		} catch (Exception ex){
-			ex.printStackTrace();
 		}
 		
 		stage.setResizable(false);

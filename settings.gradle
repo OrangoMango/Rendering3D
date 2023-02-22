@@ -1,1 +1,2 @@
 rootProject.name = "Rendering3D"
+include "blockWorld"

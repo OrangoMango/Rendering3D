@@ -173,72 +173,66 @@ public class Mesh{
 				this.normals[i][2] = normal;
 			}
 			
-			double dot = normal.dotProduct(point1.subtract(camera.getX(), camera.getY(), camera.getZ()));
+			//double dot = normal.dotProduct(point1.subtract(camera.getX(), camera.getY(), camera.getZ()));
 			if (proj == null){
 				proj = new double[this.faces.length][3][];
 				this.cache.put(camera, proj);
 			}
 			
-			if (dot < 0){					
-				// Project 3D -> 2D
-				if (proj[i][0] == null){
-					proj[i][0] = multiply(cam, p1);
-				}
-				if (proj[i][1] == null){
-					proj[i][1] = multiply(cam, p2);
-				}
-				if (proj[i][2] == null){
-					proj[i][2] = multiply(cam, p3);
-				}
-				p1 = proj[i][0];
-				p2 = proj[i][1];
-				p3 = proj[i][2];
-				
-				// Scale
-				double px1 = p1[0]/(p1[3] == 0 ? 1 : p1[3]);
-				double py1 = p1[1]/(p1[3] == 0 ? 1 : p1[3]);
-				double px2 = p2[0]/(p2[3] == 0 ? 1 : p2[3]);
-				double py2 = p2[1]/(p2[3] == 0 ? 1 : p2[3]);
-				double px3 = p3[0]/(p3[3] == 0 ? 1 : p3[3]);
-				double py3 = p3[1]/(p3[3] == 0 ? 1 : p3[3]);
-				double pz1 = p1[2];
-				double pz2 = p2[2];
-				double pz3 = p3[2];
-				
-				double bound = 1;
-				
-				if ((isOutside(px1, bound) && isOutside(px2, bound) && isOutside(px3, bound))
-				 || (isOutside(py1, bound) && isOutside(py2, bound) && isOutside(py3, bound))
-				 || (isOutside(pz1, bound) && isOutside(pz2, bound) && isOutside(pz3, bound))){
-					setProjectedPoint(i, 0, null);
-					setProjectedPoint(i, 1, null);
-					setProjectedPoint(i, 2, null);
-					i++;
-					continue;
-				}
-				
-				px1 += 1;
-				py1 += 1;
-				px1 *= 0.5*getInstance().getWidth();
-				py1 *= 0.5*getInstance().getHeight();
-				px2 += 1;
-				py2 += 1;
-				px2 *= 0.5*getInstance().getWidth();
-				py2 *= 0.5*getInstance().getHeight();
-				px3 += 1;
-				py3 += 1;
-				px3 *= 0.5*getInstance().getWidth();
-				py3 *= 0.5*getInstance().getHeight();
-				
-				setProjectedPoint(i, 0, new double[]{px1, py1, 1/p1[3]});
-				setProjectedPoint(i, 1, new double[]{px2, py2, 1/p2[3]});
-				setProjectedPoint(i, 2, new double[]{px3, py3, 1/p3[3]});
-			} else {
+			// Project 3D -> 2D
+			if (proj[i][0] == null){
+				proj[i][0] = multiply(cam, p1);
+			}
+			if (proj[i][1] == null){
+				proj[i][1] = multiply(cam, p2);
+			}
+			if (proj[i][2] == null){
+				proj[i][2] = multiply(cam, p3);
+			}
+			p1 = proj[i][0];
+			p2 = proj[i][1];
+			p3 = proj[i][2];
+			
+			// Scale
+			double px1 = p1[0]/(p1[3] == 0 ? 1 : p1[3]);
+			double py1 = p1[1]/(p1[3] == 0 ? 1 : p1[3]);
+			double px2 = p2[0]/(p2[3] == 0 ? 1 : p2[3]);
+			double py2 = p2[1]/(p2[3] == 0 ? 1 : p2[3]);
+			double px3 = p3[0]/(p3[3] == 0 ? 1 : p3[3]);
+			double py3 = p3[1]/(p3[3] == 0 ? 1 : p3[3]);
+			double pz1 = p1[2];
+			double pz2 = p2[2];
+			double pz3 = p3[2];
+			
+			double bound = 1;
+			
+			if ((isOutside(px1, bound) && isOutside(px2, bound) && isOutside(px3, bound))
+			 || (isOutside(py1, bound) && isOutside(py2, bound) && isOutside(py3, bound))
+			 || (isOutside(pz1, bound) && isOutside(pz2, bound) && isOutside(pz3, bound))){
 				setProjectedPoint(i, 0, null);
 				setProjectedPoint(i, 1, null);
 				setProjectedPoint(i, 2, null);
+				i++;
+				continue;
 			}
 			
+			px1 += 1;
+			py1 += 1;
+			px1 *= 0.5*getInstance().getWidth();
+			py1 *= 0.5*getInstance().getHeight();
+			px2 += 1;
+			py2 += 1;
+			px2 *= 0.5*getInstance().getWidth();
+			py2 *= 0.5*getInstance().getHeight();
+			px3 += 1;
+			py3 += 1;
+			px3 *= 0.5*getInstance().getWidth();
+			py3 *= 0.5*getInstance().getHeight();
+			
+			setProjectedPoint(i, 0, new double[]{px1, py1, 1/p1[3]});
+			setProjectedPoint(i, 1, new double[]{px2, py2, 1/p2[3]});
+			setProjectedPoint(i, 2, new double[]{px3, py3, 1/p3[3]});
+		
 			i++;
 		}
 	}
@@ -255,6 +249,14 @@ public class Mesh{
 			Point2D p1 = new Point2D(projected[i][0][0], projected[i][0][1]);
 			Point2D p2 = new Point2D(projected[i][1][0], projected[i][1][1]);
 			Point2D p3 = new Point2D(projected[i][2][0], projected[i][2][1]);
+			
+			try {
+				if (projected[i][0][2] < camera.depthBuffer[(int)projected[i][0][0]][(int)projected[i][0][1]] &&
+						projected[i][1][2] < camera.depthBuffer[(int)projected[i][1][0]][(int)projected[i][1][1]] &&
+						projected[i][2][2] < camera.depthBuffer[(int)projected[i][2][0]][(int)projected[i][2][1]]) continue;
+			} catch (ArrayIndexOutOfBoundsException ex){
+				// Point is outside of the screen
+			}
 			
 			if (gc == null){
 				calculateDepthBuffer((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
@@ -729,8 +731,10 @@ public class Mesh{
 					tex_w = (1-t)*tex_sw+t*tex_ew;
 					tex_l = (1-t)*tex_sl+t*tex_el;
 					
-					int pix_x = (int)Math.round(tex_u/tex_w*(image.getWidth()-1));
-					int pix_y = (int)Math.round(tex_v/tex_w*(image.getHeight()-1));
+					int pix_x = (int)Math.round(tex_u/tex_w*(image.getWidth()-1)) % (int)(image.getWidth()-1);
+					int pix_y = (int)Math.round(tex_v/tex_w*(image.getHeight()-1)) % (int)(image.getHeight()-1);
+					if (pix_x < 0) pix_x = (int)(image.getWidth()-1)+pix_x;
+					if (pix_y < 0) pix_y = (int)(image.getHeight()-1)+pix_y;
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
@@ -812,8 +816,10 @@ public class Mesh{
 					tex_w = (1-t)*tex_sw+t*tex_ew;
 					tex_l = (1-t)*tex_sl+t*tex_el;
 					
-					int pix_x = (int)Math.round(tex_u/tex_w*(image.getWidth()-1));
-					int pix_y = (int)Math.round(tex_v/tex_w*(image.getHeight()-1));
+					int pix_x = (int)Math.round(tex_u/tex_w*(image.getWidth()-1)) % (int)(image.getWidth()-1);
+					int pix_y = (int)Math.round(tex_v/tex_w*(image.getHeight()-1)) % (int)(image.getHeight()-1);
+					if (pix_x < 0) pix_x = (int)(image.getWidth()-1)+pix_x;
+					if (pix_y < 0) pix_y = (int)(image.getHeight()-1)+pix_y;
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
@@ -864,6 +870,8 @@ public class Mesh{
 					current[2] = Double.parseDouble(line.split(" ")[3]);
 				} else if (line.toLowerCase().startsWith("d") && current != null){
 					// nothing
+				} else if (line.toLowerCase().startsWith("map_kd")){
+					
 				}
 			}
 			if (name != null){
@@ -877,7 +885,7 @@ public class Mesh{
 		}
 	}
 	
-	public static Mesh loadFromFile(File file, double x, double y, double z, double scale, String singleObject){
+	public static Mesh loadFromFile(File file, double x, double y, double z, double scale, String singleObject, boolean invertVaxis){
 		Map<String, double[]> mtllib = null;
 		Image image = new Image(Mesh.class.getResourceAsStream("/truck_red.jpg"));
 		
@@ -915,7 +923,7 @@ public class Mesh{
 					}
 					normals.add(new Point3D(narray[0], narray[1], narray[2]));
 				} else if (line.startsWith("vt ")){
-					vertexCoords.add(new Point2D(Double.parseDouble(line.split(" ")[1]), 1-Double.parseDouble(line.split(" ")[2])));
+					vertexCoords.add(new Point2D(Double.parseDouble(line.split(" ")[1]), invertVaxis ? 1-Double.parseDouble(line.split(" ")[2]) : Double.parseDouble(line.split(" ")[2])));
 				} else if (line.startsWith("f ")){
 					String[] pieces = line.split(" ");
 					int[] farray = new int[pieces.length-1];
