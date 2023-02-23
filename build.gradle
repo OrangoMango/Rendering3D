@@ -39,7 +39,6 @@ javafx {
 }
 
 dependencies {
-
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 }
@@ -59,3 +58,14 @@ jlink {
 jlinkZip {
     group = 'distribution'
 }
+
+/*jar {
+    from {
+         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+         exclude "META-INF/*.SF" 
+         exclude "META-INF/*.DSA"
+         exclude "META-INF/*.RSA" 
+    }
+}*/
