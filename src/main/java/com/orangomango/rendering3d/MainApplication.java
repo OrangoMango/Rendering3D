@@ -14,8 +14,8 @@ import com.orangomango.rendering3d.model.Light;
 import com.orangomango.rendering3d.model.Mesh;
 
 public class MainApplication extends Application{
-	private static final int WIDTH = 640; //320;
-	private static final int HEIGHT = 360; //180;
+	private static final int WIDTH = 320;
+	private static final int HEIGHT = 180;
 	
 	@Override
 	public void start(Stage stage){		
@@ -65,8 +65,11 @@ public class MainApplication extends Application{
 			//engine.getObjects().add(model);
 			//engine.getObjects().add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5, null, false));
 			
-			Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/truck.obj").toURI()), 0, 0, 0, 0.05, null, true);
+			/*Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/truck.obj").toURI()), 0, 0, 0, 0.05, null, true);
 			model.setRotation(Math.PI, 0, 0);
+			engine.getObjects().add(model);*/
+			
+			Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5, null, false);
 			engine.getObjects().add(model);
 			
 			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null, false);
