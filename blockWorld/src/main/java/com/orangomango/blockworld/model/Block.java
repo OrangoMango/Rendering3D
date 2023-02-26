@@ -16,7 +16,7 @@ public class Block{
 		this.chunk = chunk;
 		this.x = x+chunk.getX()*Chunk.CHUNK_SIZE;
 		this.y = y+chunk.getY()*Chunk.CHUNK_SIZE;
-		this.z = z;
+		this.z = z+chunk.getZ()*Chunk.CHUNK_SIZE;
 	}
 	
 	/**

@@ -8,13 +8,14 @@ public class Chunk{
 	public static final int CHUNK_SIZE = 4;
 	
 	private Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-	private int x, y;
+	private int x, y, z;
 	private World world;
 	
-	public Chunk(World world, int x, int y){
+	public Chunk(World world, int x, int y, int z){
 		this.world = world;
 		this.x = x;
 		this.y = y;
+		this.z = z;
 		for (int i = 0; i < CHUNK_SIZE; i++){
 			for (int j = 0; j < CHUNK_SIZE; j++){
 				for (int k = 0; k < CHUNK_SIZE; k++){
@@ -32,9 +33,9 @@ public class Chunk{
 		}
 	}
 	
-	/*public void setBlock(Block block, int x, int y, int z){
+	public void setBlock(Block block, int x, int y, int z){
 		this.blocks[x][y][z] = block;
-	}*/
+	}
 	
 	public int getX(){
 		return this.x;
@@ -42,6 +43,10 @@ public class Chunk{
 	
 	public int getY(){
 		return this.y;
+	}
+	
+	public int getZ(){
+		return this.z;
 	}
 	
 	public World getWorld(){
@@ -53,7 +58,7 @@ public class Chunk{
 		for (int i = 0; i < CHUNK_SIZE; i++){
 			for (int j = 0; j < CHUNK_SIZE; j++){
 				for (int k = 0; k < CHUNK_SIZE; k++){
-					output.add(this.blocks[i][j][k].getMesh());
+					if (this.blocks[i][j][k] != null) output.add(this.blocks[i][j][k].getMesh());
 				}
 			}
 		}

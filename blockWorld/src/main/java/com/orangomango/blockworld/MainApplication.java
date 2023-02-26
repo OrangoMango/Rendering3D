@@ -34,11 +34,10 @@ public class MainApplication extends Application{
 		engine.getLights().add(new Light(-5, 3, 5));
 		Engine3D.LIGHT_AVAILABLE = false;
 		
-		World world = new World();
-		for (List<Mesh> mesh : world.getMesh()){
-			for (Mesh m : mesh){
-				engine.getObjects().add(m);
-			}
+		World world = new World(2, 2, 1);
+		world.removeBlockAt(0, 0, 0);
+		for (Mesh mesh : world.getMesh()){
+			engine.getObjects().add(mesh);
 		}
 		
 		stage.setResizable(false);
