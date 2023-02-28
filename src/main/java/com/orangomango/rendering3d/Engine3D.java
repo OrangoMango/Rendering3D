@@ -84,37 +84,6 @@ public class Engine3D{
 		canvas.setFocusTraversable(true);
 		canvas.setOnKeyPressed(e -> this.keys.put(e.getCode(), true));
 		canvas.setOnKeyReleased(e -> this.keys.put(e.getCode(), false));
-		/*canvas.setOnMousePressed(e -> {
-			double x = e.getX();
-			double y = e.getY();
-			double w = this.camera.depthBuffer[(int)Math.round(x)][(int)Math.round(y)];
-			double[] reverted = revertPoint(new double[]{x, y, w}, this.camera);
-			
-			double i = reverted[0];
-			double k = reverted[1];
-			double j = reverted[2];
-			
-			System.out.format("x=%.2f y=%.2f z=%.2f\n", i, k, j);
-			
-			double size = 1;
-			this.objects.set(0, new Mesh(MainApplication.COAL_IMAGE, new Point3D[]{
-				new Point3D(i, k, j), new Point3D(i, size+k, j), new Point3D(size+i, size+k, j),
-				new Point3D(size+i, k, j), new Point3D(i, k, size+j), new Point3D(i, size+k, size+j), 
-				new Point3D(size+i, size+k, size+j), new Point3D(size+i, k, size+j)}, new int[][]{
-					{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
-					{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
-					{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
-					{1, 6, 2}, {4, 0, 3}, {4, 3, 7}
-			}, new Point2D[]{
-				new Point2D(0, 1), new Point2D(0, 0), new Point2D(1, 0), new Point2D(1, 1)
-			}, new int[][]{
-				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
-				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
-				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
-				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
-			}, null, null, null));
-			
-		});*/
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		pane.getChildren().add(canvas);
 		
@@ -126,7 +95,7 @@ public class Engine3D{
 		loop.play();
 		
 		Timeline mouse = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS*2), e -> {
-			if (this.stage.isFocused()) this.robot.mouseMove(this.stage.getX()+this.width/2, this.stage.getY()+this.height/2);
+			if (this.stage.isFocused()) this.robot.mouseMove(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
 		}));
 		mouse.setCycleCount(Animation.INDEFINITE);
 		mouse.play();
@@ -219,7 +188,7 @@ public class Engine3D{
 
 		double sensibility = 0.6;
 		Point2D mouse = this.robot.getMousePosition();
-		Point2D center = new Point2D(this.stage.getX()+this.width/2, this.stage.getY()+this.height/2);
+		Point2D center = new Point2D(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
 		this.camera.setRx(this.camera.getRx()-Math.toRadians((center.getY()-mouse.getY())*sensibility));
 		this.camera.setRy(this.camera.getRy()-Math.toRadians((mouse.getX()-center.getX())*sensibility));
 
@@ -231,7 +200,6 @@ public class Engine3D{
 			object.render(this.camera, sceneLights, gc);
 		}
 		
-		double lspeed = 5;
 		if (LIGHT_ROTATION){
 			for (Light light : sceneLights){
 				double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{light.getPosition().getX(), light.getPosition().getY(), light.getPosition().getZ()});

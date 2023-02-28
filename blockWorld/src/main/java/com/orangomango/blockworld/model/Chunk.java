@@ -1,11 +1,12 @@
 package com.orangomango.blockworld.model;
 
 import java.util.*;
+import org.spongepowered.noise.Noise;
 
 import com.orangomango.rendering3d.model.Mesh;
 
 public class Chunk{
-	public static final int CHUNK_SIZE = 4;
+	public static final int CHUNK_SIZE = 6;
 	
 	private Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	private int x, y, z;
@@ -16,6 +17,7 @@ public class Chunk{
 		this.x = x;
 		this.y = y;
 		this.z = z;
+
 		for (int i = 0; i < CHUNK_SIZE; i++){
 			for (int j = 0; j < CHUNK_SIZE; j++){
 				for (int k = 0; k < CHUNK_SIZE; k++){

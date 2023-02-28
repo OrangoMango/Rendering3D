@@ -4,9 +4,6 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.image.Image;
 
-import java.io.File;
-import java.util.List;
-
 import com.orangomango.rendering3d.model.Camera;
 import com.orangomango.rendering3d.model.Light;
 import com.orangomango.rendering3d.model.Mesh;
@@ -34,7 +31,7 @@ public class MainApplication extends Application{
 		engine.getLights().add(new Light(-5, 3, 5));
 		Engine3D.LIGHT_AVAILABLE = false;
 		
-		World world = new World(2, 2, 1);
+		World world = new World(4, 4, 2);
 		world.removeBlockAt(0, 0, 0);
 		for (Mesh mesh : world.getMesh()){
 			engine.getObjects().add(mesh);

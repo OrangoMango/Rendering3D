@@ -10,6 +10,9 @@ version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    maven {
+        url "https://repo.spongepowered.org/repository/maven-public/"
+    }
 }
 
 ext {
@@ -40,6 +43,7 @@ javafx {
 
 dependencies {
     implementation project(":")
+    implementation "org.spongepowered:noise:2.0.0-SNAPSHOT"
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
