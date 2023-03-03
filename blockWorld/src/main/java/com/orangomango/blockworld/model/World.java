@@ -5,7 +5,8 @@ import java.util.*;
 import com.orangomango.rendering3d.model.Mesh;
 
 public class World{
-	private List<Chunk> chunks = new ArrayList<Chunk>();
+	private final List<Chunk> chunks = new ArrayList<>();
+	public int seed = (int)System.currentTimeMillis();
 	
 	public World(int w, int h, int d){
 		for (int i = 0; i < w; i++){

@@ -1,27 +1,32 @@
 package com.orangomango.blockworld.model;
 
 import java.util.*;
-import org.spongepowered.noise.Noise;
 
 import com.orangomango.rendering3d.model.Mesh;
 
 public class Chunk{
-	public static final int CHUNK_SIZE = 6;
+	public static final int CHUNK_SIZE = 16;
 	
 	private Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	private int x, y, z;
-	private World world;
+	private final World world;
 	
 	public Chunk(World world, int x, int y, int z){
 		this.world = world;
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		PerlinNoise noise = new PerlinNoise(world.seed);
+		float frequency = 0.125f;
 
-		for (int i = 0; i < CHUNK_SIZE; i++){
-			for (int j = 0; j < CHUNK_SIZE; j++){
-				for (int k = 0; k < CHUNK_SIZE; k++){
-					this.blocks[i][j][k] = new Block(this, i, j, k);
+		for (int i = 0; i < CHUNK_SIZE; i++){ // x
+			for (int j = 0; j < CHUNK_SIZE; j++){ // z
+				for (int k = 0; k < CHUNK_SIZE; k++){ // y
+					float n = (noise.noise((i+this.x)*frequency, (j+this.z)*frequency, 0)+1)/2;
+					int h = Math.round(n*(CHUNK_SIZE-1));
+					if (k >= h){
+						this.blocks[i][k][j] = new Block(this, i, k, j);
+					}
 				}
 			}
 		}

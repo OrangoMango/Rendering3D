@@ -72,6 +72,7 @@ public class Block{
 			mesh.hiddenTriangles.add(Integer.valueOf(0));
 			mesh.hiddenTriangles.add(Integer.valueOf(1));
 		}
+		System.out.format("Applying mesh for block at %d %d %d...\n", this.x, this.y, this.z);
 		return mesh;
 	}
 	
