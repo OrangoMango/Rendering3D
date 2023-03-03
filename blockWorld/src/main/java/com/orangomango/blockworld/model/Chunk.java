@@ -22,7 +22,7 @@ public class Chunk{
 		for (int i = 0; i < CHUNK_SIZE; i++){ // x
 			for (int j = 0; j < CHUNK_SIZE; j++){ // y
 				for (int k = 0; k < CHUNK_SIZE; k++){ // z
-					float n = (noise.noise((i+this.x)*frequency, 0, (k+this.z)*frequency)+1)/2;
+					float n = (noise.noise((i+this.x*CHUNK_SIZE)*frequency, 0, (k+this.z*CHUNK_SIZE)*frequency)+1)/2;
 					int h = Math.round(n*(CHUNK_SIZE-1));
 					if (j >= h){
 						this.blocks[i][j][k] = new Block(this, i, j, k);

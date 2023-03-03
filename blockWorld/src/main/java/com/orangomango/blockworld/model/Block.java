@@ -74,7 +74,7 @@ public class Block{
 			mesh.hiddenTriangles.add(0);
 			mesh.hiddenTriangles.add(1);
 		}
-		System.out.format("Applying mesh for block at %d %d %d...\n", this.x, this.y, this.z);
+		//System.out.format("Applying mesh for block at %d %d %d...\n", this.x, this.y, this.z);
 		return this.mesh;
 	}
 	

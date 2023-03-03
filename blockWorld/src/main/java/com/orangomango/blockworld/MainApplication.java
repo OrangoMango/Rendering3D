@@ -13,8 +13,8 @@ import com.orangomango.blockworld.model.World;
 import com.orangomango.blockworld.model.Chunk;
 
 public class MainApplication extends Application{
-	private static final int WIDTH = 320;
-	private static final int HEIGHT = 180;
+	private static final int WIDTH = 640; //320;
+	private static final int HEIGHT = 360; //180;
 	
 	public static final Image COAL_IMAGE = new Image(MainApplication.class.getResourceAsStream("/coal.png"));
 	public static final Image DIRT_IMAGE = new Image(MainApplication.class.getResourceAsStream("/dirt.png"));
@@ -33,7 +33,7 @@ public class MainApplication extends Application{
 		engine.getLights().add(new Light(-5, 3, 5));
 		Engine3D.LIGHT_AVAILABLE = false;
 		
-		World world = new World(3, 1, 3);
+		World world = new World(3, 1, 4);
 		world.removeBlockAt(0, 0, 0);
 		for (Mesh mesh : world.getMesh()){
 			engine.getObjects().add(mesh);
