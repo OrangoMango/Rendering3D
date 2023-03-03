@@ -5,7 +5,7 @@ import java.util.*;
 import com.orangomango.rendering3d.model.Mesh;
 
 public class Chunk{
-	public static final int CHUNK_SIZE = 16;
+	public static final int CHUNK_SIZE = 10;
 	
 	private Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	private int x, y, z;
@@ -17,15 +17,15 @@ public class Chunk{
 		this.y = y;
 		this.z = z;
 		PerlinNoise noise = new PerlinNoise(world.seed);
-		float frequency = 0.125f;
+		float frequency = 0.1575f;
 
 		for (int i = 0; i < CHUNK_SIZE; i++){ // x
-			for (int j = 0; j < CHUNK_SIZE; j++){ // z
-				for (int k = 0; k < CHUNK_SIZE; k++){ // y
-					float n = (noise.noise((i+this.x)*frequency, (j+this.z)*frequency, 0)+1)/2;
+			for (int j = 0; j < CHUNK_SIZE; j++){ // y
+				for (int k = 0; k < CHUNK_SIZE; k++){ // z
+					float n = (noise.noise((i+this.x)*frequency, 0, (k+this.z)*frequency)+1)/2;
 					int h = Math.round(n*(CHUNK_SIZE-1));
-					if (k >= h){
-						this.blocks[i][k][j] = new Block(this, i, k, j);
+					if (j >= h){
+						this.blocks[i][j][k] = new Block(this, i, j, k);
 					}
 				}
 			}

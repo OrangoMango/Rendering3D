@@ -27,6 +27,7 @@ public class Engine3D{
 	private Map<KeyCode, Boolean> keys = new HashMap<>();
 	private Robot robot;
 	private Stage stage;
+	private Map<KeyCode, Runnable> keyEvents = new HashMap<>();
 	
 	private static Image POINTER = new Image(Engine3D.class.getResourceAsStream("/pointer.png"));
 	
@@ -67,6 +68,10 @@ public class Engine3D{
 		});
 		counter.setDaemon(true);
 		counter.start();
+	}
+
+	public void setOnKey(KeyCode code, Runnable r){
+		this.keyEvents.put(code, r);
 	}
 	
 	public static Engine3D getInstance(){
@@ -138,6 +143,13 @@ public class Engine3D{
 			this.keys.put(KeyCode.R, false);
 		} else if (this.keys.getOrDefault(KeyCode.ESCAPE, false)){
 			System.exit(0);
+		}
+
+		for (KeyCode k : this.keyEvents.keySet()){
+			if (this.keys.getOrDefault(k, false)){
+				this.keyEvents.get(k).run();
+				this.keys.put(k, false);
+			}
 		}
 		
 		if (DEBUG){

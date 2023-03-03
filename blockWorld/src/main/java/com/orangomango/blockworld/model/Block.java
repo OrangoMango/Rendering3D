@@ -11,6 +11,7 @@ import com.orangomango.blockworld.MainApplication;
 public class Block{
 	private int x, y, z;
 	private Chunk chunk;
+	private Mesh mesh;
 	
 	public Block(Chunk chunk, int x, int y, int z){
 		this.chunk = chunk;
@@ -25,8 +26,9 @@ public class Block{
 	 * 0 1 2 3 4 5 6 7 8 9 10 11
 	 */
 	public Mesh getMesh(){
+		if (this.mesh != null) return this.mesh;
 		Random random = new Random();
-		Mesh mesh = new Mesh(switch(random.nextInt(3)){
+		this.mesh = new Mesh(switch(random.nextInt(3)){
 			case 0 -> MainApplication.COAL_IMAGE;
 			case 1 -> MainApplication.DIRT_IMAGE;
 			case 2 -> MainApplication.STONE_IMAGE;
@@ -49,31 +51,31 @@ public class Block{
 		}, null, null, null);
 		
 		if (this.chunk.getWorld().getBlockAt(this.x+1, this.y, this.z) != null){
-			mesh.hiddenTriangles.add(Integer.valueOf(2));
-			mesh.hiddenTriangles.add(Integer.valueOf(3));
+			mesh.hiddenTriangles.add(2);
+			mesh.hiddenTriangles.add(3);
 		}
 		if (this.chunk.getWorld().getBlockAt(this.x, this.y+1, this.z) != null){
-			mesh.hiddenTriangles.add(Integer.valueOf(8));
-			mesh.hiddenTriangles.add(Integer.valueOf(9));
+			mesh.hiddenTriangles.add(8);
+			mesh.hiddenTriangles.add(9);
 		}
 		if (this.chunk.getWorld().getBlockAt(this.x, this.y, this.z+1) != null){
-			mesh.hiddenTriangles.add(Integer.valueOf(4));
-			mesh.hiddenTriangles.add(Integer.valueOf(5));
+			mesh.hiddenTriangles.add(4);
+			mesh.hiddenTriangles.add(5);
 		}
 		if (this.chunk.getWorld().getBlockAt(this.x-1, this.y, this.z) != null){
-			mesh.hiddenTriangles.add(Integer.valueOf(6));
-			mesh.hiddenTriangles.add(Integer.valueOf(7));
+			mesh.hiddenTriangles.add(6);
+			mesh.hiddenTriangles.add(7);
 		}
 		if (this.chunk.getWorld().getBlockAt(this.x, this.y-1, this.z) != null){
-			mesh.hiddenTriangles.add(Integer.valueOf(10));
-			mesh.hiddenTriangles.add(Integer.valueOf(11));
+			mesh.hiddenTriangles.add(10);
+			mesh.hiddenTriangles.add(11);
 		}
 		if (this.chunk.getWorld().getBlockAt(this.x, this.y, this.z-1) != null){
-			mesh.hiddenTriangles.add(Integer.valueOf(0));
-			mesh.hiddenTriangles.add(Integer.valueOf(1));
+			mesh.hiddenTriangles.add(0);
+			mesh.hiddenTriangles.add(1);
 		}
 		System.out.format("Applying mesh for block at %d %d %d...\n", this.x, this.y, this.z);
-		return mesh;
+		return this.mesh;
 	}
 	
 	public int getX(){
