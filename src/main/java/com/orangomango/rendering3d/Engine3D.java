@@ -15,6 +15,7 @@ import javafx.scene.Cursor;
 import javafx.scene.robot.Robot;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 import com.orangomango.rendering3d.model.Camera;
 import com.orangomango.rendering3d.model.Mesh;
@@ -28,6 +29,7 @@ public class Engine3D{
 	private Robot robot;
 	private Stage stage;
 	private Map<KeyCode, Runnable> keyEvents = new HashMap<>();
+	private Consumer<GraphicsContext> onUpdate;
 	
 	private static Image POINTER = new Image(Engine3D.class.getResourceAsStream("/pointer.png"));
 	
@@ -72,6 +74,10 @@ public class Engine3D{
 
 	public void setOnKey(KeyCode code, Runnable r){
 		this.keyEvents.put(code, r);
+	}
+
+	public void setOnUpdate(Consumer<GraphicsContext> cons){
+		this.onUpdate = cons;
 	}
 	
 	public static Engine3D getInstance(){
@@ -226,6 +232,10 @@ public class Engine3D{
 		if (SHOW_POINTER){
 			double cursorSize = 26*this.camera.aspectRatio;
 			gc.drawImage(POINTER, this.width/2-cursorSize/2, this.height/2-cursorSize/2, cursorSize, cursorSize);
+		}
+
+		if (this.onUpdate != null){
+			this.onUpdate.accept(gc);
 		}
 		
 		gc.setFill(Color.BLACK);

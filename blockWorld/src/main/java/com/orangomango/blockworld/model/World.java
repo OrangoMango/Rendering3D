@@ -8,7 +8,6 @@ public class World{
 	private final List<Chunk> chunks = new ArrayList<>();
 	public int seed = (int)System.currentTimeMillis();
 	private int width, height, depth;
-	private int currentDepth = -1;
 	
 	public World(int w, int h, int d){
 		this.width = w;
@@ -23,12 +22,8 @@ public class World{
 		}
 	}
 
-	public Chunk addChunk(){
-		if (this.currentDepth < 0 || this.currentDepth == this.depth){
-			if (this.currentDepth >= 0) this.width++;
-			this.currentDepth = 0;
-		}
-		Chunk c = new Chunk(this, this.width, this.height-1, this.currentDepth++);
+	public Chunk addChunk(int x, int y, int z){
+		Chunk c = new Chunk(this, x, y, z);
 		chunks.add(c);
 		return c;
 	}
@@ -54,8 +49,12 @@ public class World{
 			chunk.setBlock(null, x % Chunk.CHUNK_SIZE, y % Chunk.CHUNK_SIZE, z % Chunk.CHUNK_SIZE);
 		}
 	}
+
+	public void clearChunks(){
+		this.chunks.clear();
+	}
 	
-	private Chunk getChunkAt(int x, int y, int z){
+	public Chunk getChunkAt(int x, int y, int z){
 		for (Chunk chunk : this.chunks){
 			if (chunk.getX() == x && chunk.getY() == y && chunk.getZ() == z){
 				return chunk;
