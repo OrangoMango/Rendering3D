@@ -12,12 +12,16 @@ public class Block{
 	private int x, y, z;
 	private Chunk chunk;
 	private Mesh mesh;
+	private String type;
+
+	private static Atlas atlas = new Atlas("/atlas.json");
 	
-	public Block(Chunk chunk, int x, int y, int z){
+	public Block(Chunk chunk, int x, int y, int z, String type){
 		this.chunk = chunk;
 		this.x = x+chunk.getX()*Chunk.CHUNK_SIZE;
 		this.y = y+chunk.getY()*Chunk.CHUNK_SIZE;
 		this.z = z+chunk.getZ()*Chunk.CHUNK_SIZE;
+		this.type = type;
 	}
 	
 	/**
@@ -28,12 +32,7 @@ public class Block{
 	public Mesh getMesh(){
 		if (this.mesh != null) return this.mesh;
 		Random random = new Random();
-		this.mesh = new Mesh(switch(random.nextInt(3)){
-			case 0 -> MainApplication.COAL_IMAGE;
-			case 1 -> MainApplication.DIRT_IMAGE;
-			case 2 -> MainApplication.STONE_IMAGE;
-			default -> null;
-		}, new Point3D[]{
+		this.mesh = new Mesh(atlas.getImages().get(this.type), new Point3D[]{
 			new Point3D(this.x, this.y, this.z), new Point3D(this.x, 1+this.y, this.z), new Point3D(1+this.x, 1+this.y, this.z),
 			new Point3D(1+this.x, this.y, this.z), new Point3D(this.x, this.y, 1+this.z), new Point3D(this.x, 1+this.y, 1+this.z),
 			new Point3D(1+this.x, 1+this.y, 1+this.z), new Point3D(1+this.x, this.y, 1+this.z)}, new int[][]{

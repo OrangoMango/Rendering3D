@@ -5,9 +5,6 @@ import javafx.geometry.Point3D;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.scene.image.Image;
-
-import java.util.List;
 
 import com.orangomango.rendering3d.model.*;
 import com.orangomango.rendering3d.Engine3D;
@@ -16,10 +13,7 @@ import com.orangomango.blockworld.model.*;
 public class MainApplication extends Application{
 	private static final int WIDTH = 320;
 	private static final int HEIGHT = 180;
-	
-	public static final Image COAL_IMAGE = new Image(MainApplication.class.getResourceAsStream("/coal.png"));
-	public static final Image DIRT_IMAGE = new Image(MainApplication.class.getResourceAsStream("/dirt.png"));
-	public static final Image STONE_IMAGE = new Image(MainApplication.class.getResourceAsStream("/stone.png"));
+	private static final double RENDER_DISTANCE = 3.5;
 	
 	@Override
 	public void start(Stage stage){
@@ -34,8 +28,9 @@ public class MainApplication extends Application{
 		
 		engine.setCamera(camera);
 		Light light = new Light(-5, 3, 5);
+		light.setFixed(true);
 		engine.getLights().add(light);
-		Engine3D.LIGHT_AVAILABLE = false;
+		//Engine3D.LIGHT_AVAILABLE = false;
 		
 		World world = new World();
 
@@ -59,7 +54,7 @@ public class MainApplication extends Application{
 							mgroup.skipCondition = cam -> {
 								Point3D cpos = new Point3D(cam.getX()/Chunk.CHUNK_SIZE, cam.getY()/Chunk.CHUNK_SIZE, cam.getZ()/Chunk.CHUNK_SIZE);
 								Point3D chunkPos = new Point3D(chunk.getX(), chunk.getY(), chunk.getZ());
-								return cpos.distance(chunkPos) > 3;
+								return cpos.distance(chunkPos) > RENDER_DISTANCE;
 							};
 							engine.getObjects().add(mgroup);
 						}

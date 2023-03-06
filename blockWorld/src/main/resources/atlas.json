@@ -1,0 +1,13 @@
+{
+  "blocks" : {
+    "dirt" : {
+      "fileName" : "/dirt.png"
+    },
+    "coal" : {
+      "fileName" : "/coal.png"
+    },
+    "stone" : {
+      "fileName" : "/stone.png"
+    }
+  }
+}

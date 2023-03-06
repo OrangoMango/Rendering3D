@@ -9,6 +9,7 @@ public class Light{
 	private double x, y, z;
 	private double rx, ry;
 	private Camera camera;
+	private boolean fixed;
 	
 	private static final double AMBIENT_LIGHT = 0.08;
 	
@@ -25,6 +26,10 @@ public class Light{
 	
 	public Point3D getPosition(){
 		return new Point3D(this.x, this.y, this.z);
+	}
+
+	public void setFixed(boolean f){
+		this.fixed = f;
 	}
 	
 	public void setRx(double rx){
@@ -60,10 +65,21 @@ public class Light{
 	
 	public double getLightIntensity(Point3D normal, Point3D point){
 		double intensity = 1;
-		double factor = normal.dotProduct(point.subtract(getPosition()).normalize());
-		if (factor < -1) factor = 1;
-		else if (factor > 0) factor = 0;
-		else factor = Math.abs(factor);
+		double factor = 0;
+		if (this.fixed){
+			double nx = Math.abs(normal.getX());
+			double ny = Math.abs(normal.getY());
+			double nz = Math.abs(normal.getZ());
+			if (nx == 1) factor = 0.4;
+			else if (ny == 1) factor = 1;
+			else if (nz == 1) factor = 0.7;
+			else System.out.println(normal);
+		} else {
+			factor = normal.dotProduct(point.subtract(getPosition()).normalize());
+			if (factor < -1) factor = 1;
+			else if (factor > 0) factor = 0;
+			else factor = Math.abs(factor);
+		}
 		return factor*intensity+AMBIENT_LIGHT;
 	}
 	
