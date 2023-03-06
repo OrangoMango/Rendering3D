@@ -7,20 +7,6 @@ import com.orangomango.rendering3d.model.Mesh;
 public class World{
 	private final List<Chunk> chunks = new ArrayList<>();
 	public int seed = (int)System.currentTimeMillis();
-	private int width, height, depth;
-	
-	public World(int w, int h, int d){
-		this.width = w;
-		this.height = h;
-		this.depth = d;
-		for (int i = 0; i < w; i++){
-			for (int j = 0; j < h; j++){
-				for (int k = 0; k < d; k++){
-					chunks.add(new Chunk(this, i, j, k));
-				}
-			}
-		}
-	}
 
 	public Chunk addChunk(int x, int y, int z){
 		Chunk c = new Chunk(this, x, y, z);
@@ -63,12 +49,10 @@ public class World{
 		return null;
 	}
 	
-	public List<Mesh> getMesh(){
-		List<Mesh> output = new ArrayList<>();
+	public List<List<Mesh>> getMesh(){
+		List<List<Mesh>> output = new ArrayList<>();
 		for (Chunk chunk : this.chunks){
-			for (Mesh mesh : chunk.getMesh()){
-				output.add(mesh);
-			}
+			output.add(chunk.getMesh());
 		}
 		return output;
 	}

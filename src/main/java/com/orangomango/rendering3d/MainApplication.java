@@ -12,6 +12,7 @@ import java.util.Random;
 import com.orangomango.rendering3d.model.Camera;
 import com.orangomango.rendering3d.model.Light;
 import com.orangomango.rendering3d.model.Mesh;
+import com.orangomango.rendering3d.model.MeshGroup;
 
 public class MainApplication extends Application{
 	private static final int WIDTH = 320;
@@ -70,7 +71,7 @@ public class MainApplication extends Application{
 			engine.getObjects().add(model);*/
 			
 			Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5, null, false);
-			engine.getObjects().add(model);
+			engine.getObjects().add(new MeshGroup(model));
 			
 			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null, false);
 			//model.setRotation(0, 0, Math.PI);

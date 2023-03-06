@@ -19,6 +19,7 @@ import java.util.function.Consumer;
 
 import com.orangomango.rendering3d.model.Camera;
 import com.orangomango.rendering3d.model.Mesh;
+import com.orangomango.rendering3d.model.MeshGroup;
 import com.orangomango.rendering3d.model.Light;
 
 public class Engine3D{
@@ -41,7 +42,7 @@ public class Engine3D{
 	public static boolean SHOW_POINTER = true;
 	public static boolean DEBUG = true;
 	
-	private List<Mesh> objects = new ArrayList<>();
+	private List<MeshGroup> objects = new ArrayList<>();
 	private List<Light> sceneLights = new ArrayList<>();
 	private Camera camera;
 	
@@ -194,11 +195,13 @@ public class Engine3D{
 				Camera lightCamera = light.getCamera();
 				lightCamera.clearDepthBuffer();
 				boolean stateChanged = lightCamera.stateChanged;
-				for (Mesh object : objects){
-					if (stateChanged) object.cache.remove(lightCamera);
-					object.showLines = false;
-					object.evaluate(lightCamera);
-					object.render(lightCamera, null, null);
+				for (MeshGroup mg : objects){
+					for (Mesh object : mg.getMeshes()){
+						if (stateChanged) object.cache.remove(lightCamera);
+						object.showLines = false;
+						object.evaluate(lightCamera);
+						object.render(lightCamera, null, null);
+					}
 				}
 			}
 		}
@@ -210,11 +213,15 @@ public class Engine3D{
 		this.camera.setRy(this.camera.getRy()-Math.toRadians((mouse.getX()-center.getX())*sensibility));
 
 		boolean stateChanged = this.camera.stateChanged;
-		for (Mesh object : objects){
-			if (stateChanged) object.cache.remove(this.camera);
-			object.showLines = SHOW_LINES;
-			object.evaluate(this.camera);
-			object.render(this.camera, sceneLights, gc);
+		for (MeshGroup mg : objects){
+			if (mg.skipCondition != null && mg.skipCondition.test(this.camera)) continue;
+
+			for (Mesh object : mg.getMeshes()){
+				if (stateChanged) object.cache.remove(this.camera);
+				object.showLines = SHOW_LINES;
+				object.evaluate(this.camera);
+				object.render(this.camera, sceneLights, gc);
+			}
 		}
 		
 		if (LIGHT_ROTATION){
@@ -372,7 +379,7 @@ public class Engine3D{
 		return p > bound || p < -bound;
 	}
 	
-	public List<Mesh> getObjects(){
+	public List<MeshGroup> getObjects(){
 		return this.objects;
 	}
 	

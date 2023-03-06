@@ -1,14 +1,15 @@
 package com.orangomango.blockworld;
 
 import javafx.application.Application;
+import javafx.geometry.Point3D;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.image.Image;
 
-import com.orangomango.rendering3d.model.Camera;
-import com.orangomango.rendering3d.model.Light;
-import com.orangomango.rendering3d.model.Mesh;
+import java.util.List;
+
+import com.orangomango.rendering3d.model.*;
 import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.blockworld.model.*;
 
@@ -25,21 +26,18 @@ public class MainApplication extends Application{
 		stage.setTitle("BlockWorld");
 		
 		Engine3D engine = new Engine3D(stage, WIDTH, HEIGHT);
-        Player player = new Player(0, 0, 0);
+        Player player = new Player(Chunk.CHUNK_SIZE, 0, Chunk.CHUNK_SIZE);
 		Camera camera = player.getCamera();
 		camera.zNear = 1;
 		camera.zFar = 100;
 		camera.lookAtCenter();
 		
 		engine.setCamera(camera);
-		engine.getLights().add(new Light(-5, 3, 5));
+		Light light = new Light(-5, 3, 5);
+		engine.getLights().add(light);
 		Engine3D.LIGHT_AVAILABLE = false;
 		
-		World world = new World(3, 1, 4);
-		world.removeBlockAt(0, 0, 0);
-		for (Mesh mesh : world.getMesh()){
-			engine.getObjects().add(mesh);
-		}
+		World world = new World();
 
 		engine.setOnKey(KeyCode.P, () -> {
 			engine.getObjects().clear();
@@ -54,10 +52,16 @@ public class MainApplication extends Application{
 			gc.fillText(String.format("%d %d %d", chunkX, chunkY, chunkZ), 30, 50);
 			for (int i = -1; i < 2; i++){
 				for (int j = -1; j < 2; j++){
-					if (world.getChunkAt(chunkX+i, chunkY+1, chunkZ+j) == null){
-						Chunk chunk = world.addChunk(chunkX+i, chunkY+1, chunkZ+j);
-						for (Mesh mesh : chunk.getMesh()){
-							engine.getObjects().add(mesh);
+					for (int k = 0; k < 2; k++){
+						if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
+							Chunk chunk = world.addChunk(chunkX+i, chunkY+k, chunkZ+j);
+							MeshGroup mgroup = new MeshGroup(chunk.getMesh());
+							mgroup.skipCondition = cam -> {
+								Point3D cpos = new Point3D(cam.getX()/Chunk.CHUNK_SIZE, cam.getY()/Chunk.CHUNK_SIZE, cam.getZ()/Chunk.CHUNK_SIZE);
+								Point3D chunkPos = new Point3D(chunk.getX(), chunk.getY(), chunk.getZ());
+								return cpos.distance(chunkPos) > 3;
+							};
+							engine.getObjects().add(mgroup);
 						}
 					}
 				}

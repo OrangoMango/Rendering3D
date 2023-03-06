@@ -340,8 +340,6 @@ public class Mesh{
 					col_sw = swap(col_ew, col_ew = col_sw);
 				}
 				
-				col_w = col_sw;
-				
 				double tstep = 1.0/(bx-ax);
 				double t = 0.0;
 				
@@ -379,8 +377,6 @@ public class Mesh{
 					ax = swap(bx, bx = ax);
 					col_sw = swap(col_ew, col_ew = col_sw);
 				}
-				
-				col_w = col_sw;
 				
 				double tstep = 1.0/(bx-ax);
 				double t = 0.0;
@@ -494,12 +490,6 @@ public class Mesh{
 					col_sl = swap(col_el, col_el = col_sl);
 				}
 				
-				col_r = col_sr;
-				col_g = col_sg;
-				col_b = col_sb;
-				col_w = col_sw;
-				col_l = col_sl;
-				
 				double tstep = 1.0/(bx-ax);
 				double t = 0.0;
 				
@@ -580,12 +570,6 @@ public class Mesh{
 					col_sw = swap(col_ew, col_ew = col_sw);
 					col_sl = swap(col_el, col_el = col_sl);
 				}
-				
-				col_r = col_sr;
-				col_g = col_sg;
-				col_b = col_sb;
-				col_w = col_sw;
-				col_l = col_sl;
 				
 				double tstep = 1.0/(bx-ax);
 				double t = 0.0;
@@ -717,11 +701,6 @@ public class Mesh{
 					tex_sl = swap(tex_el, tex_el = tex_sl);
 				}
 				
-				tex_u = tex_su;
-				tex_v = tex_sv;
-				tex_w = tex_sw;
-				tex_l = tex_sl;
-				
 				double tstep = 1.0/(bx-ax);
 				double t = 0.0;
 				
@@ -801,11 +780,6 @@ public class Mesh{
 					tex_sw = swap(tex_ew, tex_ew = tex_sw);
 					tex_sl = swap(tex_el, tex_el = tex_sl);
 				}
-				
-				tex_u = tex_su;
-				tex_v = tex_sv;
-				tex_w = tex_sw;
-				tex_l = tex_sl;
 				
 				double tstep = 1.0/(bx-ax);
 				double t = 0.0;

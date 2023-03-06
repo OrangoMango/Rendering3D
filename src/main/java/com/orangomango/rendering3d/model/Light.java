@@ -59,8 +59,8 @@ public class Light{
 	}
 	
 	public double getLightIntensity(Point3D normal, Point3D point){
-		double intensity = Math.max(0, 1-point.subtract(getPosition()).magnitude()*0.005);
-		double factor = normal.dotProduct(point.subtract(getPosition()).normalize());	
+		double intensity = 1;
+		double factor = normal.dotProduct(point.subtract(getPosition()).normalize());
 		if (factor < -1) factor = 1;
 		else if (factor > 0) factor = 0;
 		else factor = Math.abs(factor);
