@@ -27,7 +27,7 @@ public class Mesh{
 	private Color[][] vertexCol;
 	private double crx, cry, crz;
 	public boolean showLines;
-	public List<Integer> hiddenTriangles = new ArrayList<>();
+	private List<Integer> hiddenTriangles = new ArrayList<>();
 	
 	public Map<Camera, double[][][]> cache = new HashMap<>();
 	private double[][][] rotationCache;
@@ -47,6 +47,10 @@ public class Mesh{
 		this.normals = ns == null ? new Point3D[faces.length][3] : ns;
 		
 		this.rotationCache = new double[faces.length][3][];
+	}
+
+	public void addHiddenFace(int n){
+		if (!this.hiddenTriangles.contains(n)) this.hiddenTriangles.add(n);
 	}
 	
 	public void setRotation(double crx, double cry, double crz){

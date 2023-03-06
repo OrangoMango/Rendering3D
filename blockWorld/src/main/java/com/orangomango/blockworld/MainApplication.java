@@ -13,7 +13,8 @@ import com.orangomango.blockworld.model.*;
 public class MainApplication extends Application{
 	private static final int WIDTH = 320;
 	private static final int HEIGHT = 180;
-	private static final double RENDER_DISTANCE = 3.5;
+	private static final double RENDER_DISTANCE = 4;
+	private static final int CHUNKS = 3;
 	
 	@Override
 	public void start(Stage stage){
@@ -45,9 +46,10 @@ public class MainApplication extends Application{
 			int chunkY = (int)Math.floor(player.getY()/Chunk.CHUNK_SIZE);
 			int chunkZ = (int)Math.floor(player.getZ()/Chunk.CHUNK_SIZE);
 			gc.fillText(String.format("%d %d %d", chunkX, chunkY, chunkZ), 30, 50);
-			for (int i = -1; i < 2; i++){
-				for (int j = -1; j < 2; j++){
+			for (int i = -CHUNKS/2; i < CHUNKS-1; i++){
+				for (int j = -CHUNKS/2; j < CHUNKS-1; j++){
 					for (int k = 0; k < 2; k++){
+						if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
 						if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
 							Chunk chunk = world.addChunk(chunkX+i, chunkY+k, chunkZ+j);
 							MeshGroup mgroup = new MeshGroup(chunk.getMesh());
@@ -60,6 +62,9 @@ public class MainApplication extends Application{
 						}
 					}
 				}
+			}
+			for (Chunk chunk : world.getChunks()){
+				chunk.setupFaces();
 			}
 		});
 		

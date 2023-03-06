@@ -6,7 +6,6 @@ import javafx.geometry.Point3D;
 import java.util.Random;
 
 import com.orangomango.rendering3d.model.Mesh;
-import com.orangomango.blockworld.MainApplication;
 
 public class Block{
 	private int x, y, z;
@@ -22,6 +21,33 @@ public class Block{
 		this.y = y+chunk.getY()*Chunk.CHUNK_SIZE;
 		this.z = z+chunk.getZ()*Chunk.CHUNK_SIZE;
 		this.type = type;
+	}
+
+	public void setupFaces(){
+		if (this.chunk.getWorld().getBlockAt(this.x+1, this.y, this.z) != null){
+			mesh.addHiddenFace(2);
+			mesh.addHiddenFace(3);
+		}
+		if (this.chunk.getWorld().getBlockAt(this.x, this.y+1, this.z) != null){
+			mesh.addHiddenFace(8);
+			mesh.addHiddenFace(9);
+		}
+		if (this.chunk.getWorld().getBlockAt(this.x, this.y, this.z+1) != null){
+			mesh.addHiddenFace(4);
+			mesh.addHiddenFace(5);
+		}
+		if (this.chunk.getWorld().getBlockAt(this.x-1, this.y, this.z) != null){
+			mesh.addHiddenFace(6);
+			mesh.addHiddenFace(7);
+		}
+		if (this.chunk.getWorld().getBlockAt(this.x, this.y-1, this.z) != null){
+			mesh.addHiddenFace(10);
+			mesh.addHiddenFace(11);
+		}
+		if (this.chunk.getWorld().getBlockAt(this.x, this.y, this.z-1) != null){
+			mesh.addHiddenFace(0);
+			mesh.addHiddenFace(1);
+		}
 	}
 	
 	/**
@@ -48,31 +74,6 @@ public class Block{
 			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
 		}, null, null, null);
-		
-		if (this.chunk.getWorld().getBlockAt(this.x+1, this.y, this.z) != null){
-			mesh.hiddenTriangles.add(2);
-			mesh.hiddenTriangles.add(3);
-		}
-		if (this.chunk.getWorld().getBlockAt(this.x, this.y+1, this.z) != null){
-			mesh.hiddenTriangles.add(8);
-			mesh.hiddenTriangles.add(9);
-		}
-		if (this.chunk.getWorld().getBlockAt(this.x, this.y, this.z+1) != null){
-			mesh.hiddenTriangles.add(4);
-			mesh.hiddenTriangles.add(5);
-		}
-		if (this.chunk.getWorld().getBlockAt(this.x-1, this.y, this.z) != null){
-			mesh.hiddenTriangles.add(6);
-			mesh.hiddenTriangles.add(7);
-		}
-		if (this.chunk.getWorld().getBlockAt(this.x, this.y-1, this.z) != null){
-			mesh.hiddenTriangles.add(10);
-			mesh.hiddenTriangles.add(11);
-		}
-		if (this.chunk.getWorld().getBlockAt(this.x, this.y, this.z-1) != null){
-			mesh.hiddenTriangles.add(0);
-			mesh.hiddenTriangles.add(1);
-		}
 		//System.out.format("Applying mesh for block at %d %d %d...\n", this.x, this.y, this.z);
 		return this.mesh;
 	}

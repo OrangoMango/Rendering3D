@@ -25,6 +25,10 @@ public class World{
 			return null;
 		}
 	}
+
+	public List<Chunk> getChunks(){
+		return this.chunks;
+	}
 	
 	public void removeBlockAt(int x, int y, int z){
 		int chunkX = x / Chunk.CHUNK_SIZE;
