@@ -25,7 +25,7 @@ public class Chunk{
 					if (this.y < 0){
 						this.blocks[i][j][k] = null;
 					} else {
-						float n = (noise.noise((i+this.x*CHUNK_SIZE+1000)*frequency, 0, (k+this.z*CHUNK_SIZE+1000)*frequency)+1)/2;
+						float n = (noise.noise((i+this.x*CHUNK_SIZE)*frequency, 0, (k+this.z*CHUNK_SIZE)*frequency)+1)/2;
 						int h = Math.round(n*(CHUNK_SIZE-1));
 						if (this.y*Chunk.CHUNK_SIZE+j >= h){
 							this.blocks[i][j][k] = new Block(this, i, j, k, "stone");

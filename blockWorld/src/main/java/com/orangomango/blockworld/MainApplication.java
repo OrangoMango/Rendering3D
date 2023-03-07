@@ -35,6 +35,16 @@ public class MainApplication extends Application{
 		
 		World world = new World();
 
+		/*engine.setOnMousePressed(e -> {
+			double w = camera.depthBuffer[(int)e.getX()][(int)e.getY()];
+			double[] pos = Engine3D.revertPoint(new double[]{e.getX(), e.getY(), w}, camera);
+			System.out.println(java.util.Arrays.toString(pos));
+			int worldX = (int)Math.round(pos[0]);
+			int worldY = (int)Math.round(pos[1]);
+			int worldZ = (int)Math.round(pos[2]);
+			world.removeBlockAt(worldX, worldY, worldZ);
+		});*/
+
 		engine.setOnKey(KeyCode.P, () -> {
 			engine.getObjects().clear();
 			world.clearChunks();
@@ -46,8 +56,8 @@ public class MainApplication extends Application{
 			int chunkY = (int)Math.floor(player.getY()/Chunk.CHUNK_SIZE);
 			int chunkZ = (int)Math.floor(player.getZ()/Chunk.CHUNK_SIZE);
 			gc.fillText(String.format("%d %d %d", chunkX, chunkY, chunkZ), 30, 50);
-			for (int i = -CHUNKS/2; i < CHUNKS-1; i++){
-				for (int j = -CHUNKS/2; j < CHUNKS-1; j++){
+			for (int i = -CHUNKS/2; i < -CHUNKS/2+CHUNKS; i++){
+				for (int j = -CHUNKS/2; j < -CHUNKS/2+CHUNKS; j++){
 					for (int k = 0; k < 2; k++){
 						if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
 						if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){

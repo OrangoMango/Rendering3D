@@ -10,6 +10,8 @@ import javafx.scene.text.Font;
 import javafx.animation.*;
 import javafx.util.Duration;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.robot.Robot;
@@ -31,6 +33,7 @@ public class Engine3D{
 	private Stage stage;
 	private Map<KeyCode, Runnable> keyEvents = new HashMap<>();
 	private Consumer<GraphicsContext> onUpdate;
+	private EventHandler<MouseEvent> onMousePressed;
 	
 	private static Image POINTER = new Image(Engine3D.class.getResourceAsStream("/pointer.png"));
 	
@@ -80,6 +83,10 @@ public class Engine3D{
 	public void setOnUpdate(Consumer<GraphicsContext> cons){
 		this.onUpdate = cons;
 	}
+
+	public void setOnMousePressed(EventHandler<MouseEvent> event){
+		this.onMousePressed = event;
+	}
 	
 	public static Engine3D getInstance(){
 		return instance;
@@ -95,6 +102,7 @@ public class Engine3D{
 		canvas.setFocusTraversable(true);
 		canvas.setOnKeyPressed(e -> this.keys.put(e.getCode(), true));
 		canvas.setOnKeyReleased(e -> this.keys.put(e.getCode(), false));
+		if (this.onMousePressed != null) canvas.setOnMousePressed(this.onMousePressed);
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		pane.getChildren().add(canvas);
 		
@@ -209,8 +217,8 @@ public class Engine3D{
 		double sensibility = 0.6;
 		Point2D mouse = this.robot.getMousePosition();
 		Point2D center = new Point2D(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
-		this.camera.setRx(this.camera.getRx()-Math.toRadians((center.getY()-mouse.getY())*sensibility));
-		this.camera.setRy(this.camera.getRy()-Math.toRadians((mouse.getX()-center.getX())*sensibility));
+		this.camera.setRx(this.camera.getRx()-Math.toRadians((int)(center.getY()-mouse.getY())*sensibility));
+		this.camera.setRy(this.camera.getRy()-Math.toRadians((int)(mouse.getX()-center.getX())*sensibility));
 
 		boolean stateChanged = this.camera.stateChanged;
 		for (MeshGroup mg : objects){
@@ -238,7 +246,7 @@ public class Engine3D{
 		
 		if (SHOW_POINTER){
 			double cursorSize = 26*this.camera.aspectRatio;
-			gc.drawImage(POINTER, this.width/2-cursorSize/2, this.height/2-cursorSize/2, cursorSize, cursorSize);
+			gc.drawImage(POINTER, this.width/2.0-cursorSize/2, this.height/2.0-cursorSize/2, cursorSize, cursorSize);
 		}
 
 		if (this.onUpdate != null){
@@ -250,7 +258,7 @@ public class Engine3D{
 		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d (%d)\nLight: %s", this.fps, FPS, sceneLights.get(0).getPosition()), 0.05*width, 0.05*height);
 	}
 	
-	private static double[] revertPoint(double[] point, Camera cam1){
+	public static double[] revertPoint(double[] point, Camera cam1){
 		double w = 1/point[2];
 		double x = (point[0]*2/getInstance().getWidth()-1)*(w == 0 ? 1 : w);
 		double y = (point[1]*2/getInstance().getHeight()-1)*(w == 0 ? 1 : w);
