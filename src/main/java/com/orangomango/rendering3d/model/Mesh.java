@@ -52,6 +52,10 @@ public class Mesh{
 	public void addHiddenFace(int n){
 		if (!this.hiddenTriangles.contains(n)) this.hiddenTriangles.add(n);
 	}
+
+	public void clearHiddenFaces(){
+		this.hiddenTriangles.clear();
+	}
 	
 	public void setRotation(double crx, double cry, double crz){
 		this.rotationCache = new double[faces.length][3][];

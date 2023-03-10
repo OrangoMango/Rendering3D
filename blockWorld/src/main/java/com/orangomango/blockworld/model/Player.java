@@ -25,6 +25,18 @@ public class Player{
         return this.camera.getZ();
     }
 
+    public int getChunkX(){
+        return (int)Math.floor(getX()/Chunk.CHUNK_SIZE);
+    }
+
+    public int getChunkY(){
+        return (int)Math.floor(getY()/Chunk.CHUNK_SIZE);
+    }
+
+    public int getChunkZ(){
+        return (int)Math.floor(getZ()/Chunk.CHUNK_SIZE);
+    }
+
     public Camera getCamera(){
         return this.camera;
     }

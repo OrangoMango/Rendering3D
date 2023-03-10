@@ -24,6 +24,7 @@ public class Block{
 	}
 
 	public void setupFaces(){
+		mesh.clearHiddenFaces();
 		if (this.chunk.getWorld().getBlockAt(this.x+1, this.y, this.z) != null){
 			mesh.addHiddenFace(2);
 			mesh.addHiddenFace(3);

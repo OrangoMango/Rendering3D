@@ -24,6 +24,7 @@ public class Chunk{
 				for (int k = 0; k < CHUNK_SIZE; k++){ // z
 					if (this.y < 0){
 						this.blocks[i][j][k] = null;
+						System.out.println("Eroroe");
 					} else {
 						float n = (noise.noise((i+this.x*CHUNK_SIZE)*frequency, 0, (k+this.z*CHUNK_SIZE)*frequency)+1)/2;
 						int h = Math.round(n*(CHUNK_SIZE-1));
