@@ -144,11 +144,11 @@ public class Engine3D{
 		if (this.keys.getOrDefault(KeyCode.W, false)){
 			this.camera.move(speed*Math.cos(ry+Math.PI/2), 0, speed*Math.sin(ry+Math.PI/2));
 		} else if (this.keys.getOrDefault(KeyCode.A, false)){
-			this.camera.move(speed*Math.cos(ry+Math.PI), 0, speed*Math.sin(ry+Math.PI));
+			this.camera.move(-speed*Math.cos(ry), 0, -speed*Math.sin(ry));
 		} else if (this.keys.getOrDefault(KeyCode.S, false)){
 			this.camera.move(-speed*Math.cos(ry+Math.PI/2), 0, -speed*Math.sin(ry+Math.PI/2));
 		} else if (this.keys.getOrDefault(KeyCode.D, false)){
-			this.camera.move(-speed*Math.cos(ry+Math.PI), 0, -speed*Math.sin(ry+Math.PI));
+			this.camera.move(speed*Math.cos(ry), 0, speed*Math.sin(ry));
 		} else if (this.keys.getOrDefault(KeyCode.SPACE, false)){
 			this.camera.move(0, -speed, 0);
 		} else if (this.keys.getOrDefault(KeyCode.SHIFT, false)){
@@ -324,8 +324,8 @@ public class Engine3D{
 	
 	public static double[][] getRotateZ(double angle){
 		return new double[][]{
-			{Math.cos(angle), -Math.sin(angle), 0, 0},
-			{Math.sin(angle), Math.cos(angle), 0, 0},
+			{Math.cos(angle), Math.sin(angle), 0, 0},
+			{-Math.sin(angle), Math.cos(angle), 0, 0},
 			{0, 0, 1, 0},
 			{0, 0, 0, 1}
 		};

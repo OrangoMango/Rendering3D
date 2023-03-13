@@ -30,7 +30,12 @@ public class Camera{
 	}
 	
 	public void clearDepthBuffer(){
-		this.depthBuffer = new double[Engine3D.getInstance().getWidth()][Engine3D.getInstance().getHeight()];
+		//this.depthBuffer = new double[Engine3D.getInstance().getWidth()][Engine3D.getInstance().getHeight()];
+		for (int i = 0; i < Engine3D.getInstance().getWidth(); i++){
+			for (int j = 0; j < Engine3D.getInstance().getHeight(); j++){
+				this.depthBuffer[i][j] = 0;
+			}
+		}
 	}
 	
 	public void move(double x, double y, double z){
@@ -91,8 +96,23 @@ public class Camera{
 	
 	public double[][] getCompleteMatrix(){
 		if (this.stateChanged){
-			this.savedMatrix = Engine3D.multiply(Engine3D.multiply(Engine3D.getTranslation(-getX(), -getY(), -getZ()), 
-				Engine3D.multiply(Engine3D.getRotateY(getRy()), Engine3D.getRotateX(getRx()))), getProjectionMatrix());
+			//this.savedMatrix = Engine3D.multiply(Engine3D.multiply(Engine3D.getTranslation(-getX(), -getY(), -getZ()),
+			//	Engine3D.multiply(Engine3D.getRotateY(getRy()), Engine3D.getRotateX(getRx()))), getProjectionMatrix());
+
+			this.savedMatrix = new double[][]{
+				{Math.cos(getRy())*aspectRatio/Math.tan(fov/2), Math.sin(getRx())*Math.sin(getRy())/Math.tan(fov/2), 2*Math.sin(getRy())*Math.cos(getRx())/(zFar-zNear)+getX(), -2*zNear*Math.sin(getRy())*Math.cos(getRx())/(zFar-zNear)-1},
+				{0, Math.cos(getRx())/Math.tan(fov/2), -2*Math.sin(getRx())/(zFar-zNear)+getY(), 2*zNear*Math.sin(getRx())/(zFar-zNear)-1},
+				{-Math.sin(getRy())*aspectRatio/Math.tan(fov/2), Math.cos(getRy())*Math.sin(getRx())/Math.tan(fov/2), 2*Math.cos(getRy())*Math.cos(getRx())/(zFar-zNear)+getZ(), -2*zNear*Math.cos(getRy())*Math.cos(getRx())/(zFar-zNear)-1},
+				{0, 0, 1, 0},
+			};
+
+			/*this.savedMatrix = new double[][]{
+				{Math.cos(getRy())*aspectRatio/Math.tan(fov/2), 0, -Math.sin(getRy())*aspectRatio/Math.tan(fov/2), 0},
+				{Math.sin(getRx())*Math.sin(getRy())/Math.tan(fov/2), Math.cos(getRx())/Math.tan(fov/2), Math.cos(getRy())*Math.sin(getRx())/Math.tan(fov/2), 0},
+				{2*Math.sin(getRy())*Math.cos(getRx())/(zFar-zNear)+getX(), -2*Math.sin(getRx())/(zFar-zNear)+getY(), 2*Math.cos(getRy())*Math.cos(getRx())/(zFar-zNear)+getZ(), 1},
+				{-2*zNear*Math.sin(getRy())*Math.cos(getRx())/(zFar-zNear)-1, 2*zNear*Math.sin(getRx())/(zFar-zNear)-1, -2*zNear*Math.cos(getRy())*Math.cos(getRx())/(zFar-zNear)-1, 0}
+			};*/
+
 			this.stateChanged = false;
 		}
 		return this.savedMatrix;

@@ -21,7 +21,25 @@ public class MainApplication extends Application{
 		stage.setTitle("BlockWorld");
 		
 		Engine3D engine = new Engine3D(stage, WIDTH, HEIGHT);
-        Player player = new Player(Chunk.CHUNK_SIZE, 0, Chunk.CHUNK_SIZE);
+
+		Camera camera = new Camera(4, 3, -5);
+		//camera.lookAtCenter();
+		System.out.println(camera);
+		double[][] m1 = Engine3D.multiply(Engine3D.multiply(Engine3D.getTranslation(-camera.getX(), -camera.getY(), -camera.getZ()),
+				Engine3D.multiply(Engine3D.getRotateY(camera.getRy()), Engine3D.getRotateX(camera.getRx()))), camera.getProjectionMatrix());
+
+		double[][] m2 = camera.getCompleteMatrix();
+		System.out.println("---M2:");
+		for (int i = 0; i < 4; i++) System.out.println(java.util.Arrays.toString(m2[i]));
+		System.out.println("---M1:");
+		for (int i = 0; i < 4; i++) System.out.println(java.util.Arrays.toString(m1[i]));
+		System.out.println("---Output:");
+		System.out.println(java.util.Arrays.toString(Engine3D.multiply(m1, new double[]{3, 4, 5, 1})));
+		System.out.println(java.util.Arrays.toString(Engine3D.multiply(m2, new double[]{3, 4, 5, 1})));
+
+		System.exit(0);
+
+        /*Player player = new Player(Chunk.CHUNK_SIZE, 0, Chunk.CHUNK_SIZE);
 		Camera camera = player.getCamera();
 		camera.zNear = 1;
 		camera.zFar = 100;
@@ -82,7 +100,7 @@ public class MainApplication extends Application{
 		
 		stage.setResizable(false);
 		stage.setScene(engine.getScene());
-		stage.show();
+		stage.show();*/
 	}
 	
 	public static void main(String[] args){		
@@ -92,6 +110,7 @@ public class MainApplication extends Application{
 		System.out.println("F4 -> ROTATE_LIGHT");
 		System.out.println("F5 -> PLACE_LIGHT_AT_CAMERA");
 		System.out.println("F6 -> SHADOWS");
+
 		launch(args);
 	}
 }
