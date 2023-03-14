@@ -96,21 +96,18 @@ public class Camera{
 	
 	public double[][] getCompleteMatrix(){
 		if (this.stateChanged){
-			//this.savedMatrix = Engine3D.multiply(Engine3D.multiply(Engine3D.getTranslation(-getX(), -getY(), -getZ()),
-			//	Engine3D.multiply(Engine3D.getRotateY(getRy()), Engine3D.getRotateX(getRx()))), getProjectionMatrix());
+			this.savedMatrix = Engine3D.multiply(Engine3D.multiply(Engine3D.getTranslation(-getX(), -getY(), -getZ()),
+				Engine3D.multiply(Engine3D.getRotateY(getRy()), Engine3D.getRotateX(getRx()))), getProjectionMatrix());
+
+			/*double alpha = getRx();
+			double beta = getRy();
+			double tx = -getX(), ty = -getY(), tz = -getZ();
 
 			this.savedMatrix = new double[][]{
-				{Math.cos(getRy())*aspectRatio/Math.tan(fov/2), Math.sin(getRx())*Math.sin(getRy())/Math.tan(fov/2), 2*Math.sin(getRy())*Math.cos(getRx())/(zFar-zNear)+getX(), -2*zNear*Math.sin(getRy())*Math.cos(getRx())/(zFar-zNear)-1},
-				{0, Math.cos(getRx())/Math.tan(fov/2), -2*Math.sin(getRx())/(zFar-zNear)+getY(), 2*zNear*Math.sin(getRx())/(zFar-zNear)-1},
-				{-Math.sin(getRy())*aspectRatio/Math.tan(fov/2), Math.cos(getRy())*Math.sin(getRx())/Math.tan(fov/2), 2*Math.cos(getRy())*Math.cos(getRx())/(zFar-zNear)+getZ(), -2*zNear*Math.cos(getRy())*Math.cos(getRx())/(zFar-zNear)-1},
-				{0, 0, 1, 0},
-			};
-
-			/*this.savedMatrix = new double[][]{
-				{Math.cos(getRy())*aspectRatio/Math.tan(fov/2), 0, -Math.sin(getRy())*aspectRatio/Math.tan(fov/2), 0},
-				{Math.sin(getRx())*Math.sin(getRy())/Math.tan(fov/2), Math.cos(getRx())/Math.tan(fov/2), Math.cos(getRy())*Math.sin(getRx())/Math.tan(fov/2), 0},
-				{2*Math.sin(getRy())*Math.cos(getRx())/(zFar-zNear)+getX(), -2*Math.sin(getRx())/(zFar-zNear)+getY(), 2*Math.cos(getRy())*Math.cos(getRx())/(zFar-zNear)+getZ(), 1},
-				{-2*zNear*Math.sin(getRy())*Math.cos(getRx())/(zFar-zNear)-1, 2*zNear*Math.sin(getRx())/(zFar-zNear)-1, -2*zNear*Math.cos(getRy())*Math.cos(getRx())/(zFar-zNear)-1, 0}
+				{aspectRatio*Math.cos(beta)/Math.tan(fov/2), 0, aspectRatio*Math.sin(beta)/Math.tan(fov/2), aspectRatio*(Math.cos(beta)*tx+Math.sin(beta)*tz)/Math.tan(fov/2)},
+					{Math.sin(beta)*Math.sin(alpha)/Math.tan(fov/2), Math.cos(alpha)/Math.tan(fov/2), -Math.sin(alpha)*Math.cos(beta)/Math.tan(fov/2), (Math.sin(beta)*Math.sin(alpha)*tx+Math.cos(alpha)*ty-Math.sin(alpha)*Math.cos(beta)*tz)/Math.tan(fov/2)},
+					{-2*Math.sin(beta)*Math.cos(alpha)/(zFar-zNear), 2*Math.sin(alpha)/(zFar-zNear), 2*Math.cos(alpha)*Math.cos(beta)/(zFar-zNear), 2*(-Math.sin(beta)*Math.cos(alpha)*tx+Math.sin(alpha)*ty+Math.cos(alpha)*Math.cos(beta)*tz)/(zFar-zNear)-2*zNear/(zFar-zNear)-1},
+					{-Math.sin(beta)*Math.cos(alpha), Math.sin(alpha), Math.cos(alpha)*Math.cos(beta), -Math.sin(beta)*Math.cos(alpha)*tx+Math.sin(alpha)*ty, Math.cos(alpha)*Math.cos(beta)*tz}
 			};*/
 
 			this.stateChanged = false;

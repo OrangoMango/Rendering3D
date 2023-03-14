@@ -139,7 +139,7 @@ public class Engine3D{
 		gc.fillRect(0, 0, width, height);
 		this.camera.clearDepthBuffer();
 		
-		double speed = 1.1;
+		double speed = 0.7;
 		double ry = this.camera.getRy();
 		if (this.keys.getOrDefault(KeyCode.W, false)){
 			this.camera.move(speed*Math.cos(ry+Math.PI/2), 0, speed*Math.sin(ry+Math.PI/2));

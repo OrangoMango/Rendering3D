@@ -3,6 +3,7 @@ package com.orangomango.rendering3d.model;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
+import javafx.scene.image.PixelReader;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 
@@ -23,6 +24,7 @@ public class Mesh{
 	private int[][] textureFaces;
 	private Point3D[][] normals;
 	private Image image;
+	private PixelReader reader;
 	private Point3D[][] trianglePoints;
 	private Color[][] vertexCol;
 	private double crx, cry, crz;
@@ -37,6 +39,7 @@ public class Mesh{
 	public Mesh(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, Color[] colors, Point3D[][] ns, Color[][] fcs){
 		this.color = Color.RED; //Color.color(Math.random(), Math.random(), Math.random());
 		this.image = image;
+		this.reader = image.getPixelReader();
 		this.points = points;
 		this.projected = new double[faces.length][3][3];
 		this.faces = faces;
@@ -286,7 +289,7 @@ public class Mesh{
 						
 						renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
 								t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(),
-								projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera, lights, this.image);
+								projected[i][0][2], projected[i][1][2], projected[i][2][2], i, gc, camera, lights, this.image, this.reader);
 					} else {
 						Color c1 = this.facesColors != null ? this.facesColors[i][0] : this.vertexColors[i][0];
 						Color c2 = this.facesColors != null ? this.facesColors[i][1] : this.vertexColors[i][1];
@@ -618,7 +621,7 @@ public class Mesh{
 	}
 	
 	private void renderTriangle(int x1, int y1, int x2, int y2, int x3, int y3, double u1, double v1, double u2, double v2, double u3, double v3, 
-								double w1, double w2, double w3, int index, GraphicsContext gc, Camera camera, List<Light> lights, Image image){
+								double w1, double w2, double w3, int index, GraphicsContext gc, Camera camera, List<Light> lights, Image image, PixelReader reader){
 		
 		double l1 = 0, l2 = 0, l3 = 0;
 		for (Light light : lights){
@@ -726,7 +729,7 @@ public class Mesh{
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
 						if (gc != null){
-							Color color = image.getPixelReader().getColor(pix_x, pix_y);
+							Color color = reader.getColor(pix_x, pix_y);
 							if (SHADOWS){
 								for (Light light : lights){
 									Camera cam2 = light.getCamera();
@@ -806,7 +809,7 @@ public class Mesh{
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
 						if (gc != null){
-							Color color = image.getPixelReader().getColor(pix_x, pix_y);
+							Color color = reader.getColor(pix_x, pix_y);
 							if (SHADOWS){
 								for (Light light : lights){
 									Camera cam2 = light.getCamera();

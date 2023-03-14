@@ -29,7 +29,7 @@ public class Chunk{
 						float n = (noise.noise((i+this.x*CHUNK_SIZE)*frequency, 0, (k+this.z*CHUNK_SIZE)*frequency)+1)/2;
 						int h = Math.round(n*(CHUNK_SIZE-1));
 						if (this.y*Chunk.CHUNK_SIZE+j >= h){
-							this.blocks[i][j][k] = new Block(this, i, j, k, "stone");
+							this.blocks[i][j][k] = new Block(this, i, j, k, this.y*Chunk.CHUNK_SIZE+j > h+3 ? "stone" : "dirt");
 						}
 					}
 				}

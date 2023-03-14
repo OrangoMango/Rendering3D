@@ -13,8 +13,8 @@ import com.orangomango.blockworld.model.*;
 public class MainApplication extends Application{
 	private static final int WIDTH = 320;
 	private static final int HEIGHT = 180;
-	private static final double RENDER_DISTANCE = 4;
-	private static final int CHUNKS = 5;
+	private static final double RENDER_DISTANCE = 2.5;
+	private static final int CHUNKS = 3;
 	
 	@Override
 	public void start(Stage stage){
@@ -22,11 +22,15 @@ public class MainApplication extends Application{
 		
 		Engine3D engine = new Engine3D(stage, WIDTH, HEIGHT);
 
-		Camera camera = new Camera(4, 3, -5);
+		/*Camera camera = new Camera(3, 4, -5);
 		//camera.lookAtCenter();
 		System.out.println(camera);
 		double[][] m1 = Engine3D.multiply(Engine3D.multiply(Engine3D.getTranslation(-camera.getX(), -camera.getY(), -camera.getZ()),
 				Engine3D.multiply(Engine3D.getRotateY(camera.getRy()), Engine3D.getRotateX(camera.getRx()))), camera.getProjectionMatrix());
+
+		double[][] tras = Engine3D.getTranslation(-camera.getX(), -camera.getY(), -camera.getZ());
+		System.out.println("---TRAS:");
+		for (int i = 0; i < 4; i++) System.out.println(java.util.Arrays.toString(tras[i]));
 
 		double[][] m2 = camera.getCompleteMatrix();
 		System.out.println("---M2:");
@@ -37,9 +41,9 @@ public class MainApplication extends Application{
 		System.out.println(java.util.Arrays.toString(Engine3D.multiply(m1, new double[]{3, 4, 5, 1})));
 		System.out.println(java.util.Arrays.toString(Engine3D.multiply(m2, new double[]{3, 4, 5, 1})));
 
-		System.exit(0);
+		System.exit(0);*/
 
-        /*Player player = new Player(Chunk.CHUNK_SIZE, 0, Chunk.CHUNK_SIZE);
+        Player player = new Player(Chunk.CHUNK_SIZE, 0, Chunk.CHUNK_SIZE);
 		Camera camera = player.getCamera();
 		camera.zNear = 1;
 		camera.zFar = 100;
@@ -54,14 +58,34 @@ public class MainApplication extends Application{
 		World world = new World();
 
 		engine.setOnMousePressed(e -> {
-			world.removeBlockAt((int)player.getX(), (int)(player.getY()+1), (int)player.getZ());
-			Chunk chunk = world.getChunkAt(player.getChunkX(), player.getChunkY(), player.getChunkZ());
-			for (MeshGroup mg : engine.getObjects()){
-				if (mg.tag != null && mg.tag.equals(String.format("%d %d %d", chunk.getX(), chunk.getY(), chunk.getZ()))){
-					mg.updateMesh(chunk.getMesh());
+			//world.removeBlockAt((int)player.getX(), (int)(player.getY()+1), (int)player.getZ());
+			Block block = null;
+			int startX = (int)Math.round(player.getX());
+			int startY = (int)Math.round(player.getY());
+			int startZ = (int)Math.round(player.getZ());
+
+			double stepX = Math.cos(camera.getRy()+Math.PI/2)*Math.cos(camera.getRx());
+			double stepY = Math.sin(camera.getRx());
+			double stepZ = Math.sin(camera.getRy()+Math.PI/2)*Math.cos(camera.getRx());
+
+			for (int i = 0; i <= 20; i++){
+				block = world.getBlockAt(startX+(int)Math.round(i*stepX), startY+(int)Math.round(i*stepY), startZ+(int)Math.round(i*stepZ));
+				if (block != null) break;
+			}
+			if (block != null){
+				world.removeBlockAt(block.getX(), block.getY(), block.getZ());
+				Chunk chunk = world.getChunkAt(block.getX()/Chunk.CHUNK_SIZE, block.getY()/Chunk.CHUNK_SIZE, block.getZ()/Chunk.CHUNK_SIZE);
+				if (chunk != null){
+					for (MeshGroup mg : engine.getObjects()){
+						if (mg.tag != null && mg.tag.equals(String.format("%d %d %d", chunk.getX(), chunk.getY(), chunk.getZ()))){
+							mg.updateMesh(chunk.getMesh());
+						}
+					}
+					chunk.setupFaces();
+				} else {
+					System.out.println("Player is in a null chunk");
 				}
 			}
-			chunk.setupFaces();
 		});
 
 		engine.setOnKey(KeyCode.P, () -> {
@@ -100,7 +124,7 @@ public class MainApplication extends Application{
 		
 		stage.setResizable(false);
 		stage.setScene(engine.getScene());
-		stage.show();*/
+		stage.show();
 	}
 	
 	public static void main(String[] args){		

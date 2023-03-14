@@ -1,6 +1,5 @@
 package com.orangomango.blockworld.model;
 
-import com.orangomango.blockworld.MainApplication;
 import javafx.scene.image.Image;
 
 import java.io.*;
