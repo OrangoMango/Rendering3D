@@ -109,9 +109,9 @@ public class Engine3D{
 		this.robot = new Robot();
 		Mesh.SHADOW_FACTOR /= this.width/640.0;
 		
-		Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
-		loop.setCycleCount(Animation.INDEFINITE);
-		loop.play();
+		//Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
+		//loop.setCycleCount(Animation.INDEFINITE);
+		//loop.play();
 		
 		Timeline mouse = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS*2), e -> {
 			if (this.stage.isFocused()) this.robot.mouseMove(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
@@ -123,6 +123,7 @@ public class Engine3D{
 			@Override
 			public void handle(long time){
 				Engine3D.this.frames++;
+				update(gc);
 			}
 		};
 		timer.start();
@@ -217,8 +218,8 @@ public class Engine3D{
 		double sensibility = 0.6;
 		Point2D mouse = this.robot.getMousePosition();
 		Point2D center = new Point2D(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
-		this.camera.setRx(this.camera.getRx()-Math.toRadians((int)(center.getY()-mouse.getY())*sensibility));
-		this.camera.setRy(this.camera.getRy()-Math.toRadians((int)(mouse.getX()-center.getX())*sensibility));
+		this.camera.setRx(this.camera.getRx()+Math.toRadians((int)(center.getY()-mouse.getY())*sensibility));
+		this.camera.setRy(this.camera.getRy()+Math.toRadians((int)(center.getX()-mouse.getX())*sensibility));
 
 		boolean stateChanged = this.camera.stateChanged;
 		for (MeshGroup mg : objects){
@@ -266,12 +267,12 @@ public class Engine3D{
 		x *= Math.tan(cam1.fov/2)/cam1.aspectRatio;
 		y *= Math.tan(cam1.fov/2);
 		
-		double[] rotation = multiply(getRotateX(-cam1.getRx()), new double[]{x, y, w, 1});
+		double[] rotation = multiply(getRotateX(cam1.getRx()), new double[]{x, y, w, 1});
 		x = rotation[0];
 		y = rotation[1];
 		w = rotation[2];
 		
-		rotation = multiply(getRotateY(-cam1.getRy()), new double[]{x, y, w, 1});
+		rotation = multiply(getRotateY(cam1.getRy()), new double[]{x, y, w, 1});
 		x = rotation[0];
 		y = rotation[1];
 		w = rotation[2];
@@ -315,9 +316,9 @@ public class Engine3D{
 	
 	public static double[][] getRotateY(double angle){
 		return new double[][]{
-			{Math.cos(angle), 0, Math.sin(angle), 0},
+			{Math.cos(angle), 0, -Math.sin(angle), 0},
 			{0, 1, 0, 0},
-			{-Math.sin(angle), 0, Math.cos(angle), 0},
+			{Math.sin(angle), 0, Math.cos(angle), 0},
 			{0, 0, 0, 1}
 		};
 	}

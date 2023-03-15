@@ -60,13 +60,13 @@ public class MainApplication extends Application{
 		engine.setOnMousePressed(e -> {
 			//world.removeBlockAt((int)player.getX(), (int)(player.getY()+1), (int)player.getZ());
 			Block block = null;
-			int startX = (int)Math.round(player.getX());
-			int startY = (int)Math.round(player.getY());
-			int startZ = (int)Math.round(player.getZ());
+			int startX = (int)Math.floor(player.getX());
+			int startY = (int)Math.floor(player.getY());
+			int startZ = (int)Math.floor(player.getZ());
 
-			double stepX = Math.cos(camera.getRy()+Math.PI/2)*Math.cos(camera.getRx());
-			double stepY = Math.sin(camera.getRx());
-			double stepZ = Math.sin(camera.getRy()+Math.PI/2)*Math.cos(camera.getRx());
+			double stepX = Math.cos(camera.getRx())*Math.cos(camera.getRy()+Math.PI/2);
+			double stepY = -Math.sin(camera.getRx());
+			double stepZ = Math.cos(camera.getRx())*Math.sin(camera.getRy()+Math.PI/2);
 
 			for (int i = 0; i <= 20; i++){
 				block = world.getBlockAt(startX+(int)Math.round(i*stepX), startY+(int)Math.round(i*stepY), startZ+(int)Math.round(i*stepZ));
@@ -99,11 +99,13 @@ public class MainApplication extends Application{
 			int chunkY = player.getChunkY();
 			int chunkZ = player.getChunkZ();
 			gc.fillText(String.format("%d %d %d", chunkX, chunkY, chunkZ), 30, 50);
+			boolean setupFaces = false;
 			for (int i = -CHUNKS/2; i < -CHUNKS/2+CHUNKS; i++){
 				for (int j = -CHUNKS/2; j < -CHUNKS/2+CHUNKS; j++){
 					for (int k = 0; k < 2; k++){
 						if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
 						if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
+							setupFaces = true;
 							Chunk chunk = world.addChunk(chunkX+i, chunkY+k, chunkZ+j);
 							MeshGroup mgroup = new MeshGroup(chunk.getMesh());
 							mgroup.tag = String.format("%d %d %d", chunk.getX(), chunk.getY(), chunk.getZ());
@@ -117,8 +119,10 @@ public class MainApplication extends Application{
 					}
 				}
 			}
-			for (Chunk chunk : world.getChunks()){
-				chunk.setupFaces();
+			if (setupFaces){
+				for (Chunk chunk : world.getChunks()){
+					chunk.setupFaces();
+				}
 			}
 		});
 		

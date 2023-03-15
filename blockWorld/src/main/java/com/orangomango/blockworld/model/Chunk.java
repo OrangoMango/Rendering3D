@@ -22,16 +22,16 @@ public class Chunk{
 		for (int i = 0; i < CHUNK_SIZE; i++){ // x
 			for (int j = 0; j < CHUNK_SIZE; j++){ // y
 				for (int k = 0; k < CHUNK_SIZE; k++){ // z
-					if (this.y < 0){
+					this.blocks[i][j][k] = new Block(this, i, j, k, "stone");
+					/*if (this.y < 0){
 						this.blocks[i][j][k] = null;
-						System.out.println("Eroroe");
 					} else {
-						float n = (noise.noise((i+this.x*CHUNK_SIZE)*frequency, 0, (k+this.z*CHUNK_SIZE)*frequency)+1)/2;
+						float n = 1; //(noise.noise((i+this.x*CHUNK_SIZE)*frequency, 0, (k+this.z*CHUNK_SIZE)*frequency)+1)/2;
 						int h = Math.round(n*(CHUNK_SIZE-1));
 						if (this.y*Chunk.CHUNK_SIZE+j >= h){
 							this.blocks[i][j][k] = new Block(this, i, j, k, this.y*Chunk.CHUNK_SIZE+j > h+3 ? "stone" : "dirt");
 						}
-					}
+					}*/
 				}
 			}
 		}
@@ -85,5 +85,10 @@ public class Chunk{
 				}
 			}
 		}
+	}
+
+	@Override
+	public String toString(){
+		return String.format("Chunk at %d %d %d", this.x, this.y, this.z);
 	}
 }

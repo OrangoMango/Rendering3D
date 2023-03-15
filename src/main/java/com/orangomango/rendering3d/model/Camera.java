@@ -97,17 +97,17 @@ public class Camera{
 	public double[][] getCompleteMatrix(){
 		if (this.stateChanged){
 			this.savedMatrix = Engine3D.multiply(Engine3D.multiply(Engine3D.getTranslation(-getX(), -getY(), -getZ()),
-				Engine3D.multiply(Engine3D.getRotateY(getRy()), Engine3D.getRotateX(getRx()))), getProjectionMatrix());
+				Engine3D.multiply(Engine3D.getRotateY(-getRy()), Engine3D.getRotateX(-getRx()))), getProjectionMatrix());
 
-			/*double alpha = getRx();
-			double beta = getRy();
+			/*double alpha = -getRx();
+			double beta = -getRy();
 			double tx = -getX(), ty = -getY(), tz = -getZ();
 
 			this.savedMatrix = new double[][]{
-				{aspectRatio*Math.cos(beta)/Math.tan(fov/2), 0, aspectRatio*Math.sin(beta)/Math.tan(fov/2), aspectRatio*(Math.cos(beta)*tx+Math.sin(beta)*tz)/Math.tan(fov/2)},
-					{Math.sin(beta)*Math.sin(alpha)/Math.tan(fov/2), Math.cos(alpha)/Math.tan(fov/2), -Math.sin(alpha)*Math.cos(beta)/Math.tan(fov/2), (Math.sin(beta)*Math.sin(alpha)*tx+Math.cos(alpha)*ty-Math.sin(alpha)*Math.cos(beta)*tz)/Math.tan(fov/2)},
-					{-2*Math.sin(beta)*Math.cos(alpha)/(zFar-zNear), 2*Math.sin(alpha)/(zFar-zNear), 2*Math.cos(alpha)*Math.cos(beta)/(zFar-zNear), 2*(-Math.sin(beta)*Math.cos(alpha)*tx+Math.sin(alpha)*ty+Math.cos(alpha)*Math.cos(beta)*tz)/(zFar-zNear)-2*zNear/(zFar-zNear)-1},
-					{-Math.sin(beta)*Math.cos(alpha), Math.sin(alpha), Math.cos(alpha)*Math.cos(beta), -Math.sin(beta)*Math.cos(alpha)*tx+Math.sin(alpha)*ty, Math.cos(alpha)*Math.cos(beta)*tz}
+				{aspectRatio*Math.cos(beta)/Math.tan(fov/2), 0, -aspectRatio*Math.sin(beta)/Math.tan(fov/2), aspectRatio*(Math.cos(beta)*tx-Math.sin(beta)*tz)/Math.tan(fov/2)},
+					{-Math.sin(beta)*Math.sin(alpha)/Math.tan(fov/2), Math.cos(alpha)/Math.tan(fov/2), -Math.sin(alpha)*Math.cos(beta)/Math.tan(fov/2), (-Math.sin(beta)*Math.sin(alpha)*tx+Math.cos(alpha)*ty-Math.sin(alpha)*Math.cos(beta)*tz)/Math.tan(fov/2)},
+					{2*Math.sin(beta)*Math.cos(alpha)/(zFar-zNear), 2*Math.sin(alpha)/(zFar-zNear), 2*Math.cos(alpha)*Math.cos(beta)/(zFar-zNear), 2*(Math.sin(beta)*Math.cos(alpha)*tx+Math.sin(alpha)*ty+Math.cos(alpha)*Math.cos(beta)*tz)/(zFar-zNear)-2*zNear/(zFar-zNear)-1},
+					{Math.sin(beta)*Math.cos(alpha), Math.sin(alpha), Math.cos(alpha)*Math.cos(beta), Math.sin(beta)*Math.cos(alpha)*tx+Math.sin(alpha)*ty, Math.cos(alpha)*Math.cos(beta)*tz}
 			};*/
 
 			this.stateChanged = false;
