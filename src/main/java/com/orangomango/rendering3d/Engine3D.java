@@ -215,7 +215,7 @@ public class Engine3D{
 			}
 		}
 
-		double sensibility = 0.6;
+		double sensibility = 0.35;
 		Point2D mouse = this.robot.getMousePosition();
 		Point2D center = new Point2D(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
 		this.camera.setRx(this.camera.getRx()+Math.toRadians((int)(center.getY()-mouse.getY())*sensibility));

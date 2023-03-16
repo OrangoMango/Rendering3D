@@ -12,8 +12,8 @@ import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.blockworld.model.*;
 
 public class MainApplication extends Application{
-	private static final int WIDTH = 320;
-	private static final int HEIGHT = 180;
+	private static final int WIDTH = 640; //320;
+	private static final int HEIGHT = 360; //180;
 	private static final double RENDER_DISTANCE = 2.5;
 	private static final int CHUNKS = 3;
 	
@@ -62,7 +62,7 @@ public class MainApplication extends Application{
 			//world.removeBlockAt((int)player.getX(), (int)(player.getY()+1), (int)player.getZ());
 			Block block = null;
 			int startX = (int)Math.floor(player.getX());
-			int startY = (int)Math.floor(player.getY());
+			int startY = (int)Math.floor(player.getY()+0.05);
 			int startZ = (int)Math.floor(player.getZ());
 
 			double stepX = Math.cos(camera.getRx())*Math.cos(camera.getRy()+Math.PI/2);
@@ -78,13 +78,12 @@ public class MainApplication extends Application{
 				int lY = startY+(int)Math.round(i*stepY);
 				int lZ = startZ+(int)Math.round(i*stepZ);
 				block = world.getBlockAt(lX, lY, lZ);
-				if (block != null){
-					break;
-				} else {
+				if (block == null || i == 0){
 					lastX = lX;
 					lastY = lY;
 					lastZ = lZ;
 				}
+				if (block != null) break;
 			}
 			if (block != null){
 				if (e.getButton() == MouseButton.PRIMARY){
@@ -92,16 +91,18 @@ public class MainApplication extends Application{
 				} else if (e.getButton() == MouseButton.SECONDARY){
 					world.setBlockAt(lastX, lastY, lastZ, "coal");
 				}
-				Chunk chunk = world.getChunkAt(block.getX()/Chunk.CHUNK_SIZE, block.getY()/Chunk.CHUNK_SIZE, block.getZ()/Chunk.CHUNK_SIZE);
-				if (chunk != null){
-					for (MeshGroup mg : engine.getObjects()){
-						if (mg.tag != null && mg.tag.equals(String.format("%d %d %d", chunk.getX(), chunk.getY(), chunk.getZ()))){
-							mg.updateMesh(chunk.getMesh());
+				for (int i = -1; i < 2; i++){
+					for (int j = -1; j < 2; j++){
+						Chunk chunk = world.getChunkAt(block.getX()/Chunk.CHUNK_SIZE+i, block.getY()/Chunk.CHUNK_SIZE, block.getZ()/Chunk.CHUNK_SIZE+j);
+						if (chunk != null){
+							for (MeshGroup mg : engine.getObjects()){
+								if (mg.tag != null && mg.tag.equals(String.format("%d %d %d", chunk.getX(), chunk.getY(), chunk.getZ()))){
+									mg.updateMesh(chunk.getMesh());
+								}
+							}
+							chunk.setupFaces();
 						}
 					}
-					chunk.setupFaces();
-				} else {
-					System.out.println("Player is in a null chunk");
 				}
 			}
 		});
