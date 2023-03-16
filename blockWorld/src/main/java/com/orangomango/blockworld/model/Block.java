@@ -3,8 +3,6 @@ package com.orangomango.blockworld.model;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 
-import java.util.Random;
-
 import com.orangomango.rendering3d.model.Mesh;
 
 public class Block{
@@ -58,7 +56,6 @@ public class Block{
 	 */
 	public Mesh getMesh(){
 		if (this.mesh != null) return this.mesh;
-		Random random = new Random();
 		this.mesh = new Mesh(atlas.getImages().get(this.type), new Point3D[]{
 			new Point3D(this.x, this.y, this.z), new Point3D(this.x, 1+this.y, this.z), new Point3D(1+this.x, 1+this.y, this.z),
 			new Point3D(1+this.x, this.y, this.z), new Point3D(this.x, this.y, 1+this.z), new Point3D(this.x, 1+this.y, 1+this.z),

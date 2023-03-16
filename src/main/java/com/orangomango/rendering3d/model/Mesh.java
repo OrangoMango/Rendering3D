@@ -219,7 +219,7 @@ public class Mesh{
 				
 				if ((isOutside(px1, bound) && isOutside(px2, bound) && isOutside(px3, bound))
 				 || (isOutside(py1, bound) && isOutside(py2, bound) && isOutside(py3, bound))
-				 || (isOutside(pz1, bound) && isOutside(pz2, bound) && isOutside(pz3, bound))){
+				 || (isOutside(pz1, bound) || isOutside(pz2, bound) || isOutside(pz3, bound))){
 					setProjectedPoint(i, 0, null);
 					setProjectedPoint(i, 1, null);
 					setProjectedPoint(i, 2, null);

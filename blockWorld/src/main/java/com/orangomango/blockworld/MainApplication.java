@@ -14,7 +14,7 @@ import com.orangomango.blockworld.model.*;
 public class MainApplication extends Application{
 	private static final int WIDTH = 640; //320;
 	private static final int HEIGHT = 360; //180;
-	private static final double RENDER_DISTANCE = 2.5;
+	private static final double RENDER_DISTANCE = 3.5;
 	private static final int CHUNKS = 3;
 	
 	@Override
@@ -62,7 +62,7 @@ public class MainApplication extends Application{
 			//world.removeBlockAt((int)player.getX(), (int)(player.getY()+1), (int)player.getZ());
 			Block block = null;
 			int startX = (int)Math.floor(player.getX());
-			int startY = (int)Math.floor(player.getY()+0.05);
+			int startY = (int)Math.floor(player.getY());
 			int startZ = (int)Math.floor(player.getZ());
 
 			double stepX = Math.cos(camera.getRx())*Math.cos(camera.getRy()+Math.PI/2);
@@ -73,7 +73,7 @@ public class MainApplication extends Application{
 			int lastY = 0;
 			int lastZ = 0;
 
-			for (int i = 0; i <= 20; i++){
+			for (double i = 0; i <= 10; i += 0.05){
 				int lX = startX+(int)Math.round(i*stepX);
 				int lY = startY+(int)Math.round(i*stepY);
 				int lZ = startZ+(int)Math.round(i*stepZ);
