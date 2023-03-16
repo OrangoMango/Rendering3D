@@ -40,6 +40,19 @@ public class World{
 		}
 	}
 
+	public void setBlockAt(int x, int y, int z, String type){
+		int chunkX = x / Chunk.CHUNK_SIZE;
+		int chunkY = y / Chunk.CHUNK_SIZE;
+		int chunkZ = z / Chunk.CHUNK_SIZE;
+		Chunk chunk = getChunkAt(chunkX, chunkY, chunkZ);
+		if (chunk != null){
+			int blockX = x % Chunk.CHUNK_SIZE;
+			int blockY = y % Chunk.CHUNK_SIZE;
+			int blockZ = z % Chunk.CHUNK_SIZE;
+			chunk.setBlock(new Block(chunk, blockX, blockY, blockZ, type), blockX, blockY, blockZ);
+		}
+	}
+
 	public void clearChunks(){
 		this.chunks.clear();
 	}

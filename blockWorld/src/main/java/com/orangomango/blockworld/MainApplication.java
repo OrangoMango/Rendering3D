@@ -3,6 +3,7 @@ package com.orangomango.blockworld;
 import javafx.application.Application;
 import javafx.geometry.Point3D;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -68,12 +69,29 @@ public class MainApplication extends Application{
 			double stepY = -Math.sin(camera.getRx());
 			double stepZ = Math.cos(camera.getRx())*Math.sin(camera.getRy()+Math.PI/2);
 
+			int lastX = 0;
+			int lastY = 0;
+			int lastZ = 0;
+
 			for (int i = 0; i <= 20; i++){
-				block = world.getBlockAt(startX+(int)Math.round(i*stepX), startY+(int)Math.round(i*stepY), startZ+(int)Math.round(i*stepZ));
-				if (block != null) break;
+				int lX = startX+(int)Math.round(i*stepX);
+				int lY = startY+(int)Math.round(i*stepY);
+				int lZ = startZ+(int)Math.round(i*stepZ);
+				block = world.getBlockAt(lX, lY, lZ);
+				if (block != null){
+					break;
+				} else {
+					lastX = lX;
+					lastY = lY;
+					lastZ = lZ;
+				}
 			}
 			if (block != null){
-				world.removeBlockAt(block.getX(), block.getY(), block.getZ());
+				if (e.getButton() == MouseButton.PRIMARY){
+					world.removeBlockAt(block.getX(), block.getY(), block.getZ());
+				} else if (e.getButton() == MouseButton.SECONDARY){
+					world.setBlockAt(lastX, lastY, lastZ, "coal");
+				}
 				Chunk chunk = world.getChunkAt(block.getX()/Chunk.CHUNK_SIZE, block.getY()/Chunk.CHUNK_SIZE, block.getZ()/Chunk.CHUNK_SIZE);
 				if (chunk != null){
 					for (MeshGroup mg : engine.getObjects()){
