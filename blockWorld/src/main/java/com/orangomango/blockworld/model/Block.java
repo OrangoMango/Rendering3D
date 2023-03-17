@@ -87,4 +87,9 @@ public class Block{
 	public int getZ(){
 		return this.z;
 	}
+
+	@Override
+	public String toString(){
+		return String.format("Block at %d %d %d", this.x, this.y, this.z);
+	}
 }

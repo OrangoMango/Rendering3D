@@ -1,5 +1,6 @@
 package com.orangomango.rendering3d;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -36,6 +37,8 @@ public class Engine3D{
 	private EventHandler<MouseEvent> onMousePressed;
 	private boolean mouseMovement = true;
 	private Scene scene;
+	public SimpleStringProperty extraText = new SimpleStringProperty();
+	private int renderedMeshes = 0;
 	
 	private static Image POINTER = new Image(Engine3D.class.getResourceAsStream("/pointer.png"));
 	
@@ -144,6 +147,7 @@ public class Engine3D{
 		gc.setFill(Color.CYAN);
 		gc.fillRect(0, 0, width, height);
 		this.camera.clearDepthBuffer();
+		this.renderedMeshes = 0;
 		
 		double speed = 0.3*this.fps/FPS;
 		double ry = this.camera.getRy();
@@ -231,7 +235,7 @@ public class Engine3D{
 		boolean stateChanged = this.camera.stateChanged;
 		for (MeshGroup mg : objects){
 			if (mg.skipCondition != null && mg.skipCondition.test(this.camera)) continue;
-
+			this.renderedMeshes++;
 			for (Mesh object : mg.getMeshes()){
 				if (stateChanged) object.cache.remove(this.camera);
 				object.showLines = SHOW_LINES;
@@ -260,10 +264,19 @@ public class Engine3D{
 		if (this.onUpdate != null){
 			this.onUpdate.accept(gc);
 		}
-		
+
 		gc.setFill(Color.BLACK);
-		gc.setFont(new Font("sans-serif", 7));
-		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d (%d)\nLight: %s", this.fps, FPS, sceneLights.get(0).getPosition()), 0.05*width, 0.05*height);
+		gc.save();
+		gc.setGlobalAlpha(0.6);
+		gc.fillRect(0.035*width, 0.025*height, 0.45*width, 0.2*height);
+		gc.restore();
+		gc.setFill(Color.WHITE);
+		gc.setFont(new Font("sans-serif", 13));
+		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d (%d)\n%s", this.fps, FPS, this.extraText.get()), 0.05*width, 0.075*height);
+	}
+
+	public int getRenderedMeshes(){
+		return this.renderedMeshes;
 	}
 
 	public void toggleMouseMovement(){

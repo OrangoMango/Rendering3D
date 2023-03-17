@@ -14,8 +14,8 @@ import com.orangomango.blockworld.model.*;
 public class MainApplication extends Application{
 	private static final int WIDTH = 640; //320;
 	private static final int HEIGHT = 360; //180;
-	private static final double RENDER_DISTANCE = 5.5;
-	private static final int CHUNKS = 7;
+	private static final double RENDER_DISTANCE = 3.5;
+	private static final int CHUNKS = 3;
 
 	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "dirt", "stone"};
 	private int currentBlock = 0;
@@ -43,9 +43,9 @@ public class MainApplication extends Application{
 		engine.setOnMousePressed(e -> {
 			//world.removeBlockAt((int)player.getX(), (int)(player.getY()+1), (int)player.getZ());
 			Block block = null;
-			int startX = (int)Math.floor(player.getX());
-			int startY = (int)Math.floor(player.getY());
-			int startZ = (int)Math.floor(player.getZ());
+			double startX = player.getX();
+			double startY = player.getY();
+			double startZ = player.getZ();
 
 			double stepX = Math.cos(camera.getRx())*Math.cos(camera.getRy()+Math.PI/2);
 			double stepY = -Math.sin(camera.getRx());
@@ -56,9 +56,9 @@ public class MainApplication extends Application{
 			int lastZ = 0;
 
 			for (double i = 0; i <= 10; i += 0.005){
-				int lX = startX+(int)Math.round(i*stepX);
-				int lY = startY+(int)Math.round(i*stepY);
-				int lZ = startZ+(int)Math.round(i*stepZ);
+				int lX = (int)Math.floor(startX+i*stepX);
+				int lY = (int)Math.floor(startY+i*stepY);
+				int lZ = (int)Math.floor(startZ+i*stepZ);
 				block = world.getBlockAt(lX, lY, lZ);
 				if (block == null || i == 0){
 					lastX = lX;
@@ -107,11 +107,14 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.DIGIT4, () -> this.currentBlock = 3);
 
 		engine.setOnUpdate(gc -> {
-			gc.setFill(Color.BLACK);
+			//gc.setFill(Color.BLACK);
+			//gc.fillText(String.format("%d %d %d", chunkX, chunkY, chunkZ), 30, 50);
+
+			engine.extraText.set("Chunks generated: "+engine.getRenderedMeshes());
+
 			int chunkX = player.getChunkX();
 			int chunkY = player.getChunkY();
 			int chunkZ = player.getChunkZ();
-			gc.fillText(String.format("%d %d %d", chunkX, chunkY, chunkZ), 30, 50);
 			boolean setupFaces = false;
 			for (int i = -CHUNKS/2; i < -CHUNKS/2+CHUNKS; i++){
 				for (int j = -CHUNKS/2; j < -CHUNKS/2+CHUNKS; j++){
