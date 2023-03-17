@@ -14,8 +14,11 @@ import com.orangomango.blockworld.model.*;
 public class MainApplication extends Application{
 	private static final int WIDTH = 640; //320;
 	private static final int HEIGHT = 360; //180;
-	private static final double RENDER_DISTANCE = 3.5;
-	private static final int CHUNKS = 3;
+	private static final double RENDER_DISTANCE = 5.5;
+	private static final int CHUNKS = 7;
+
+	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "dirt", "stone"};
+	private int currentBlock = 0;
 	
 	@Override
 	public void start(Stage stage){
@@ -23,35 +26,14 @@ public class MainApplication extends Application{
 		
 		Engine3D engine = new Engine3D(stage, WIDTH, HEIGHT);
 
-		/*Camera camera = new Camera(3, 4, -5);
-		//camera.lookAtCenter();
-		System.out.println(camera);
-		double[][] m1 = Engine3D.multiply(Engine3D.multiply(Engine3D.getTranslation(-camera.getX(), -camera.getY(), -camera.getZ()),
-				Engine3D.multiply(Engine3D.getRotateY(camera.getRy()), Engine3D.getRotateX(camera.getRx()))), camera.getProjectionMatrix());
-
-		double[][] tras = Engine3D.getTranslation(-camera.getX(), -camera.getY(), -camera.getZ());
-		System.out.println("---TRAS:");
-		for (int i = 0; i < 4; i++) System.out.println(java.util.Arrays.toString(tras[i]));
-
-		double[][] m2 = camera.getCompleteMatrix();
-		System.out.println("---M2:");
-		for (int i = 0; i < 4; i++) System.out.println(java.util.Arrays.toString(m2[i]));
-		System.out.println("---M1:");
-		for (int i = 0; i < 4; i++) System.out.println(java.util.Arrays.toString(m1[i]));
-		System.out.println("---Output:");
-		System.out.println(java.util.Arrays.toString(Engine3D.multiply(m1, new double[]{3, 4, 5, 1})));
-		System.out.println(java.util.Arrays.toString(Engine3D.multiply(m2, new double[]{3, 4, 5, 1})));
-
-		System.exit(0);*/
-
-        Player player = new Player(Chunk.CHUNK_SIZE, 0, Chunk.CHUNK_SIZE);
+        Player player = new Player(0, 15, 0);
 		Camera camera = player.getCamera();
 		camera.zNear = 1;
 		camera.zFar = 100;
 		camera.lookAtCenter();
 		
 		engine.setCamera(camera);
-		Light light = new Light(-5, 3, 5);
+		Light light = new Light(0, 0, 0); // -5, 3, 5
 		light.setFixed(true);
 		engine.getLights().add(light);
 		//Engine3D.LIGHT_AVAILABLE = false;
@@ -73,7 +55,7 @@ public class MainApplication extends Application{
 			int lastY = 0;
 			int lastZ = 0;
 
-			for (double i = 0; i <= 10; i += 0.05){
+			for (double i = 0; i <= 10; i += 0.005){
 				int lX = startX+(int)Math.round(i*stepX);
 				int lY = startY+(int)Math.round(i*stepY);
 				int lZ = startZ+(int)Math.round(i*stepZ);
@@ -89,18 +71,24 @@ public class MainApplication extends Application{
 				if (e.getButton() == MouseButton.PRIMARY){
 					world.removeBlockAt(block.getX(), block.getY(), block.getZ());
 				} else if (e.getButton() == MouseButton.SECONDARY){
-					world.setBlockAt(lastX, lastY, lastZ, "coal");
+					world.setBlockAt(lastX, lastY, lastZ, inventoryBlocks[this.currentBlock]);
+					/*int blockX = Integer.compare(lastX, block.getX());
+					int blockY = Integer.compare(lastY, block.getY());
+					int blockZ = Integer.compare(lastZ, block.getZ());
+					world.setBlockAt(block.getX()+blockX, block.getY()+blockY, block.getZ()+blockZ, "wood");*/
 				}
 				for (int i = -1; i < 2; i++){
 					for (int j = -1; j < 2; j++){
-						Chunk chunk = world.getChunkAt(block.getX()/Chunk.CHUNK_SIZE+i, block.getY()/Chunk.CHUNK_SIZE, block.getZ()/Chunk.CHUNK_SIZE+j);
-						if (chunk != null){
-							for (MeshGroup mg : engine.getObjects()){
-								if (mg.tag != null && mg.tag.equals(String.format("%d %d %d", chunk.getX(), chunk.getY(), chunk.getZ()))){
-									mg.updateMesh(chunk.getMesh());
+						for (int k = -1; k < 2; k++){
+							Chunk chunk = world.getChunkAt(block.getX()/Chunk.CHUNK_SIZE+i, block.getY()/Chunk.CHUNK_SIZE+k, block.getZ()/Chunk.CHUNK_SIZE+j);
+							if (chunk != null){
+								for (MeshGroup mg : engine.getObjects()){
+									if (mg.tag != null && mg.tag.equals(String.format("%d %d %d", chunk.getX(), chunk.getY(), chunk.getZ()))){
+										mg.updateMesh(chunk.getMesh());
+									}
 								}
+								chunk.setupFaces();
 							}
-							chunk.setupFaces();
 						}
 					}
 				}
@@ -111,6 +99,12 @@ public class MainApplication extends Application{
 			engine.getObjects().clear();
 			world.clearChunks();
 		});
+
+		engine.setOnKey(KeyCode.O, engine::toggleMouseMovement);
+		engine.setOnKey(KeyCode.DIGIT1, () -> this.currentBlock = 0);
+		engine.setOnKey(KeyCode.DIGIT2, () -> this.currentBlock = 1);
+		engine.setOnKey(KeyCode.DIGIT3, () -> this.currentBlock = 2);
+		engine.setOnKey(KeyCode.DIGIT4, () -> this.currentBlock = 3);
 
 		engine.setOnUpdate(gc -> {
 			gc.setFill(Color.BLACK);

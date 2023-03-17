@@ -8,6 +8,9 @@
     },
     "stone" : {
       "fileName" : "/stone.png"
+    },
+    "wood" : {
+      "fileName" : "/wood.png"
     }
   }
 }

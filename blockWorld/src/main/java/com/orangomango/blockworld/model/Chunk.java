@@ -6,6 +6,7 @@ import com.orangomango.rendering3d.model.Mesh;
 
 public class Chunk{
 	public static final int CHUNK_SIZE = 8;
+	private static final int HEIGHT_LIMIT = 2;
 	
 	private Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	private int x, y, z;
@@ -22,13 +23,13 @@ public class Chunk{
 		for (int i = 0; i < CHUNK_SIZE; i++){ // x
 			for (int j = 0; j < CHUNK_SIZE; j++){ // y
 				for (int k = 0; k < CHUNK_SIZE; k++){ // z
-					if (this.y < 0){
+					if (this.y < HEIGHT_LIMIT){
 						this.blocks[i][j][k] = null;
 					} else {
 						float n = (noise.noise((i+this.x*CHUNK_SIZE)*frequency, 0, (k+this.z*CHUNK_SIZE)*frequency)+1)/2;
-						int h = Math.round(n*(CHUNK_SIZE-1));
-						if (this.y*Chunk.CHUNK_SIZE+j >= h){
-							this.blocks[i][j][k] = new Block(this, i, j, k, this.y*Chunk.CHUNK_SIZE+j > h+3 ? "stone" : "dirt");
+						int h = Math.round(n*(CHUNK_SIZE-1))+CHUNK_SIZE*HEIGHT_LIMIT;
+						if (this.y*CHUNK_SIZE+j >= h){
+							this.blocks[i][j][k] = new Block(this, i, j, k, this.y*CHUNK_SIZE+j > h+3 ? "stone" : "dirt");
 						}
 					}
 				}
@@ -45,7 +46,11 @@ public class Chunk{
 	}
 	
 	public void setBlock(Block block, int x, int y, int z){
-		this.blocks[x][y][z] = block;
+		if (x < 0 || y < 0 || z < 0 || x >= Chunk.CHUNK_SIZE || y >= Chunk.CHUNK_SIZE || z >= Chunk.CHUNK_SIZE){
+			throw new IllegalStateException("Block is outside the world");
+		} else {
+			this.blocks[x][y][z] = block;
+		}
 	}
 	
 	public int getX(){

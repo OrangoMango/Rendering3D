@@ -34,6 +34,8 @@ public class Engine3D{
 	private Map<KeyCode, Runnable> keyEvents = new HashMap<>();
 	private Consumer<GraphicsContext> onUpdate;
 	private EventHandler<MouseEvent> onMousePressed;
+	private boolean mouseMovement = true;
+	private Scene scene;
 	
 	private static Image POINTER = new Image(Engine3D.class.getResourceAsStream("/pointer.png"));
 	
@@ -102,7 +104,10 @@ public class Engine3D{
 		canvas.setFocusTraversable(true);
 		canvas.setOnKeyPressed(e -> this.keys.put(e.getCode(), true));
 		canvas.setOnKeyReleased(e -> this.keys.put(e.getCode(), false));
-		if (this.onMousePressed != null) canvas.setOnMousePressed(this.onMousePressed);
+		if (this.onMousePressed != null){
+			canvas.setOnMousePressed(this.onMousePressed);
+			//canvas.setOnMouseDragged(this.onMousePressed);
+		}
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		pane.getChildren().add(canvas);
 		
@@ -114,7 +119,7 @@ public class Engine3D{
 		//loop.play();
 		
 		Timeline mouse = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS*2), e -> {
-			if (this.stage.isFocused()) this.robot.mouseMove(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
+			if (this.stage.isFocused() && this.mouseMovement) this.robot.mouseMove(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
 		}));
 		mouse.setCycleCount(Animation.INDEFINITE);
 		mouse.play();
@@ -128,7 +133,7 @@ public class Engine3D{
 		};
 		timer.start();
 		
-		Scene scene = new Scene(pane, width, height);
+		scene = new Scene(pane, width, height);
 		scene.setCursor(Cursor.NONE);
 		
 		return scene;
@@ -140,7 +145,7 @@ public class Engine3D{
 		gc.fillRect(0, 0, width, height);
 		this.camera.clearDepthBuffer();
 		
-		double speed = 0.7;
+		double speed = 0.3*this.fps/FPS;
 		double ry = this.camera.getRy();
 		if (this.keys.getOrDefault(KeyCode.W, false)){
 			this.camera.move(speed*Math.cos(ry+Math.PI/2), 0, speed*Math.sin(ry+Math.PI/2));
@@ -215,11 +220,13 @@ public class Engine3D{
 			}
 		}
 
-		double sensibility = 0.35;
-		Point2D mouse = this.robot.getMousePosition();
-		Point2D center = new Point2D(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
-		this.camera.setRx(this.camera.getRx()+Math.toRadians((int)(center.getY()-mouse.getY())*sensibility));
-		this.camera.setRy(this.camera.getRy()+Math.toRadians((int)(center.getX()-mouse.getX())*sensibility));
+		if (this.mouseMovement){
+			double sensibility = 0.35;
+			Point2D mouse = this.robot.getMousePosition();
+			Point2D center = new Point2D(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
+			this.camera.setRx(this.camera.getRx()+Math.toRadians((int) (center.getY()-mouse.getY())*sensibility));
+			this.camera.setRy(this.camera.getRy()+Math.toRadians((int) (center.getX()-mouse.getX())*sensibility));
+		}
 
 		boolean stateChanged = this.camera.stateChanged;
 		for (MeshGroup mg : objects){
@@ -257,6 +264,11 @@ public class Engine3D{
 		gc.setFill(Color.BLACK);
 		gc.setFont(new Font("sans-serif", 7));
 		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d (%d)\nLight: %s", this.fps, FPS, sceneLights.get(0).getPosition()), 0.05*width, 0.05*height);
+	}
+
+	public void toggleMouseMovement(){
+		this.mouseMovement = !this.mouseMovement;
+		scene.setCursor(this.mouseMovement ? Cursor.NONE : Cursor.DEFAULT);
 	}
 	
 	public static double[] revertPoint(double[] point, Camera cam1){
