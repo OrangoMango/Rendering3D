@@ -61,21 +61,26 @@ public class MainApplication extends Application{
 				if (block != null) break;
 			}
 			if (block != null){
+				boolean chunkUpdate = false;
 				if (e.getButton() == MouseButton.PRIMARY){
 					world.removeBlockAt(block.getX(), block.getY(), block.getZ());
-				} else if (e.getButton() == MouseButton.SECONDARY){
+					chunkUpdate = true;
+				} else if (e.getButton() == MouseButton.SECONDARY && lastX >= 0 && lastY >= 0 && lastZ >= 0){
 					world.setBlockAt(lastX, lastY, lastZ, inventoryBlocks[this.currentBlock]);
+					chunkUpdate = true;
 					/*int blockX = Integer.compare(lastX, block.getX());
 					int blockY = Integer.compare(lastY, block.getY());
 					int blockZ = Integer.compare(lastZ, block.getZ());
 					world.setBlockAt(block.getX()+blockX, block.getY()+blockY, block.getZ()+blockZ, "wood");*/
 				}
-				for (int i = -1; i < 2; i++){
-					for (int j = -1; j < 2; j++){
-						for (int k = -1; k < 2; k++){
-							Chunk chunk = world.getChunkAt(block.getX()/Chunk.CHUNK_SIZE+i, block.getY()/Chunk.CHUNK_SIZE+k, block.getZ()/Chunk.CHUNK_SIZE+j);
-							if (chunk != null){
-								Chunk.updateMesh(chunk);
+				if (chunkUpdate){
+					for (int i = -1; i < 2; i++){
+						for (int j = -1; j < 2; j++){
+							for (int k = -1; k < 2; k++){
+								Chunk chunk = world.getChunkAt(block.getX()/Chunk.CHUNK_SIZE+i, block.getY()/Chunk.CHUNK_SIZE+k, block.getZ()/Chunk.CHUNK_SIZE+j);
+								if (chunk != null){
+									Chunk.updateMesh(chunk);
+								}
 							}
 						}
 					}

@@ -40,6 +40,7 @@ public class Chunk{
 			}
 		}
 
+		// Trees generation
 		Random random = world.getRandom();
 		for (int i = 0; i < CHUNK_SIZE; i++){ // x
 			for (int j = 0; j < CHUNK_SIZE; j++){ // z
@@ -47,7 +48,7 @@ public class Chunk{
 				for (int k = 0; k < CHUNK_SIZE; k++){ // y
 					if (this.blocks[i][k][j] == null) h++;
 				}
-				if (h < CHUNK_SIZE){
+				if (h > 0 && h < CHUNK_SIZE){
 					if (random.nextInt(1000) < 5){
 						int treeHeight = 5;
 						for (int k = 0; k < treeHeight; k++){
@@ -59,6 +60,7 @@ public class Chunk{
 			}
 		}
 
+		// Build pending blocks generated from other chunks
 		Iterator<Block> iterator = pendingBlocks.iterator();
 		while (iterator.hasNext()){
 			Block block = iterator.next();

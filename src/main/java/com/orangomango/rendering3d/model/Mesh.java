@@ -216,7 +216,8 @@ public class Mesh{
 				double pz3 = p3[2];
 				
 				double bound = 1;
-				
+
+				// TODO (clipping and z < 1)
 				if ((isOutside(px1, bound) && isOutside(px2, bound) && isOutside(px3, bound))
 				 || (isOutside(py1, bound) && isOutside(py2, bound) && isOutside(py3, bound))
 				 || (isOutside(pz1, bound) || isOutside(pz2, bound) || isOutside(pz3, bound))){
