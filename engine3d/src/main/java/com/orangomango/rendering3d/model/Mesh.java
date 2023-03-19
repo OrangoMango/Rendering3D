@@ -160,7 +160,7 @@ public class Mesh{
 		int i = 0;
 		this.vertexColors = new Color[this.faces.length][3];
 		for (Point3D[] points : getTrianglePoints(vertexColors)){
-			double[][] cam = camera.getCompleteMatrix();
+			double[][] cam = camera.getViewMatrix();
 			
 			// Apply transforms
 			double[] p1 = new double[]{points[0].getX(), points[0].getY(), points[0].getZ(), 1};
@@ -223,32 +223,38 @@ public class Mesh{
 			}
 			
 			if (dot < 0){
-				Point3D[][] clippedTriangles = clipTriangle(new Point3D(0, 0, 1), new Point3D(camera.getX(), camera.getY(), camera.getZ()+camera.zNear), point1, point2, point3);
-				if (clippedTriangles == null){
-					setProjectedPoint(i, 0, null);
-					setProjectedPoint(i, 1, null);
-					setProjectedPoint(i, 2, null);
-					i++;
-					continue;
-				} else {
-					Point3D[] tr1 = clippedTriangles[0];
-					p1 = new double[]{tr1[0].getX(), tr1[0].getY(), tr1[0].getZ(), 1};
-					p2 = new double[]{tr1[1].getX(), tr1[1].getY(), tr1[1].getZ(), 1};
-					p3 = new double[]{tr1[2].getX(), tr1[2].getY(), tr1[2].getZ(), 1};
-					if (clippedTriangles.length == 2){
-						// TODO
-					}
-				}
-
-				// Project 3D -> 2D
+				// Project 3D -> View space
+				boolean cacheMissing = false;
 				if (proj[i][0] == null){
 					proj[i][0] = multiply(cam, p1);
+					cacheMissing = true;
 				}
 				if (proj[i][1] == null){
 					proj[i][1] = multiply(cam, p2);
+					cacheMissing = true;
 				}
 				if (proj[i][2] == null){
 					proj[i][2] = multiply(cam, p3);
+					cacheMissing = true;
+				}
+				if (cacheMissing){
+					Point3D[][] clippedTriangles = clipTriangle(new Point3D(0, 0, 1), new Point3D(0, 0, 5.5), new Point3D(proj[i][0][0], proj[i][0][1], proj[i][0][2]), new Point3D(proj[i][1][0], proj[i][1][1], proj[i][1][2]), new Point3D(proj[i][2][0], proj[i][2][1], proj[i][2][2]));
+					if (clippedTriangles == null){
+						setProjectedPoint(i, 0, null);
+						setProjectedPoint(i, 1, null);
+						setProjectedPoint(i, 2, null);
+						i++;
+						continue;
+					} else {
+						Point3D[] tr1 = clippedTriangles[0];
+						// Project View space -> 2D
+						proj[i][0] = multiply(camera.getProjectionMatrix(), new double[]{tr1[0].getX(), tr1[0].getY(), tr1[0].getZ(), 1});
+						proj[i][1] = multiply(camera.getProjectionMatrix(), new double[]{tr1[1].getX(), tr1[1].getY(), tr1[1].getZ(), 1});
+						proj[i][2] = multiply(camera.getProjectionMatrix(), new double[]{tr1[2].getX(), tr1[2].getY(), tr1[2].getZ(), 1});
+						if (clippedTriangles.length == 2){
+							// TODO
+						}
+					}
 				}
 				p1 = proj[i][0];
 				p2 = proj[i][1];

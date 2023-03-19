@@ -299,7 +299,7 @@ public class Engine3D{
 		double y = reverted[1];
 		double w = reverted[2];
 		
-		double[] out = multiply(cam2.getCompleteMatrix(), new double[]{x, y, w, 1});
+		double[] out = multiply(multiply(cam2.getViewMatrix(), cam2.getProjectionMatrix()), new double[]{x, y, w, 1});
 		out[0] /= out[3] == 0 ? 1 : out[3];
 		out[1] /= out[3] == 0 ? 1 : out[3];
 		

@@ -42,7 +42,7 @@ javafx {
 }
 
 dependencies {
-    implementation project(":")
+    implementation project(":engine3d")
     implementation "org.json:json:20220924"
     //implementation "org.spongepowered:noise:2.0.0-SNAPSHOT"
 

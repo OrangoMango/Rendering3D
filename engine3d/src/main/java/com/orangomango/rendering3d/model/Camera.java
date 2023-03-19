@@ -94,10 +94,10 @@ public class Camera{
 		return String.format("Cx: %.2f Cy: %.2f Cz: %.2f | Rx: %.2f Ry: %.2f", this.cx, this.cy, this.cz, this.rx, this.ry);
 	}
 	
-	public double[][] getCompleteMatrix(){
+	public double[][] getViewMatrix(){
 		if (this.stateChanged){
-			this.savedMatrix = Engine3D.multiply(Engine3D.multiply(Engine3D.getTranslation(-getX(), -getY(), -getZ()),
-				Engine3D.multiply(Engine3D.getRotateY(-getRy()), Engine3D.getRotateX(-getRx()))), getProjectionMatrix());
+			this.savedMatrix = Engine3D.multiply(Engine3D.getTranslation(-getX(), -getY(), -getZ()),
+				Engine3D.multiply(Engine3D.getRotateY(-getRy()), Engine3D.getRotateX(-getRx())));
 
 			/*double alpha = -getRx();
 			double beta = -getRy();
