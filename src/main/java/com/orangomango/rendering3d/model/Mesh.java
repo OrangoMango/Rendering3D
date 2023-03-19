@@ -122,6 +122,45 @@ public class Mesh{
 	private void setProjectedPoint(int f, int tr, double[] point){
 		this.projected[f][tr] = point;
 	}
+
+	private double distanceToPlane(Point3D normal, Point3D planePoint, Point3D point, Point3D direction){
+		return (normal.dotProduct(planePoint)-normal.dotProduct(point))/normal.dotProduct(direction);
+	}
+
+	private Point3D[][] clipTriangle(Point3D planeN, Point3D planeA, Point3D t1, Point3D t2, Point3D t3){
+		Point3D[] outside = new Point3D[3];
+		Point3D[] inside = new Point3D[3];
+		int outsideN = 0;
+		int insideN = 0;
+
+		double d1 = distanceToPlane(planeN, planeA, t1, planeN.multiply(-1));
+		double d2 = distanceToPlane(planeN, planeA, t2, planeN.multiply(-1));
+		double d3 = distanceToPlane(planeN, planeA, t3, planeN.multiply(-1));
+
+		if (d1 >= 0) inside[insideN++] = t1;
+		else outside[outsideN++] = t1;
+		if (d2 >= 0) inside[insideN++] = t2;
+		else outside[outsideN++] = t2;
+		if (d3 >= 0) inside[insideN++] = t3;
+		else outside[outsideN++] = t3;
+
+		if (insideN == 3){
+			return new Point3D[][]{{t1, t2, t3}};
+		} else if (insideN == 0){
+			return null;
+		} else if (insideN == 1 && outsideN == 2){
+			Point3D dp1 = t2.subtract(t1).normalize();
+			Point3D dp2 = t3.subtract(t1).normalize();
+			return new Point3D[][]{{t1, t1.add(dp1.multiply(distanceToPlane(planeN, planeA, t1, dp1))), t1.add(dp2.multiply(distanceToPlane(planeN, planeA, t1, dp2)))}};
+		} else if (insideN == 2 && outsideN == 1){
+			Point3D dp1 = t3.subtract(t1).normalize();
+			Point3D tempP = t1.add(dp1.multiply(distanceToPlane(planeN, planeA, t1, dp1)));
+			Point3D dp2 = t3.subtract(t2).normalize();
+			return new Point3D[][]{{t1, t2, tempP}, {tempP, t2, t2.add(dp2.multiply(distanceToPlane(planeN, planeA, t2, dp2)))}};
+		} else {
+			return null;
+		}
+	}
 	
 	public void evaluate(Camera camera){
 		int i = 0;
@@ -217,15 +256,36 @@ public class Mesh{
 				
 				double bound = 1;
 
-				// TODO (clipping and z < 1)
 				if ((isOutside(px1, bound) && isOutside(px2, bound) && isOutside(px3, bound))
-				 || (isOutside(py1, bound) && isOutside(py2, bound) && isOutside(py3, bound))
-				 || (isOutside(pz1, bound) || isOutside(pz2, bound) || isOutside(pz3, bound))){
+				 || (isOutside(py1, bound) && isOutside(py2, bound) && isOutside(py3, bound))){
 					setProjectedPoint(i, 0, null);
 					setProjectedPoint(i, 1, null);
 					setProjectedPoint(i, 2, null);
 					i++;
 					continue;
+				}
+
+				Point3D[][] clippedTriangles = clipTriangle(new Point3D(0, 0, 1), new Point3D(0, 0, camera.zNear), new Point3D(px1, py1, pz1), new Point3D(px2, py2, pz2), new Point3D(px3, py3, pz3));
+				if (clippedTriangles == null){
+					setProjectedPoint(i, 0, null);
+					setProjectedPoint(i, 1, null);
+					setProjectedPoint(i, 2, null);
+					i++;
+					continue;
+				} else {
+					Point3D[] tr1 = clippedTriangles[0];
+					px1 = tr1[0].getX();
+					px2 = tr1[1].getX();
+					px3 = tr1[2].getX();
+					py1 = tr1[0].getY();
+					py2 = tr1[1].getY();
+					py3 = tr1[2].getY();
+					pz1 = tr1[0].getZ();
+					pz2 = tr1[1].getZ();
+					pz3 = tr1[2].getZ();
+					if (clippedTriangles.length == 2){
+						// TODO
+					}
 				}
 				
 				px1 += 1;
