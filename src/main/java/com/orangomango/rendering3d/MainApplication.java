@@ -1,6 +1,7 @@
 package com.orangomango.rendering3d;
 
 import javafx.application.Application;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.geometry.Point2D;
@@ -59,6 +60,14 @@ public class MainApplication extends Application{
 				}
 			}
 		}*/
+
+		double speed = 0.7;
+		engine.setOnKey(KeyCode.W, () -> camera.move(speed*Math.cos(camera.getRy()+Math.PI/2), 0, speed*Math.sin(camera.getRy()+Math.PI/2)), false);
+		engine.setOnKey(KeyCode.A, () -> camera.move(-speed*Math.cos(camera.getRy()), 0, -speed*Math.sin(camera.getRy())), false);
+		engine.setOnKey(KeyCode.S, () -> camera.move(-speed*Math.cos(camera.getRy()+Math.PI/2), 0, -speed*Math.sin(camera.getRy()+Math.PI/2)), false);
+		engine.setOnKey(KeyCode.D, () -> camera.move(speed*Math.cos(camera.getRy()), 0, speed*Math.sin(camera.getRy())), false);
+		engine.setOnKey(KeyCode.SPACE, () -> camera.move(0, -speed, 0), false);
+		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(0, speed, 0), false);
 		
 		try {
 			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05, null, false);
