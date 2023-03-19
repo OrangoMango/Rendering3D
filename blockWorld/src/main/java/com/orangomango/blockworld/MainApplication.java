@@ -48,7 +48,7 @@ public class MainApplication extends Application{
 			int lastY = 0;
 			int lastZ = 0;
 
-			for (double i = 0; i <= 10; i += 0.005){
+			for (double i = 0; i <= 10; i += 0.01){
 				int lX = (int)(player.getX()+i*stepX);
 				int lY = (int)(player.getY()+i*stepY);
 				int lZ = (int)(player.getZ()+i*stepZ);
