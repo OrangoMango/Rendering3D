@@ -6,7 +6,21 @@ import com.orangomango.rendering3d.model.Mesh;
 
 public class World{
 	private final List<Chunk> chunks = new ArrayList<>();
-	public int seed = (int)System.currentTimeMillis();
+	private int seed;
+	private Random random;
+
+	public World(int seed){
+		this.seed = seed;
+		this.random = new Random(seed);
+	}
+
+	public Random getRandom(){
+		return this.random;
+	}
+
+	public int getSeed(){
+		return this.seed;
+	}
 
 	public Chunk addChunk(int x, int y, int z){
 		Chunk c = new Chunk(this, x, y, z);

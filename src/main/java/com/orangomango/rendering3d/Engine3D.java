@@ -27,12 +27,12 @@ import com.orangomango.rendering3d.model.Light;
 
 public class Engine3D{
 	private int width, height;
-	private static final int FPS = 6;
 	private volatile int frames, fps;
 	private Map<KeyCode, Boolean> keys = new HashMap<>();
 	private Robot robot;
 	private Stage stage;
 	private Map<KeyCode, Runnable> keyEvents = new HashMap<>();
+	private Map<KeyCode, Boolean> keyEventsSingle = new HashMap<>();
 	private Consumer<GraphicsContext> onUpdate;
 	private EventHandler<MouseEvent> onMousePressed;
 	private boolean mouseMovement = true;
@@ -81,8 +81,9 @@ public class Engine3D{
 		counter.start();
 	}
 
-	public void setOnKey(KeyCode code, Runnable r){
+	public void setOnKey(KeyCode code, Runnable r, boolean singleClick){
 		this.keyEvents.put(code, r);
+		this.keyEventsSingle.put(code, singleClick);
 	}
 
 	public void setOnUpdate(Consumer<GraphicsContext> cons){
@@ -117,11 +118,7 @@ public class Engine3D{
 		this.robot = new Robot();
 		Mesh.SHADOW_FACTOR /= this.width/640.0;
 		
-		//Timeline loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> update(gc)));
-		//loop.setCycleCount(Animation.INDEFINITE);
-		//loop.play();
-		
-		Timeline mouse = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS*2), e -> {
+		Timeline mouse = new Timeline(new KeyFrame(Duration.millis(1000.0/12), e -> {
 			if (this.stage.isFocused() && this.mouseMovement) this.robot.mouseMove(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
 		}));
 		mouse.setCycleCount(Animation.INDEFINITE);
@@ -149,21 +146,7 @@ public class Engine3D{
 		this.camera.clearDepthBuffer();
 		this.renderedMeshes = 0;
 		
-		double speed = 0.3*this.fps/FPS;
-		double ry = this.camera.getRy();
-		if (this.keys.getOrDefault(KeyCode.W, false)){
-			this.camera.move(speed*Math.cos(ry+Math.PI/2), 0, speed*Math.sin(ry+Math.PI/2));
-		} else if (this.keys.getOrDefault(KeyCode.A, false)){
-			this.camera.move(-speed*Math.cos(ry), 0, -speed*Math.sin(ry));
-		} else if (this.keys.getOrDefault(KeyCode.S, false)){
-			this.camera.move(-speed*Math.cos(ry+Math.PI/2), 0, -speed*Math.sin(ry+Math.PI/2));
-		} else if (this.keys.getOrDefault(KeyCode.D, false)){
-			this.camera.move(speed*Math.cos(ry), 0, speed*Math.sin(ry));
-		} else if (this.keys.getOrDefault(KeyCode.SPACE, false)){
-			this.camera.move(0, -speed, 0);
-		} else if (this.keys.getOrDefault(KeyCode.SHIFT, false)){
-			this.camera.move(0, speed, 0);
-		} else if (this.keys.getOrDefault(KeyCode.R, false)){
+		if (this.keys.getOrDefault(KeyCode.R, false)){
 			this.camera.reset();
 			this.keys.put(KeyCode.R, false);
 		} else if (this.keys.getOrDefault(KeyCode.ESCAPE, false)){
@@ -173,7 +156,7 @@ public class Engine3D{
 		for (KeyCode k : this.keyEvents.keySet()){
 			if (this.keys.getOrDefault(k, false)){
 				this.keyEvents.get(k).run();
-				this.keys.put(k, false);
+				if (this.keyEventsSingle.get(k)) this.keys.put(k, false);
 			}
 		}
 		
@@ -225,7 +208,7 @@ public class Engine3D{
 		}
 
 		if (this.mouseMovement){
-			double sensibility = 0.35;
+			double sensibility = 0.7;
 			Point2D mouse = this.robot.getMousePosition();
 			Point2D center = new Point2D(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
 			this.camera.setRx(this.camera.getRx()+Math.toRadians((int) (center.getY()-mouse.getY())*sensibility));
@@ -246,7 +229,7 @@ public class Engine3D{
 		
 		if (LIGHT_ROTATION){
 			for (Light light : sceneLights){
-				double[] rotationV = multiply(getRotateY(0.01*40/FPS), new double[]{light.getPosition().getX(), light.getPosition().getY(), light.getPosition().getZ()});
+				double[] rotationV = multiply(getRotateY(0.01*40/6), new double[]{light.getPosition().getX(), light.getPosition().getY(), light.getPosition().getZ()});
 				light.setPos(rotationV[0], rotationV[1], rotationV[2]);
 				light.lookAtCenter();
 			}
@@ -272,7 +255,7 @@ public class Engine3D{
 		gc.restore();
 		gc.setFill(Color.WHITE);
 		gc.setFont(new Font("sans-serif", 13));
-		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d (%d)\n%s", this.fps, FPS, this.extraText.get()), 0.05*width, 0.075*height);
+		gc.fillText(this.camera.toString()+"\n"+String.format("FPS:%d\n%s", this.fps, this.extraText.get()), 0.05*width, 0.075*height);
 	}
 
 	public int getRenderedMeshes(){
@@ -427,9 +410,5 @@ public class Engine3D{
 	
 	public int getHeight(){
 		return this.height;
-	}
-	
-	public int getFPS(){
-		return this.fps;
 	}
 }
