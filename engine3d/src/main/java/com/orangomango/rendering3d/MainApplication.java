@@ -16,8 +16,8 @@ import com.orangomango.rendering3d.model.Mesh;
 import com.orangomango.rendering3d.model.MeshGroup;
 
 public class MainApplication extends Application{
-	private static final int WIDTH = 320;
-	private static final int HEIGHT = 180;
+	private static final int WIDTH = 960; //320;
+	private static final int HEIGHT = 540; //180;
 	
 	@Override
 	public void start(Stage stage){		
@@ -72,15 +72,15 @@ public class MainApplication extends Application{
 		try {
 			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05, null, false);
 			//model.setRotation(Math.PI/2, 0, 0);
-			//engine.getObjects().add(model);
-			//engine.getObjects().add(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5, null, false));
+			//engine.getObjects().add(new MeshGroup(model));
+			engine.getObjects().add(new MeshGroup(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane2.obj").toURI()), 0, 0.5, 0, 0.5, null, false)));
 			
 			/*Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/truck.obj").toURI()), 0, 0, 0, 0.05, null, true);
 			model.setRotation(Math.PI, 0, 0);
 			engine.getObjects().add(model);*/
 			
-			Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5, null, false);
-			engine.getObjects().add(new MeshGroup(model));
+			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5, null, false);
+			//engine.getObjects().add(new MeshGroup(model));
 			
 			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null, false);
 			//model.setRotation(0, 0, Math.PI);

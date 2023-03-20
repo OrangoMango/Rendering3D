@@ -167,7 +167,7 @@ public class Mesh{
 	public void evaluate(Camera camera){
 		int i = 0;
 		this.vertexColors = new Color[this.faces.length][3];
-		this.extraProjected.clear();
+		//this.extraProjected.clear();
 		for (Point3D[] points : getTrianglePoints(vertexColors)){
 			double[][] cam = camera.getViewMatrix();
 			
