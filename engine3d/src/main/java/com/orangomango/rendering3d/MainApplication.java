@@ -61,7 +61,7 @@ public class MainApplication extends Application{
 			}
 		}*/
 
-		double speed = 0.7;
+		double speed = 0.2;
 		engine.setOnKey(KeyCode.W, () -> camera.move(speed*Math.cos(camera.getRy()+Math.PI/2), 0, speed*Math.sin(camera.getRy()+Math.PI/2)), false);
 		engine.setOnKey(KeyCode.A, () -> camera.move(-speed*Math.cos(camera.getRy()), 0, -speed*Math.sin(camera.getRy())), false);
 		engine.setOnKey(KeyCode.S, () -> camera.move(-speed*Math.cos(camera.getRy()+Math.PI/2), 0, -speed*Math.sin(camera.getRy()+Math.PI/2)), false);

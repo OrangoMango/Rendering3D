@@ -11,7 +11,7 @@ public class Player{
         this.y = y;
         this.z = z;
         this.camera = new Camera(this.x, this.y, this.z);
-        this.camera.zNear = 1;
+        this.camera.zNear = 0.1;
         this.camera.zFar = 100;
         this.camera.lookAtCenter();
     }
