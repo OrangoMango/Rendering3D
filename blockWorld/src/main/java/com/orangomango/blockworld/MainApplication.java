@@ -12,9 +12,9 @@ import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.blockworld.model.*;
 
 public class MainApplication extends Application{
-	private static final int WIDTH = 640; //320;
-	private static final int HEIGHT = 360; //180;
-	private static final double RENDER_DISTANCE = 3.5;
+	private static final int WIDTH = 320;
+	private static final int HEIGHT = 180;
+	private static final double RENDER_DISTANCE = 2.5;
 	private static final int CHUNKS = 3;
 
 	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "dirt", "stone"};
@@ -33,6 +33,7 @@ public class MainApplication extends Application{
 		light.setFixed(true);
 		engine.getLights().add(light);
 		//Engine3D.LIGHT_AVAILABLE = false;
+		Engine3D.SHOW_LINES = true;
 		
 		World world = new World((int)System.currentTimeMillis());
 

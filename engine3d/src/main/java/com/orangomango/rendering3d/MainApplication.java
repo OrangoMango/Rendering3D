@@ -16,11 +16,11 @@ import com.orangomango.rendering3d.model.Mesh;
 import com.orangomango.rendering3d.model.MeshGroup;
 
 public class MainApplication extends Application{
-	private static final int WIDTH = 960; //320;
-	private static final int HEIGHT = 540; //180;
+	private static final int WIDTH = 320;
+	private static final int HEIGHT = 180;
 	
 	@Override
-	public void start(Stage stage){		
+	public void start(Stage stage){
 		stage.setTitle("3D Graphics");
 		
 		Engine3D engine = new Engine3D(stage, WIDTH, HEIGHT);

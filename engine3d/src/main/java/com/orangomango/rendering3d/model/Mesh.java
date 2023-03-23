@@ -145,7 +145,7 @@ public class Mesh{
 		else outside[outsideN++] = t2;
 		if (d3 >= 0) inside[insideN++] = t3;
 		else outside[outsideN++] = t3;
-
+		
 		if (insideN == 3){
 			return new Point3D[][]{{t1, t2, t3}};
 		} else if (insideN == 0){
@@ -167,7 +167,7 @@ public class Mesh{
 	public void evaluate(Camera camera){
 		int i = 0;
 		this.vertexColors = new Color[this.faces.length][3];
-		//this.extraProjected.clear();
+		this.extraProjected.clear();
 		for (Point3D[] points : getTrianglePoints(vertexColors)){
 			double[][] cam = camera.getViewMatrix();
 			
@@ -233,41 +233,35 @@ public class Mesh{
 			
 			if (dot < 0){
 				// Project 3D -> View space
-				boolean cacheMissing = false;
 				if (proj[i][0] == null){
 					proj[i][0] = multiply(cam, p1);
-					cacheMissing = true;
 				}
 				if (proj[i][1] == null){
 					proj[i][1] = multiply(cam, p2);
-					cacheMissing = true;
 				}
 				if (proj[i][2] == null){
 					proj[i][2] = multiply(cam, p3);
-					cacheMissing = true;
 				}
-				if (cacheMissing){
-					Point3D[][] clippedTriangles = clipTriangle(new Point3D(0, 0, 1), new Point3D(0, 0, 5.5), new Point3D(proj[i][0][0], proj[i][0][1], proj[i][0][2]), new Point3D(proj[i][1][0], proj[i][1][1], proj[i][1][2]), new Point3D(proj[i][2][0], proj[i][2][1], proj[i][2][2]));
-					if (clippedTriangles == null){
-						setProjectedPoint(i, 0, null);
-						setProjectedPoint(i, 1, null);
-						setProjectedPoint(i, 2, null);
-						i++;
-						continue;
-					} else {
-						Point3D[] tr1 = clippedTriangles[0];
-						// Project View space -> 2D
-						proj[i][0] = multiply(camera.getProjectionMatrix(), new double[]{tr1[0].getX(), tr1[0].getY(), tr1[0].getZ(), 1});
-						proj[i][1] = multiply(camera.getProjectionMatrix(), new double[]{tr1[1].getX(), tr1[1].getY(), tr1[1].getZ(), 1});
-						proj[i][2] = multiply(camera.getProjectionMatrix(), new double[]{tr1[2].getX(), tr1[2].getY(), tr1[2].getZ(), 1});
-						setupTriangle(i, proj[i][0], proj[i][1], proj[i][2], false);
-						if (clippedTriangles.length == 2){
-							Point3D[] tr2 = clippedTriangles[1];
-							double[] a = multiply(camera.getProjectionMatrix(), new double[]{tr2[0].getX(), tr2[0].getY(), tr2[0].getZ(), 1});
-							double[] b = multiply(camera.getProjectionMatrix(), new double[]{tr2[1].getX(), tr2[1].getY(), tr2[1].getZ(), 1});
-							double[] c = multiply(camera.getProjectionMatrix(), new double[]{tr2[2].getX(), tr2[2].getY(), tr2[2].getZ(), 1});
-							setupTriangle(i, a, b, c, true);
-						}
+				Point3D[][] clippedTriangles = clipTriangle(new Point3D(0, 0, 1), new Point3D(0, 0, camera.zNear), new Point3D(proj[i][0][0], proj[i][0][1], proj[i][0][2]), new Point3D(proj[i][1][0], proj[i][1][1], proj[i][1][2]), new Point3D(proj[i][2][0], proj[i][2][1], proj[i][2][2]));
+				if (clippedTriangles == null){
+					setProjectedPoint(i, 0, null);
+					setProjectedPoint(i, 1, null);
+					setProjectedPoint(i, 2, null);
+					i++;
+					continue;
+				} else {
+					Point3D[] tr1 = clippedTriangles[0];
+					// Project View space -> 2D
+					double[] pa = multiply(camera.getProjectionMatrix(), new double[]{tr1[0].getX(), tr1[0].getY(), tr1[0].getZ(), 1});
+					double[] pb = multiply(camera.getProjectionMatrix(), new double[]{tr1[1].getX(), tr1[1].getY(), tr1[1].getZ(), 1});
+					double[] pc = multiply(camera.getProjectionMatrix(), new double[]{tr1[2].getX(), tr1[2].getY(), tr1[2].getZ(), 1});
+					setupTriangle(i, pa, pb, pc, false);
+					if (clippedTriangles.length == 2){
+						Point3D[] tr2 = clippedTriangles[1];
+						double[] a = multiply(camera.getProjectionMatrix(), new double[]{tr2[0].getX(), tr2[0].getY(), tr2[0].getZ(), 1});
+						double[] b = multiply(camera.getProjectionMatrix(), new double[]{tr2[1].getX(), tr2[1].getY(), tr2[1].getZ(), 1});
+						double[] c = multiply(camera.getProjectionMatrix(), new double[]{tr2[2].getX(), tr2[2].getY(), tr2[2].getZ(), 1});
+						setupTriangle(i, a, b, c, true);
 					}
 				}
 			} else {
@@ -293,7 +287,8 @@ public class Mesh{
 
 		double bound = 1;
 		if ((isOutside(px1, bound) && isOutside(px2, bound) && isOutside(px3, bound))
-				|| (isOutside(py1, bound) && isOutside(py2, bound) && isOutside(py3, bound))){
+				|| (isOutside(py1, bound) && isOutside(py2, bound) && isOutside(py3, bound))
+				|| (isOutside(pz1, bound) && isOutside(pz2, bound) && isOutside(pz3, bound))){
 			if (!extraList){
 				setProjectedPoint(i, 0, null);
 				setProjectedPoint(i, 1, null);
