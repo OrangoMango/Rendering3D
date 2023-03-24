@@ -8,7 +8,8 @@ import org.json.*;
 
 public class Atlas{
 	private JSONObject json;
-	private Map<String, Image> images = new HashMap<>();
+	private Map<String, Image[]> images = new HashMap<>();
+	private Map<String, int[]> imageFaces = new HashMap<>();
 
 	public Atlas(String name){
 		try {
@@ -23,13 +24,35 @@ public class Atlas{
 		}
 
 		for (String blockType : this.json.getJSONObject("blocks").keySet()){
-			String fileName = this.json.getJSONObject("blocks").getJSONObject(blockType).getString("fileName");
-			this.images.put(blockType, new Image(Atlas.class.getResourceAsStream(fileName)));
+			List<Image> imageObjects = new ArrayList<>();
+			for (Object imageName : this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONArray("images")){
+				imageObjects.add(new Image(Atlas.class.getResourceAsStream((String)imageName)));
+			}
+			this.images.put(blockType, imageObjects.toArray(new Image[imageObjects.size()]));
+			
+			int[] imageF = new int[12];
+			imageF[0] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("front");
+			imageF[1] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("front");
+			imageF[2] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("right");
+			imageF[3] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("right");
+			imageF[4] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("back");
+			imageF[5] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("back");
+			imageF[6] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("left");
+			imageF[7] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("left");
+			imageF[8] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("down");
+			imageF[9] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("down");
+			imageF[10] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("top");
+			imageF[11] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("top");
+			this.imageFaces.put(blockType, imageF);
 		}
 	}
 
-	public Map<String, Image> getImages(){
+	public Map<String, Image[]> getImages(){
 		return this.images;
+	}
+	
+	public Map<String, int[]> getBlockFaces(){
+		return this.imageFaces;
 	}
 
 	public JSONObject getJSON(){

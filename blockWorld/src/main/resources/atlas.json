@@ -1,16 +1,59 @@
 {
-  "blocks" : {
-    "dirt" : {
-      "fileName" : "/dirt.png"
-    },
-    "coal" : {
-      "fileName" : "/coal.png"
-    },
-    "stone" : {
-      "fileName" : "/stone.png"
-    },
-    "wood" : {
-      "fileName" : "/wood.png"
-    }
-  }
+	"blocks" : {
+		"dirt" : {
+			"images" : ["/dirt.png"],
+			"config" : {
+				"top" : 0,
+				"down" : 0,
+				"right" : 0,
+				"left" : 0,
+				"front" : 0,
+				"back" : 0,
+			}
+		},
+		"grass" : {
+			"images" : ["/dirt.png", "/grass.png", "/grass_top.png"],
+			"config" : {
+				"top" : 2,
+				"down" : 0,
+				"right" : 1,
+				"left" : 1,
+				"front" : 1,
+				"back" : 1,
+			}
+		},
+		"coal" : {
+			"images" : ["/coal.png"],
+			"config" : {
+				"top" : 0,
+				"down" : 0,
+				"right" : 0,
+				"left" : 0,
+				"front" : 0,
+				"back" : 0,
+			}
+		},
+		"stone" : {
+			"images" : ["/stone.png"],
+			"config" : {
+				"top" : 0,
+				"down" : 0,
+				"right" : 0,
+				"left" : 0,
+				"front" : 0,
+				"back" : 0,
+			}
+		},
+		"wood" : {
+			"images" : ["/wood.png"],
+			"config" : {
+				"top" : 0,
+				"down" : 0,
+				"right" : 0,
+				"left" : 0,
+				"front" : 0,
+				"back" : 0,
+			}
+		}
+	}
 }

@@ -25,7 +25,8 @@ public class Mesh{
 	private Point2D[] textureVertex;
 	private int[][] textureFaces;
 	private Point3D[][] normals;
-	private Image image;
+	private Image[] images;
+	private int[] facesImages;
 	private Point3D[][] trianglePoints;
 	private Color[][] vertexCol;
 	private double crx, cry, crz;
@@ -37,9 +38,10 @@ public class Mesh{
 	
 	public static double SHADOW_FACTOR = 0.0005;
 	
-	public Mesh(Image image, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, Color[] colors, Point3D[][] ns, Color[][] fcs){
+	public Mesh(Image[] images, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, int[] facesImages, Color[] colors, Point3D[][] ns, Color[][] fcs){
 		this.color = Color.RED; //Color.color(Math.random(), Math.random(), Math.random());
-		this.image = image;
+		this.images = images;
+		this.facesImages = facesImages;
 		this.points = points;
 		this.projected = new double[faces.length][3][3];
 		this.projectedTex = new Point2D[faces.length][3];
@@ -411,7 +413,7 @@ public class Mesh{
 
 					renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
 							t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(),
-							proj1[2], proj2[2], proj3[2], i, gc, camera, lights, this.image);
+							proj1[2], proj2[2], proj3[2], i, gc, camera, lights, this.images[this.facesImages[i]]);
 				} else {
 					Color c1 = this.facesColors != null ? this.facesColors[i][0] : this.vertexColors[i][0];
 					Color c2 = this.facesColors != null ? this.facesColors[i][1] : this.vertexColors[i][1];
@@ -845,10 +847,8 @@ public class Mesh{
 					tex_w = (1-t)*tex_sw+t*tex_ew;
 					tex_l = (1-t)*tex_sl+t*tex_el;
 					
-					int pix_x = (int)Math.round(tex_u/tex_w*(width-1)) % (int)(width-1);
-					int pix_y = (int)Math.round(tex_v/tex_w*(height-1)) % (int)(height-1);
-					if (pix_x < 0) pix_x = (int)(width-1)+pix_x;
-					if (pix_y < 0) pix_y = (int)(height-1)+pix_y;
+					int pix_x = (int)(tex_u/tex_w*(width-1));
+					int pix_y = (int)(tex_v/tex_w*(height-1));
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
@@ -925,10 +925,8 @@ public class Mesh{
 					tex_w = (1-t)*tex_sw+t*tex_ew;
 					tex_l = (1-t)*tex_sl+t*tex_el;
 
-					int pix_x = (int)Math.round(tex_u/tex_w*(width-1)) % (int)(width-1);
-					int pix_y = (int)Math.round(tex_v/tex_w*(height-1)) % (int)(height-1);
-					if (pix_x < 0) pix_x = (int)(width-1)+pix_x;
-					if (pix_y < 0) pix_y = (int)(height-1)+pix_y;
+					int pix_x = (int)(tex_u/tex_w*(width-1));
+					int pix_y = (int)(tex_v/tex_w*(height-1));
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
@@ -1117,8 +1115,8 @@ public class Mesh{
 			for (int i = 0; i < vf.length; i++){
 				vf[i] = textureFaces.get(i);
 			}
-
-			return new Mesh(image, ps, fs, vc.length == 0 ? null : vc, vf.length == 0 ? null : vf, cs.length == 0 ? null : cs, ns.length == 0 ? null : ns, fcs.length == 0 ? null : fcs);
+			
+			return new Mesh(null, ps, fs, vc.length == 0 ? null : vc, vf.length == 0 ? null : vf, null, cs.length == 0 ? null : cs, ns.length == 0 ? null : ns, fcs.length == 0 ? null : fcs);
 			
 		} catch (IOException ex){
 			ex.printStackTrace();

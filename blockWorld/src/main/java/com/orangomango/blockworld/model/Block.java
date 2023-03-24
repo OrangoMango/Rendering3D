@@ -2,6 +2,7 @@ package com.orangomango.blockworld.model;
 
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
+import javafx.scene.image.Image;
 
 import com.orangomango.rendering3d.model.Mesh;
 
@@ -53,6 +54,8 @@ public class Block{
 	 * Block is declared like this:
 	 * F F R R B B L L D D U  U
 	 * 0 1 2 3 4 5 6 7 8 9 10 11
+	 * 
+	 * Texture coordinates are 1-x because the y-axis is inverted
 	 */
 	public Mesh getMesh(){
 		if (this.mesh != null) return this.mesh;
@@ -65,13 +68,13 @@ public class Block{
 				{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
 				{1, 6, 2}, {4, 0, 3}, {4, 3, 7}
 		}, new Point2D[]{
-			new Point2D(0, 1), new Point2D(0, 0), new Point2D(1, 0), new Point2D(1, 1)
+			new Point2D(0, 1-1), new Point2D(0, 1-0), new Point2D(1, 1-0), new Point2D(1, 1-1)
 		}, new int[][]{
 			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
-		}, null, null, null);
+		}, atlas.getBlockFaces().get(this.type), null, null, null);
 		//System.out.format("Applying mesh for block at %d %d %d...\n", this.x, this.y, this.z);
 		return this.mesh;
 	}

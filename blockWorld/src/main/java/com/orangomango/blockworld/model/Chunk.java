@@ -32,8 +32,9 @@ public class Chunk{
 					} else {
 						float n = (noise.noise((i+this.x*CHUNK_SIZE)*frequency, 0, (k+this.z*CHUNK_SIZE)*frequency)+1)/2;
 						int h = Math.round(n*(CHUNK_SIZE-1))+CHUNK_SIZE*HEIGHT_LIMIT;
-						if (this.y*CHUNK_SIZE+j >= h){
-							this.blocks[i][j][k] = new Block(this, i, j, k, this.y*CHUNK_SIZE+j > h+3 ? "stone" : "dirt");
+						int pos = this.y*CHUNK_SIZE+j;
+						if (pos >= h){
+							this.blocks[i][j][k] = new Block(this, i, j, k, pos > h+3 ? "stone" : (pos == h ? "grass" : "dirt"));
 						}
 					}
 				}
