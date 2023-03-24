@@ -118,7 +118,7 @@ public class Engine3D{
 		this.robot = new Robot();
 		Mesh.SHADOW_FACTOR /= this.width/640.0;
 		
-		Timeline mouse = new Timeline(new KeyFrame(Duration.millis(1000.0/24*2), e -> {
+		Timeline mouse = new Timeline(new KeyFrame(Duration.millis(1000.0/15*2), e -> {
 			if (this.stage.isFocused() && this.mouseMovement) this.robot.mouseMove(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
 		}));
 		mouse.setCycleCount(Animation.INDEFINITE);
@@ -212,11 +212,11 @@ public class Engine3D{
 		}
 
 		if (this.mouseMovement){
-			double sensibility = 1.4;
+			double sensibility = 0.4;
 			Point2D mouse = this.robot.getMousePosition();
 			Point2D center = new Point2D(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
-			this.camera.setRx(this.camera.getRx()+Math.toRadians((int) (center.getY()-mouse.getY())*sensibility));
-			this.camera.setRy(this.camera.getRy()+Math.toRadians((int) (center.getX()-mouse.getX())*sensibility));
+			this.camera.setRx(this.camera.getRx()+Math.toRadians((int)(center.getY()-mouse.getY())*sensibility));
+			this.camera.setRy(this.camera.getRy()+Math.toRadians((int)(center.getX()-mouse.getX())*sensibility));
 		}
 
 		boolean stateChanged = this.camera.stateChanged;

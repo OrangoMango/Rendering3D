@@ -33,7 +33,6 @@ public class MainApplication extends Application{
 		light.setFixed(true);
 		engine.getLights().add(light);
 		//Engine3D.LIGHT_AVAILABLE = false;
-		Engine3D.SHOW_LINES = true;
 		
 		World world = new World((int)System.currentTimeMillis());
 

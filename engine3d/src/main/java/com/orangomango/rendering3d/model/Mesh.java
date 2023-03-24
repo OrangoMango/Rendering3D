@@ -3,7 +3,6 @@ package com.orangomango.rendering3d.model;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
-import javafx.scene.image.PixelReader;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 
@@ -15,7 +14,9 @@ import static com.orangomango.rendering3d.Engine3D.*;
 public class Mesh{
 	private Point3D[] points;
 	private double[][][] projected;
+	private Point2D[][] projectedTex;
 	private Map<Integer, double[][]> extraProjected = new HashMap<>();
+	private Map<Integer, Point2D[]> extraProjectedTex = new HashMap<>();
 	private Color[][] vertexColors;
 	private Color[][] facesColors;
 	private int[][] faces;
@@ -41,6 +42,7 @@ public class Mesh{
 		this.image = image;
 		this.points = points;
 		this.projected = new double[faces.length][3][3];
+		this.projectedTex = new Point2D[faces.length][3];
 		this.faces = faces;
 		this.colors = colors;
 		this.facesColors = fcs;
@@ -120,8 +122,9 @@ public class Mesh{
 		return output;
 	}
 	
-	private void setProjectedPoint(int f, int tr, double[] point){
+	private void setProjectedPoint(int f, int tr, double[] point, Point2D tex){
 		this.projected[f][tr] = point;
+		this.projectedTex[f][tr] = tex;
 	}
 
 	private double distanceToPlane(Point3D normal, Point3D planePoint, Point3D point, Point3D direction){
@@ -129,22 +132,40 @@ public class Mesh{
 		return (normal.dotProduct(planePoint)-normal.dotProduct(point))/normal.dotProduct(direction);
 	}
 
-	private Point3D[][] clipTriangle(Point3D planeN, Point3D planeA, Point3D t1, Point3D t2, Point3D t3){
+	private Point3D[][] clipTriangle(Point3D planeN, Point3D planeA, Point3D t1, Point3D t2, Point3D t3, Point2D[] texCoords, Point2D[] secOutput){
 		Point3D[] inside = new Point3D[3];
 		Point3D[] outside = new Point3D[3];
 		int insideN = 0;
 		int outsideN = 0;
+		
+		Point2D[] insideTexture = new Point2D[3];
+		Point2D[] outsideTexture = new Point2D[3];
 
 		double d1 = distanceToPlane(planeN, planeA, t1, planeN.multiply(-1));
 		double d2 = distanceToPlane(planeN, planeA, t2, planeN.multiply(-1));
 		double d3 = distanceToPlane(planeN, planeA, t3, planeN.multiply(-1));
 
-		if (d1 >= 0) inside[insideN++] = t1;
-		else outside[outsideN++] = t1;
-		if (d2 >= 0) inside[insideN++] = t2;
-		else outside[outsideN++] = t2;
-		if (d3 >= 0) inside[insideN++] = t3;
-		else outside[outsideN++] = t3;
+		if (d1 >= 0){
+			inside[insideN] = t1;
+			insideTexture[insideN++] = texCoords[0];
+		} else {
+			outside[outsideN] = t1;
+			outsideTexture[insideN++] = texCoords[0];
+		}
+		if (d2 >= 0){
+			inside[insideN] = t2;
+			insideTexture[insideN++] = texCoords[1];
+		} else {
+			outside[outsideN] = t2;
+			outsideTexture[insideN++] = texCoords[1];
+		}
+		if (d3 >= 0){
+			inside[insideN] = t3;
+			insideTexture[insideN++] = texCoords[2];
+		} else {
+			outside[outsideN] = t3;
+			outsideTexture[insideN++] = texCoords[2];
+		}
 		
 		if (insideN == 3){
 			return new Point3D[][]{{t1, t2, t3}};
@@ -153,12 +174,26 @@ public class Mesh{
 		} else if (insideN == 1){
 			Point3D dp1 = outside[0].subtract(inside[0]).normalize();
 			Point3D dp2 = outside[1].subtract(inside[0]).normalize();
-			return new Point3D[][]{{inside[0], inside[0].add(dp1.multiply(distanceToPlane(planeN, planeA, inside[0], dp1))), inside[0].add(dp2.multiply(distanceToPlane(planeN, planeA, inside[0], dp2)))}};
+			double factor1 = distanceToPlane(planeN, planeA, inside[0], dp1);
+			double factor2 = distanceToPlane(planeN, planeA, inside[0], dp2);
+			texCoords[0] = insideTexture[0];
+			texCoords[1] = insideTexture[0].add(outsideTexture[0].subtract(insideTexture[0]).normalize().multiply(factor1)); // i0 o0 f1
+			texCoords[2] = insideTexture[0].add(outsideTexture[1].subtract(insideTexture[0]).normalize().multiply(factor2)); // i0 o1 f2
+			return new Point3D[][]{{inside[0], inside[0].add(dp1.multiply(factor1)), inside[0].add(dp2.multiply(factor2))}};
 		} else if (insideN == 2){
 			Point3D dp1 = outside[0].subtract(inside[0]).normalize();
-			Point3D tempP = inside[0].add(dp1.multiply(distanceToPlane(planeN, planeA, inside[0], dp1)));
+			double factor1 = distanceToPlane(planeN, planeA, inside[0], dp1);
+			Point3D tempP = inside[0].add(dp1.multiply(factor1));
 			Point3D dp2 = outside[0].subtract(inside[1]).normalize();
-			return new Point3D[][]{{inside[0], inside[1], tempP}, {tempP, inside[1], inside[1].add(dp2.multiply(distanceToPlane(planeN, planeA, inside[1], dp2)))}};
+			double factor2 = distanceToPlane(planeN, planeA, inside[1], dp2);
+			Point2D textureP = insideTexture[0].add(outsideTexture[0].subtract(insideTexture[0]).normalize().multiply(factor1));
+			texCoords[0] = insideTexture[0];
+			texCoords[1] = insideTexture[1];
+			texCoords[2] = textureP; // i0 o0 f1 (temp)
+			secOutput[0] = textureP; // i0 o0 f1 (temp)
+			secOutput[1] = insideTexture[1];
+			secOutput[2] = insideTexture[1].add(outsideTexture[0].subtract(insideTexture[1]).normalize().multiply(factor2)); // i1 o0 f2
+			return new Point3D[][]{{inside[0], inside[1], tempP}, {tempP, inside[1], inside[1].add(dp2.multiply(factor2))}};
 		} else {
 			return null;
 		}
@@ -168,7 +203,16 @@ public class Mesh{
 		int i = 0;
 		this.vertexColors = new Color[this.faces.length][3];
 		this.extraProjected.clear();
+		this.extraProjectedTex.clear();
 		for (Point3D[] points : getTrianglePoints(vertexColors)){
+			if (this.hiddenTriangles.contains(i)){
+				setProjectedPoint(i, 0, null, null);
+				setProjectedPoint(i, 1, null, null);
+				setProjectedPoint(i, 2, null, null);
+				i++;
+				continue;
+			}
+			
 			double[][] cam = camera.getViewMatrix();
 			
 			// Apply transforms
@@ -242,11 +286,20 @@ public class Mesh{
 				if (proj[i][2] == null){
 					proj[i][2] = multiply(cam, p3);
 				}
-				Point3D[][] clippedTriangles = clipTriangle(new Point3D(0, 0, 1), new Point3D(0, 0, camera.zNear), new Point3D(proj[i][0][0], proj[i][0][1], proj[i][0][2]), new Point3D(proj[i][1][0], proj[i][1][1], proj[i][1][2]), new Point3D(proj[i][2][0], proj[i][2][1], proj[i][2][2]));
+				Point2D[] secOut = new Point2D[3];
+				Point2D t1 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][0]];
+				Point2D t2 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][1]];
+				Point2D t3 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][2]];
+				Point2D[] fOut = new Point2D[]{t1, t2, t3};
+				Point3D[][] clippedTriangles = clipTriangle(new Point3D(0, 0, 1), new Point3D(0, 0, camera.zNear),
+												new Point3D(proj[i][0][0], proj[i][0][1], proj[i][0][2]),
+												new Point3D(proj[i][1][0], proj[i][1][1], proj[i][1][2]),
+												new Point3D(proj[i][2][0], proj[i][2][1], proj[i][2][2]),
+												fOut, secOut);
 				if (clippedTriangles == null){
-					setProjectedPoint(i, 0, null);
-					setProjectedPoint(i, 1, null);
-					setProjectedPoint(i, 2, null);
+					setProjectedPoint(i, 0, null, null);
+					setProjectedPoint(i, 1, null, null);
+					setProjectedPoint(i, 2, null, null);
 					i++;
 					continue;
 				} else {
@@ -255,25 +308,25 @@ public class Mesh{
 					double[] pa = multiply(camera.getProjectionMatrix(), new double[]{tr1[0].getX(), tr1[0].getY(), tr1[0].getZ(), 1});
 					double[] pb = multiply(camera.getProjectionMatrix(), new double[]{tr1[1].getX(), tr1[1].getY(), tr1[1].getZ(), 1});
 					double[] pc = multiply(camera.getProjectionMatrix(), new double[]{tr1[2].getX(), tr1[2].getY(), tr1[2].getZ(), 1});
-					setupTriangle(i, pa, pb, pc, false);
+					setupTriangle(i, pa, pb, pc, false, fOut[0], fOut[1], fOut[2]);
 					if (clippedTriangles.length == 2){
 						Point3D[] tr2 = clippedTriangles[1];
 						double[] a = multiply(camera.getProjectionMatrix(), new double[]{tr2[0].getX(), tr2[0].getY(), tr2[0].getZ(), 1});
 						double[] b = multiply(camera.getProjectionMatrix(), new double[]{tr2[1].getX(), tr2[1].getY(), tr2[1].getZ(), 1});
 						double[] c = multiply(camera.getProjectionMatrix(), new double[]{tr2[2].getX(), tr2[2].getY(), tr2[2].getZ(), 1});
-						setupTriangle(i, a, b, c, true);
+						setupTriangle(i, a, b, c, true, secOut[0], secOut[1], secOut[2]);
 					}
 				}
 			} else {
-				setProjectedPoint(i, 0, null);
-				setProjectedPoint(i, 1, null);
-				setProjectedPoint(i, 2, null);
+				setProjectedPoint(i, 0, null, null);
+				setProjectedPoint(i, 1, null, null);
+				setProjectedPoint(i, 2, null, null);
 			}
 			i++;
 		}
 	}
 
-	private void setupTriangle(int i, double[] p1, double[] p2, double[] p3, boolean extraList){
+	private void setupTriangle(int i, double[] p1, double[] p2, double[] p3, boolean extraList, Point2D t1, Point2D t2, Point2D t3){
 		// Scale
 		double px1 = p1[0]/(p1[3] == 0 ? 1 : p1[3]);
 		double py1 = p1[1]/(p1[3] == 0 ? 1 : p1[3]);
@@ -285,14 +338,15 @@ public class Mesh{
 		double pz2 = p2[2];
 		double pz3 = p3[2];
 
+		// TODO some triangles are not rendered but they should
 		double bound = 1;
 		if ((isOutside(px1, bound) && isOutside(px2, bound) && isOutside(px3, bound))
 				|| (isOutside(py1, bound) && isOutside(py2, bound) && isOutside(py3, bound))
-				|| (isOutside(pz1, bound) && isOutside(pz2, bound) && isOutside(pz3, bound))){
+				|| (isOutside(pz1, bound) || isOutside(pz2, bound) || isOutside(pz3, bound))){
 			if (!extraList){
-				setProjectedPoint(i, 0, null);
-				setProjectedPoint(i, 1, null);
-				setProjectedPoint(i, 2, null);
+				setProjectedPoint(i, 0, null, null);
+				setProjectedPoint(i, 1, null, null);
+				setProjectedPoint(i, 2, null, null);
 			}
 			return;
 		}
@@ -312,10 +366,11 @@ public class Mesh{
 
 		if (extraList){
 			this.extraProjected.put(i, new double[][]{{px1, py1, 1/p1[3]}, {px2, py2, 1/p2[3]}, {px3, py3, 1/p3[3]}});
+			this.extraProjectedTex.put(i, new Point2D[]{t1, t2, t3});
 		} else {
-			setProjectedPoint(i, 0, new double[]{px1, py1, 1/p1[3]});
-			setProjectedPoint(i, 1, new double[]{px2, py2, 1/p2[3]});
-			setProjectedPoint(i, 2, new double[]{px3, py3, 1/p3[3]});
+			setProjectedPoint(i, 0, new double[]{px1, py1, 1/p1[3]}, t1);
+			setProjectedPoint(i, 1, new double[]{px2, py2, 1/p2[3]}, t2);
+			setProjectedPoint(i, 2, new double[]{px3, py3, 1/p3[3]}, t3);
 		}
 	}
 	
@@ -324,18 +379,17 @@ public class Mesh{
 			gc.setStroke(this.color);
 			gc.setLineWidth(1);
 		}
-		for (int i = 0; i < projected.length; i++){
-			makeRendering(gc, i, camera, lights, projected[i][0], projected[i][1], projected[i][2]);
+		for (int i = 0; i < this.projected.length; i++){
+			makeRendering(gc, i, camera, lights, this.projected[i][0], this.projected[i][1], this.projected[i][2], this.projectedTex[i][0], this.projectedTex[i][1], this.projectedTex[i][2]);
 		}
 		for (Map.Entry<Integer, double[][]> entry : this.extraProjected.entrySet()){
-			makeRendering(gc, entry.getKey(), camera, lights, entry.getValue()[0], entry.getValue()[1], entry.getValue()[2]);
+			Point2D[] ps = this.extraProjectedTex.get(entry.getKey());
+			makeRendering(gc, entry.getKey(), camera, lights, entry.getValue()[0], entry.getValue()[1], entry.getValue()[2], ps[0], ps[1], ps[2]);
 		}
 	}
 
-	private void makeRendering(GraphicsContext gc, int i, Camera camera, List<Light> lights, double[] proj1, double[] proj2, double[] proj3){
+	private void makeRendering(GraphicsContext gc, int i, Camera camera, List<Light> lights, double[] proj1, double[] proj2, double[] proj3, Point2D t1, Point2D t2, Point2D t3){
 		if (proj1 == null || proj2 == null || proj3 == null) return;
-
-		if (this.hiddenTriangles.contains(i)) return;
 
 		Point2D p1 = new Point2D(proj1[0], proj1[1]);
 		Point2D p2 = new Point2D(proj2[0], proj2[1]);
@@ -350,10 +404,6 @@ public class Mesh{
 				gc.strokeLine(p2.getX(), p2.getY(), p3.getX(), p3.getY());
 				gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
 			} else {
-				Point2D t1 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][0]];
-				Point2D t2 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][1]];
-				Point2D t3 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][2]];
-
 				if (t1 != null && t2 != null && t3 != null){
 					t1 = t1.multiply(proj1[2]);
 					t2 = t2.multiply(proj2[2]);
@@ -703,6 +753,9 @@ public class Mesh{
 		l1 = Math.min(1, l1);
 		l2 = Math.min(1, l2);
 		l3 = Math.min(1, l3);
+		
+		double width = image.getWidth();
+		double height = image.getHeight();
 
 		if (y2 < y1){
 			y1 = swap(y2, y2 = y1);
@@ -792,12 +845,10 @@ public class Mesh{
 					tex_w = (1-t)*tex_sw+t*tex_ew;
 					tex_l = (1-t)*tex_sl+t*tex_el;
 					
-					int pix_x = (int)Math.round(tex_u/tex_w*(image.getWidth()-1)) % (int)(image.getWidth()-1);
-					int pix_y = (int)Math.round(tex_v/tex_w*(image.getHeight()-1)) % (int)(image.getHeight()-1);
-					if (pix_x < 0) pix_x = (int)(image.getWidth()-1)+pix_x;
-					if (pix_y < 0) pix_y = (int)(image.getHeight()-1)+pix_y;
-
-					//if (pix_x < 0 || pix_y < 0 || pix_x >= image.getWidth() || pix_y >= image.getHeight()) continue;
+					int pix_x = (int)Math.round(tex_u/tex_w*(width-1)) % (int)(width-1);
+					int pix_y = (int)Math.round(tex_v/tex_w*(height-1)) % (int)(height-1);
+					if (pix_x < 0) pix_x = (int)(width-1)+pix_x;
+					if (pix_y < 0) pix_y = (int)(height-1)+pix_y;
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
@@ -874,12 +925,10 @@ public class Mesh{
 					tex_w = (1-t)*tex_sw+t*tex_ew;
 					tex_l = (1-t)*tex_sl+t*tex_el;
 
-					int pix_x = (int)Math.round(tex_u/tex_w*(image.getWidth()-1)) % (int)(image.getWidth()-1);
-					int pix_y = (int)Math.round(tex_v/tex_w*(image.getHeight()-1)) % (int)(image.getHeight()-1);
-					if (pix_x < 0) pix_x = (int)(image.getWidth()-1)+pix_x;
-					if (pix_y < 0) pix_y = (int)(image.getHeight()-1)+pix_y;
-
-					//if (pix_x < 0 || pix_y < 0 || pix_x >= image.getWidth() || pix_y >= image.getHeight()) continue;
+					int pix_x = (int)Math.round(tex_u/tex_w*(width-1)) % (int)(width-1);
+					int pix_y = (int)Math.round(tex_v/tex_w*(height-1)) % (int)(height-1);
+					if (pix_x < 0) pix_x = (int)(width-1)+pix_x;
+					if (pix_y < 0) pix_y = (int)(height-1)+pix_y;
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
