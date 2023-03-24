@@ -53,7 +53,7 @@ public class Chunk{
 					if (random.nextInt(1000) < 5){
 						int treeHeight = 5;
 						for (int k = 0; k < treeHeight; k++){
-							setBlock(new Block(this, i, h-1-k, j, "wood"), i, h-1-k, j);
+							setBlock(new Block(this, i, h-1-k, j, "wood_log"), i, h-1-k, j);
 						}
 						setBlock(new Block(this, i, h-1-treeHeight, j, "coal"), i, h-1-treeHeight, j);
 					}

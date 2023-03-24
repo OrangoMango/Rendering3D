@@ -17,7 +17,7 @@ public class MainApplication extends Application{
 	private static final double RENDER_DISTANCE = 2;
 	private static final int CHUNKS = 3;
 
-	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "stone"};
+	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "stone", "wood_log", "dirt"};
 	private int currentBlock = 0;
 	
 	@Override
@@ -68,10 +68,6 @@ public class MainApplication extends Application{
 				} else if (e.getButton() == MouseButton.SECONDARY && lastX >= 0 && lastY >= 0 && lastZ >= 0){
 					world.setBlockAt(lastX, lastY, lastZ, inventoryBlocks[this.currentBlock]);
 					chunkUpdate = true;
-					/*int blockX = Integer.compare(lastX, block.getX());
-					int blockY = Integer.compare(lastY, block.getY());
-					int blockZ = Integer.compare(lastZ, block.getZ());
-					world.setBlockAt(block.getX()+blockX, block.getY()+blockY, block.getZ()+blockZ, "wood");*/
 				}
 				if (chunkUpdate){
 					for (int i = -1; i < 2; i++){
@@ -98,6 +94,8 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.DIGIT2, () -> this.currentBlock = 1, true);
 		engine.setOnKey(KeyCode.DIGIT3, () -> this.currentBlock = 2, true);
 		engine.setOnKey(KeyCode.DIGIT4, () -> this.currentBlock = 3, true);
+		engine.setOnKey(KeyCode.DIGIT5, () -> this.currentBlock = 4, true);
+		engine.setOnKey(KeyCode.DIGIT6, () -> this.currentBlock = 5, true);
 
 		final double speed = 0.4;
 		engine.setOnKey(KeyCode.W, () -> player.move(speed*Math.cos(player.getRy()+Math.PI/2), 0, speed*Math.sin(player.getRy()+Math.PI/2)), false);

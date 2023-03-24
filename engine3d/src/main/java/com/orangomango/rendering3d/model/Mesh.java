@@ -841,19 +841,19 @@ public class Mesh{
 				double tstep = 1.0/(bx-ax);
 				double t = 0.0;
 				
-				for (int j = ax; j < bx; j++){
+				for (int j = ax; j <= bx; j++){
 					tex_u = (1-t)*tex_su+t*tex_eu;
 					tex_v = (1-t)*tex_sv+t*tex_ev;
 					tex_w = (1-t)*tex_sw+t*tex_ew;
 					tex_l = (1-t)*tex_sl+t*tex_el;
 					
-					int pix_x = (int)(tex_u/tex_w*(width-1));
-					int pix_y = (int)(tex_v/tex_w*(height-1));
+					int pix_x = (int)(tex_u/tex_w*width);
+					int pix_y = (int)(tex_v/tex_w*height);
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
 						if (gc != null){
-							Color color = image.getPixelReader().getColor(pix_x, pix_y);
+							Color color = image.getPixelReader().getColor(Math.min(15, pix_x), Math.min(15, pix_y));
 							if (SHADOWS){
 								for (Light light : lights){
 									Camera cam2 = light.getCamera();
@@ -919,19 +919,19 @@ public class Mesh{
 				double tstep = 1.0/(bx-ax);
 				double t = 0.0;
 				
-				for (int j = ax; j < bx; j++){
+				for (int j = ax; j <= bx; j++){
 					tex_u = (1-t)*tex_su+t*tex_eu;
 					tex_v = (1-t)*tex_sv+t*tex_ev;
 					tex_w = (1-t)*tex_sw+t*tex_ew;
 					tex_l = (1-t)*tex_sl+t*tex_el;
 
-					int pix_x = (int)(tex_u/tex_w*(width-1));
-					int pix_y = (int)(tex_v/tex_w*(height-1));
+					int pix_x = (int)(tex_u/tex_w*width);
+					int pix_y = (int)(tex_v/tex_w*height);
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
 						if (gc != null){
-							Color color = image.getPixelReader().getColor(pix_x, pix_y);
+							Color color = image.getPixelReader().getColor(Math.min(15, pix_x), Math.min(15, pix_y));
 							if (SHADOWS){
 								for (Light light : lights){
 									Camera cam2 = light.getCamera();
