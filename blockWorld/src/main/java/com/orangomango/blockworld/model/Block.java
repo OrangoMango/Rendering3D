@@ -93,6 +93,6 @@ public class Block{
 
 	@Override
 	public String toString(){
-		return String.format("Block at %d %d %d", this.x, this.y, this.z);
+		return String.format("Block at %d %d %d of type %s", this.x, this.y, this.z, this.type);
 	}
 }

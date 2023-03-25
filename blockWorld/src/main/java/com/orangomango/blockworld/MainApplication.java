@@ -90,6 +90,7 @@ public class MainApplication extends Application{
 		}, true);
 
 		engine.setOnKey(KeyCode.O, engine::toggleMouseMovement, true);
+		engine.setOnKey(KeyCode.R, () -> player.reset(), true);
 		engine.setOnKey(KeyCode.DIGIT1, () -> this.currentBlock = 0, true);
 		engine.setOnKey(KeyCode.DIGIT2, () -> this.currentBlock = 1, true);
 		engine.setOnKey(KeyCode.DIGIT3, () -> this.currentBlock = 2, true);
@@ -97,13 +98,13 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.DIGIT5, () -> this.currentBlock = 4, true);
 		engine.setOnKey(KeyCode.DIGIT6, () -> this.currentBlock = 5, true);
 
-		final double speed = 0.4;
-		engine.setOnKey(KeyCode.W, () -> player.move(speed*Math.cos(player.getRy()+Math.PI/2), 0, speed*Math.sin(player.getRy()+Math.PI/2)), false);
-		engine.setOnKey(KeyCode.A, () -> player.move(-speed*Math.cos(player.getRy()), 0, -speed*Math.sin(player.getRy())), false);
-		engine.setOnKey(KeyCode.S, () -> player.move(-speed*Math.cos(player.getRy()+Math.PI/2), 0, -speed*Math.sin(player.getRy()+Math.PI/2)), false);
-		engine.setOnKey(KeyCode.D, () -> player.move(speed*Math.cos(player.getRy()), 0, speed*Math.sin(player.getRy())), false);
-		engine.setOnKey(KeyCode.SPACE, () -> player.move(0, -speed, 0), false);
-		engine.setOnKey(KeyCode.SHIFT, () -> player.move(0, speed, 0), false);
+		final double speed = 0.2;
+		engine.setOnKey(KeyCode.W, () -> player.move(world, speed*Math.cos(player.getRy()+Math.PI/2), 0, speed*Math.sin(player.getRy()+Math.PI/2)), false);
+		engine.setOnKey(KeyCode.A, () -> player.move(world, -speed*Math.cos(player.getRy()), 0, -speed*Math.sin(player.getRy())), false);
+		engine.setOnKey(KeyCode.S, () -> player.move(world, -speed*Math.cos(player.getRy()+Math.PI/2), 0, -speed*Math.sin(player.getRy()+Math.PI/2)), false);
+		engine.setOnKey(KeyCode.D, () -> player.move(world, speed*Math.cos(player.getRy()), 0, speed*Math.sin(player.getRy())), false);
+		engine.setOnKey(KeyCode.SPACE, () -> player.move(world, 0, -speed, 0), false);
+		engine.setOnKey(KeyCode.SHIFT, () -> player.move(world, 0, speed, 0), false);
 
 		engine.setOnUpdate(gc -> {
 			//gc.setFill(Color.BLACK);

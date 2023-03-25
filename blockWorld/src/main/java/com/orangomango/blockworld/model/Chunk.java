@@ -50,12 +50,26 @@ public class Chunk{
 					if (this.blocks[i][k][j] == null) h++;
 				}
 				if (h > 0 && h < CHUNK_SIZE){
-					if (random.nextInt(1000) < 5){
+					if (random.nextInt(1000) < 7){
 						int treeHeight = 5;
 						for (int k = 0; k < treeHeight; k++){
 							setBlock(new Block(this, i, h-1-k, j, "wood_log"), i, h-1-k, j);
 						}
-						setBlock(new Block(this, i, h-1-treeHeight, j, "coal"), i, h-1-treeHeight, j);
+						// 5x5
+						for (int kx = i-2; kx < i+3; kx++){
+							for (int ky = j-2; ky < j+3; ky++){
+								if (kx == i && ky == j) continue;
+								setBlock(new Block(this, kx, h-1-(treeHeight-2), ky, "leaves"), kx, h-1-(treeHeight-2), ky);
+							}
+						}
+						// 3x3
+						for (int kx = i-1; kx < i+2; kx++){
+							for (int ky = j-1; ky < j+2; ky++){
+								if (kx == i && ky == j) continue;
+								setBlock(new Block(this, kx, h-1-(treeHeight-1), ky, "leaves"), kx, h-1-(treeHeight-1), ky);
+							}
+						}
+						setBlock(new Block(this, i, h-1-treeHeight, j, "leaves"), i, h-1-treeHeight, j);
 					}
 				}
 			}
@@ -85,13 +99,14 @@ public class Chunk{
 	}
 	
 	public void setBlock(Block block, int x, int y, int z){
+		//System.out.format("%d %d %d %s\n", x, y, z, block);
 		if (containsBlock(x, y, z)){
 			this.blocks[x][y][z] = block;
 		} else if (block != null){
 			Chunk chunk = this.world.getChunkAt(block.getX()/CHUNK_SIZE, block.getY()/CHUNK_SIZE, block.getZ()/CHUNK_SIZE);
 			if (chunk == null){
 				pendingBlocks.add(block);
-			} else {
+			} else if (block.getX() >= 0 && block.getY() >= 0 && block.getZ() >= 0){
 				chunk.setBlock(block, block.getX() % CHUNK_SIZE, block.getY() % CHUNK_SIZE, block.getZ() % CHUNK_SIZE);
 				updateMesh(chunk);
 			}

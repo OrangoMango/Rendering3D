@@ -31,18 +31,14 @@ public class Atlas{
 			this.images.put(blockType, imageObjects.toArray(new Image[imageObjects.size()]));
 			
 			int[] imageF = new int[12];
-			imageF[0] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("front");
-			imageF[1] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("front");
-			imageF[2] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("right");
-			imageF[3] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("right");
-			imageF[4] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("back");
-			imageF[5] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("back");
-			imageF[6] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("left");
-			imageF[7] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("left");
-			imageF[8] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("down");
-			imageF[9] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("down");
-			imageF[10] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("top");
-			imageF[11] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt("top");
+			String[] directions = new String[]{"front", "right", "back", "left", "down", "top"};
+			int i = 0;
+			for (String dir : directions){
+				imageF[i] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt(dir);
+				imageF[i+1] = imageF[i];
+				i += 2;
+			}
+
 			this.imageFaces.put(blockType, imageF);
 		}
 	}

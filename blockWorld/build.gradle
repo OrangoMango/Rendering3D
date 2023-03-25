@@ -29,7 +29,7 @@ tasks.withType(JavaCompile) {
 application {
     mainModule = 'com.orangomango.blockworld'
     mainClass = 'com.orangomango.blockworld.MainApplication'
-    applicationDefaultJvmArgs = ["-Dprism.forceGPU=true"]
+    applicationDefaultJvmArgs = ["-Dprism.forceGPU=true", "-Dprism.order=sw"]
 }
 
 javafx {

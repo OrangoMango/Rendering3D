@@ -150,10 +150,7 @@ public class Engine3D{
 		this.camera.clearDepthBuffer();
 		this.renderedMeshes = 0;
 		
-		if (this.keys.getOrDefault(KeyCode.R, false)){
-			this.camera.reset();
-			this.keys.put(KeyCode.R, false);
-		} else if (this.keys.getOrDefault(KeyCode.ESCAPE, false)){
+		if (this.keys.getOrDefault(KeyCode.ESCAPE, false)){
 			System.exit(0);
 		}
 
