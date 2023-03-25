@@ -3,6 +3,7 @@ package com.orangomango.rendering3d.model;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
+import javafx.scene.image.PixelReader;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 
@@ -51,7 +52,6 @@ public class Mesh{
 		this.textureVertex = textureCoords;
 		this.textureFaces = vertexFaces;
 		this.normals = ns == null ? new Point3D[faces.length][3] : ns;
-		
 		this.rotationCache = new double[faces.length][3][];
 	}
 
@@ -207,6 +207,7 @@ public class Mesh{
 		this.extraProjected.clear();
 		this.extraProjectedTex.clear();
 		for (Point3D[] points : getTrianglePoints(vertexColors)){
+			// TODO if the meshes are behind the camera there is no need to calculate the projection
 			if (this.hiddenTriangles.contains(i)){
 				setProjectedPoint(i, 0, null, null);
 				setProjectedPoint(i, 1, null, null);
@@ -758,6 +759,7 @@ public class Mesh{
 		
 		double width = image.getWidth();
 		double height = image.getHeight();
+		PixelReader reader = image.getPixelReader();
 
 		if (y2 < y1){
 			y1 = swap(y2, y2 = y1);
@@ -853,7 +855,7 @@ public class Mesh{
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
 						if (gc != null){
-							Color color = image.getPixelReader().getColor(Math.min(15, pix_x), Math.min(15, pix_y));
+							Color color = reader.getColor(Math.min(15, pix_x), Math.min(15, pix_y));
 							if (SHADOWS){
 								for (Light light : lights){
 									Camera cam2 = light.getCamera();
@@ -931,7 +933,7 @@ public class Mesh{
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
 						if (gc != null){
-							Color color = image.getPixelReader().getColor(Math.min(15, pix_x), Math.min(15, pix_y));
+							Color color = reader.getColor(Math.min(15, pix_x), Math.min(15, pix_y));
 							if (SHADOWS){
 								for (Light light : lights){
 									Camera cam2 = light.getCamera();

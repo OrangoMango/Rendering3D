@@ -35,6 +35,19 @@ public class MainApplication extends Application{
 		//Engine3D.LIGHT_AVAILABLE = false;
 		
 		World world = new World((int)System.currentTimeMillis());
+		final int worldChunks = 15;
+		for (int i = 0; i < worldChunks; i++){
+			for (int j = 0; j < worldChunks; j++){
+				for (int k = -1; k < 1; k++){
+					Chunk chunk = world.addChunk(i, Chunk.HEIGHT_LIMIT+k, j);
+					System.out.println("Loading chunk "+chunk+"...");
+					engine.getObjects().add(getMeshGroup(chunk));
+				}
+			}
+		}
+		for (Chunk chunk : world.getChunks()){
+			chunk.setupFaces();
+		}
 
 		engine.setOnMousePressed(e -> {
 			//world.removeBlockAt((int)player.getX(), (int)(player.getY()+1), (int)player.getZ());
@@ -98,7 +111,7 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.DIGIT5, () -> this.currentBlock = 4, true);
 		engine.setOnKey(KeyCode.DIGIT6, () -> this.currentBlock = 5, true);
 
-		final double speed = 0.2;
+		final double speed = 0.4;
 		engine.setOnKey(KeyCode.W, () -> player.move(world, speed*Math.cos(player.getRy()+Math.PI/2), 0, speed*Math.sin(player.getRy()+Math.PI/2)), false);
 		engine.setOnKey(KeyCode.A, () -> player.move(world, -speed*Math.cos(player.getRy()), 0, -speed*Math.sin(player.getRy())), false);
 		engine.setOnKey(KeyCode.S, () -> player.move(world, -speed*Math.cos(player.getRy()+Math.PI/2), 0, -speed*Math.sin(player.getRy()+Math.PI/2)), false);
@@ -118,19 +131,13 @@ public class MainApplication extends Application{
 			boolean setupFaces = false;
 			for (int i = -CHUNKS/2; i < -CHUNKS/2+CHUNKS; i++){
 				for (int j = -CHUNKS/2; j < -CHUNKS/2+CHUNKS; j++){
-					for (int k = 0; k < 2; k++){
+					for (int k = 0; k < 2; k++){ // y-chunks
 						if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
 						if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
 							setupFaces = true;
 							Chunk chunk = world.addChunk(chunkX+i, chunkY+k, chunkZ+j);
-							MeshGroup mgroup = new MeshGroup(chunk.getMesh());
-							mgroup.tag = String.format("%d %d %d", chunk.getX(), chunk.getY(), chunk.getZ());
-							mgroup.skipCondition = cam -> {
-								Point3D cpos = new Point3D(cam.getX()/Chunk.CHUNK_SIZE, cam.getY()/Chunk.CHUNK_SIZE, cam.getZ()/Chunk.CHUNK_SIZE);
-								Point3D chunkPos = new Point3D(chunk.getX(), chunk.getY(), chunk.getZ());
-								return cpos.distance(chunkPos) > RENDER_DISTANCE;
-							};
-							engine.getObjects().add(mgroup);
+							System.out.println("Loading chunk "+chunk+"...");
+							engine.getObjects().add(getMeshGroup(chunk));
 						}
 					}
 				}
@@ -147,14 +154,18 @@ public class MainApplication extends Application{
 		stage.show();
 	}
 	
+	public static MeshGroup getMeshGroup(Chunk chunk){
+		MeshGroup mgroup = new MeshGroup(chunk.getMesh());
+		mgroup.tag = String.format("%d %d %d", chunk.getX(), chunk.getY(), chunk.getZ());
+		mgroup.skipCondition = cam -> {
+			Point3D cpos = new Point3D(cam.getX()/Chunk.CHUNK_SIZE, cam.getY()/Chunk.CHUNK_SIZE, cam.getZ()/Chunk.CHUNK_SIZE);
+			Point3D chunkPos = new Point3D(chunk.getX(), chunk.getY(), chunk.getZ());
+			return cpos.distance(chunkPos) > RENDER_DISTANCE;
+		};
+		return mgroup;
+	}
+	
 	public static void main(String[] args){		
-		System.out.println("F1 -> SHOW_LINES");
-		System.out.println("F2 -> FOLLOW_LIGHT");
-		System.out.println("F3 -> LIGHT_AVAILABLE");
-		System.out.println("F4 -> ROTATE_LIGHT");
-		System.out.println("F5 -> PLACE_LIGHT_AT_CAMERA");
-		System.out.println("F6 -> SHADOWS");
-
 		launch(args);
 	}
 }

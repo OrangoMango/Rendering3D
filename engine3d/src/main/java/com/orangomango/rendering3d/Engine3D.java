@@ -200,7 +200,6 @@ public class Engine3D{
 				for (MeshGroup mg : objects){
 					for (Mesh object : mg.getMeshes()){
 						if (stateChanged) object.cache.remove(lightCamera);
-						object.showLines = false;
 						object.evaluate(lightCamera);
 						object.render(lightCamera, null, null);
 					}

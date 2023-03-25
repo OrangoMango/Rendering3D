@@ -19,13 +19,15 @@ public class Player{
     }
 
     public void move(World world, double mx, double my, double mz){
-		if (checkCollision(world, (int)(this.x+mx), (int)(this.y+my), (int)(this.z+mz))) return;
+		// TODO improve AABB collision (multiple directions)
+		//if (my > 0 && checkCollision(world, (int)(this.x+mx), (int)(this.y+my), (int)(this.z+mz))) return;
         this.x += mx;
         this.y += my;
         this.z += mz;
         this.camera.move(mx, my, mz);
     }
     
+    // AABB
     public boolean checkCollision(World world, int px, int py, int pz){
 		Block block = world.getBlockAt((int)px, (int)(py+2), (int)pz);
 		if (block == null){

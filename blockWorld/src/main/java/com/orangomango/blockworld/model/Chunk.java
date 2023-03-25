@@ -8,7 +8,7 @@ import com.orangomango.rendering3d.model.MeshGroup;
 
 public class Chunk{
 	public static final int CHUNK_SIZE = 8;
-	private static final int HEIGHT_LIMIT = 2;
+	public static final int HEIGHT_LIMIT = 2;
 	
 	private Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	private int x, y, z;
