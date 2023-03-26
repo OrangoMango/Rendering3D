@@ -159,6 +159,10 @@ public class Chunk{
 			}
 		}
 	}
+	
+	public String getTag(){
+		return String.format("%d %d %d", getX(), getY(), getZ());
+	}
 
 	@Override
 	public String toString(){

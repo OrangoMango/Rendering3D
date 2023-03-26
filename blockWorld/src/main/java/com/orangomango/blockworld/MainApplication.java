@@ -7,15 +7,17 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.util.*;
+
 import com.orangomango.rendering3d.model.*;
 import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.blockworld.model.*;
 
 public class MainApplication extends Application{
-	private static final int WIDTH = 320;
-	private static final int HEIGHT = 180;
+	private static final int WIDTH = 213; //320;
+	private static final int HEIGHT = 120; //180;
 	private static final double RENDER_DISTANCE = 2;
-	private static final int CHUNKS = 3;
+	private static final int CHUNKS = 10;
 
 	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "stone", "wood_log", "dirt"};
 	private int currentBlock = 0;
@@ -40,12 +42,12 @@ public class MainApplication extends Application{
 			for (int j = 0; j < worldChunks; j++){
 				for (int k = -1; k < 1; k++){
 					Chunk chunk = world.addChunk(i, Chunk.HEIGHT_LIMIT+k, j);
-					System.out.println("Loading chunk "+chunk+"...");
+					System.out.println("Loading "+chunk+"...");
 					engine.getObjects().add(getMeshGroup(chunk));
 				}
 			}
 		}
-		for (Chunk chunk : world.getChunks()){
+		for (Chunk chunk : world.getChunks().values()){
 			chunk.setupFaces();
 		}
 
@@ -120,34 +122,42 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.SHIFT, () -> player.move(world, 0, speed, 0), false);
 
 		engine.setOnUpdate(gc -> {
-			//gc.setFill(Color.BLACK);
-			//gc.fillText(String.format("%d %d %d", chunkX, chunkY, chunkZ), 30, 50);
-
 			engine.extraText.set("Chunks generated: "+engine.getRenderedMeshes()+String.format(" Chunk: %d %d %d", player.getChunkX(), player.getChunkY(), player.getChunkZ()));
-
-			int chunkX = player.getChunkX();
-			int chunkY = player.getChunkY();
-			int chunkZ = player.getChunkZ();
-			boolean setupFaces = false;
-			for (int i = -CHUNKS/2; i < -CHUNKS/2+CHUNKS; i++){
-				for (int j = -CHUNKS/2; j < -CHUNKS/2+CHUNKS; j++){
-					for (int k = 0; k < 2; k++){ // y-chunks
-						if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
-						if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
-							setupFaces = true;
-							Chunk chunk = world.addChunk(chunkX+i, chunkY+k, chunkZ+j);
-							System.out.println("Loading chunk "+chunk+"...");
-							engine.getObjects().add(getMeshGroup(chunk));
+		});
+		
+		Thread chunkGenerator = new Thread(() -> {
+			while (true){
+				try {
+					int chunkX = player.getChunkX();
+					int chunkY = player.getChunkY();
+					int chunkZ = player.getChunkZ();
+					boolean updated = false;
+					for (int i = -CHUNKS/2; i < -CHUNKS/2+CHUNKS; i++){
+						for (int j = -CHUNKS/2; j < -CHUNKS/2+CHUNKS; j++){
+							for (int k = 0; k < 2; k++){ // y-chunks
+								if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
+								if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
+									Chunk chunk = world.addChunk(chunkX+i, chunkY+k, chunkZ+j);
+									updated = true;
+									System.out.println("Loading "+chunk+"...");
+									engine.getObjects().add(getMeshGroup(chunk));
+								}
+							}
 						}
 					}
+					if (updated){
+						for (Chunk chunk : world.getChunks().values()){
+							chunk.setupFaces();
+						}
+					}
+					Thread.sleep(750);
+				} catch (InterruptedException ex){
+					ex.printStackTrace();
 				}
 			}
-			if (setupFaces){
-				for (Chunk chunk : world.getChunks()){
-					chunk.setupFaces();
-				}
-			}
-		});
+		}, "chunkGenerator");
+		chunkGenerator.setDaemon(true);
+		//chunkGenerator.start();
 		
 		stage.setResizable(false);
 		stage.setScene(engine.getScene());
@@ -156,7 +166,7 @@ public class MainApplication extends Application{
 	
 	public static MeshGroup getMeshGroup(Chunk chunk){
 		MeshGroup mgroup = new MeshGroup(chunk.getMesh());
-		mgroup.tag = String.format("%d %d %d", chunk.getX(), chunk.getY(), chunk.getZ());
+		mgroup.tag = chunk.getTag();
 		mgroup.skipCondition = cam -> {
 			Point3D cpos = new Point3D(cam.getX()/Chunk.CHUNK_SIZE, cam.getY()/Chunk.CHUNK_SIZE, cam.getZ()/Chunk.CHUNK_SIZE);
 			Point3D chunkPos = new Point3D(chunk.getX(), chunk.getY(), chunk.getZ());

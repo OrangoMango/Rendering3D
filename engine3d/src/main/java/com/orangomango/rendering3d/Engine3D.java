@@ -197,7 +197,8 @@ public class Engine3D{
 				Camera lightCamera = light.getCamera();
 				lightCamera.clearDepthBuffer();
 				boolean stateChanged = lightCamera.stateChanged;
-				for (MeshGroup mg : objects){
+				for (int i = 0; i < objects.size(); i++){
+					MeshGroup mg = objects.get(i);
 					for (Mesh object : mg.getMeshes()){
 						if (stateChanged) object.cache.remove(lightCamera);
 						object.evaluate(lightCamera);
@@ -216,7 +217,8 @@ public class Engine3D{
 		}
 
 		boolean stateChanged = this.camera.stateChanged;
-		for (MeshGroup mg : objects){
+		for (int i = 0; i < objects.size(); i++){
+			MeshGroup mg = objects.get(i);
 			if (mg.skipCondition != null && mg.skipCondition.test(this.camera)) continue;
 			this.renderedMeshes++;
 			for (Mesh object : mg.getMeshes()){

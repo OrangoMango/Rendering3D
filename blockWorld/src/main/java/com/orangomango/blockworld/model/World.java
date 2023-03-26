@@ -5,7 +5,7 @@ import java.util.*;
 import com.orangomango.rendering3d.model.Mesh;
 
 public class World{
-	private final List<Chunk> chunks = new ArrayList<>();
+	private final Map<String, Chunk> chunks = new HashMap<>();
 	private int seed;
 	private Random random;
 
@@ -24,7 +24,7 @@ public class World{
 
 	public Chunk addChunk(int x, int y, int z){
 		Chunk c = new Chunk(this, x, y, z);
-		chunks.add(c);
+		chunks.put(c.getTag(), c);
 		return c;
 	}
 	
@@ -40,7 +40,7 @@ public class World{
 		}
 	}
 
-	public List<Chunk> getChunks(){
+	public Map<String, Chunk> getChunks(){
 		return this.chunks;
 	}
 	
@@ -72,17 +72,16 @@ public class World{
 	}
 	
 	public Chunk getChunkAt(int x, int y, int z){
-		for (Chunk chunk : this.chunks){
-			if (chunk.getX() == x && chunk.getY() == y && chunk.getZ() == z){
-				return chunk;
-			}
-		}
-		return null;
+		return getChunkAt(String.format("%d %d %d", x, y, z));
+	}
+	
+	public Chunk getChunkAt(String tag){
+		return this.chunks.get(tag);
 	}
 	
 	public List<List<Mesh>> getMesh(){
 		List<List<Mesh>> output = new ArrayList<>();
-		for (Chunk chunk : this.chunks){
+		for (Chunk chunk : this.chunks.values()){
 			output.add(chunk.getMesh());
 		}
 		return output;
