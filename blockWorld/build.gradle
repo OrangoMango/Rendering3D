@@ -45,6 +45,7 @@ dependencies {
     implementation project(":engine3d")
     implementation "org.json:json:20220924"
     //implementation "org.spongepowered:noise:2.0.0-SNAPSHOT"
+    //implementation 'org.xerial:sqlite-jdbc:3.41.2.1'
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")

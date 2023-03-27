@@ -17,7 +17,7 @@ public class MainApplication extends Application{
 	private static final int WIDTH = 213; //320;
 	private static final int HEIGHT = 120; //180;
 	private static final double RENDER_DISTANCE = 2;
-	private static final int CHUNKS = 10;
+	private static final int CHUNKS = 3;
 
 	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "stone", "wood_log", "dirt"};
 	private int currentBlock = 0;
@@ -37,10 +37,10 @@ public class MainApplication extends Application{
 		//Engine3D.LIGHT_AVAILABLE = false;
 		
 		World world = new World((int)System.currentTimeMillis());
-		final int worldChunks = 15;
+		final int worldChunks = 8;
 		for (int i = 0; i < worldChunks; i++){
 			for (int j = 0; j < worldChunks; j++){
-				for (int k = -1; k < 1; k++){
+				for (int k = -1; k < 2; k++){
 					Chunk chunk = world.addChunk(i, Chunk.HEIGHT_LIMIT+k, j);
 					System.out.println("Loading "+chunk+"...");
 					engine.getObjects().add(getMeshGroup(chunk));
@@ -123,41 +123,30 @@ public class MainApplication extends Application{
 
 		engine.setOnUpdate(gc -> {
 			engine.extraText.set("Chunks generated: "+engine.getRenderedMeshes()+String.format(" Chunk: %d %d %d", player.getChunkX(), player.getChunkY(), player.getChunkZ()));
-		});
-		
-		Thread chunkGenerator = new Thread(() -> {
-			while (true){
-				try {
-					int chunkX = player.getChunkX();
-					int chunkY = player.getChunkY();
-					int chunkZ = player.getChunkZ();
-					boolean updated = false;
-					for (int i = -CHUNKS/2; i < -CHUNKS/2+CHUNKS; i++){
-						for (int j = -CHUNKS/2; j < -CHUNKS/2+CHUNKS; j++){
-							for (int k = 0; k < 2; k++){ // y-chunks
-								if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
-								if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
-									Chunk chunk = world.addChunk(chunkX+i, chunkY+k, chunkZ+j);
-									updated = true;
-									System.out.println("Loading "+chunk+"...");
-									engine.getObjects().add(getMeshGroup(chunk));
-								}
-							}
+			
+			/*int chunkX = player.getChunkX();
+			int chunkY = player.getChunkY();
+			int chunkZ = player.getChunkZ();
+			boolean updated = false;
+			for (int i = -CHUNKS/2; i < -CHUNKS/2+CHUNKS; i++){
+				for (int j = -CHUNKS/2; j < -CHUNKS/2+CHUNKS; j++){
+					for (int k = 0; k < 2; k++){ // y-chunks
+						if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
+						if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
+							Chunk chunk = world.addChunk(chunkX+i, chunkY+k, chunkZ+j);
+							updated = true;
+							System.out.println("Loading "+chunk+"...");
+							engine.getObjects().add(getMeshGroup(chunk));
 						}
 					}
-					if (updated){
-						for (Chunk chunk : world.getChunks().values()){
-							chunk.setupFaces();
-						}
-					}
-					Thread.sleep(750);
-				} catch (InterruptedException ex){
-					ex.printStackTrace();
 				}
 			}
-		}, "chunkGenerator");
-		chunkGenerator.setDaemon(true);
-		//chunkGenerator.start();
+			if (updated){
+				for (Chunk chunk : world.getChunks().values()){
+					chunk.setupFaces();
+				}
+			}*/
+		});
 		
 		stage.setResizable(false);
 		stage.setScene(engine.getScene());
