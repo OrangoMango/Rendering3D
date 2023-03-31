@@ -1,10 +1,10 @@
 package com.orangomango.blockworld;
 
 import javafx.application.Application;
-import javafx.geometry.Point3D;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
+import javafx.geometry.Point3D;
 import javafx.stage.Stage;
 
 import java.util.*;
@@ -14,10 +14,9 @@ import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.blockworld.model.*;
 
 public class MainApplication extends Application{
-	private static final int WIDTH = 213; //320;
-	private static final int HEIGHT = 120; //180;
-	private static final double RENDER_DISTANCE = 2;
-	private static final int CHUNKS = 3;
+	private static final int WIDTH = 320;
+	private static final int HEIGHT = 180;
+	private static final int CHUNKS = 5;
 
 	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "stone", "wood_log", "dirt"};
 	private int currentBlock = 0;
@@ -37,19 +36,18 @@ public class MainApplication extends Application{
 		//Engine3D.LIGHT_AVAILABLE = false;
 		
 		World world = new World((int)System.currentTimeMillis());
-		final int worldChunks = 8;
+		ChunkManager chunkManager = new ChunkManager(world, player);
+		/*final int worldChunks = 8;
 		for (int i = 0; i < worldChunks; i++){
 			for (int j = 0; j < worldChunks; j++){
 				for (int k = -1; k < 2; k++){
-					Chunk chunk = world.addChunk(i, Chunk.HEIGHT_LIMIT+k, j);
-					System.out.println("Loading "+chunk+"...");
-					engine.getObjects().add(getMeshGroup(chunk));
+					chunkManager.loadChunk(i, Chunk.HEIGHT_LIMIT+k, j);
 				}
 			}
 		}
 		for (Chunk chunk : world.getChunks().values()){
 			chunk.setupFaces();
-		}
+		}*/
 
 		engine.setOnMousePressed(e -> {
 			//world.removeBlockAt((int)player.getX(), (int)(player.getY()+1), (int)player.getZ());
@@ -124,7 +122,7 @@ public class MainApplication extends Application{
 		engine.setOnUpdate(gc -> {
 			engine.extraText.set("Chunks generated: "+engine.getRenderedMeshes()+String.format(" Chunk: %d %d %d", player.getChunkX(), player.getChunkY(), player.getChunkZ()));
 			
-			/*int chunkX = player.getChunkX();
+			int chunkX = player.getChunkX();
 			int chunkY = player.getChunkY();
 			int chunkZ = player.getChunkZ();
 			boolean updated = false;
@@ -133,10 +131,10 @@ public class MainApplication extends Application{
 					for (int k = 0; k < 2; k++){ // y-chunks
 						if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
 						if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
-							Chunk chunk = world.addChunk(chunkX+i, chunkY+k, chunkZ+j);
-							updated = true;
-							System.out.println("Loading "+chunk+"...");
-							engine.getObjects().add(getMeshGroup(chunk));
+							if ((new Point3D(chunkX, chunkY, chunkZ)).distance(new Point3D(chunkX+i, chunkY+k, chunkZ+j)) <= ChunkManager.RENDER_DISTANCE){
+								chunkManager.loadChunk(chunkX+i, chunkY+k, chunkZ+j);
+								updated = true;
+							}
 						}
 					}
 				}
@@ -145,23 +143,37 @@ public class MainApplication extends Application{
 				for (Chunk chunk : world.getChunks().values()){
 					chunk.setupFaces();
 				}
-			}*/
+			}
+			
+			chunkManager.manage();
+			
+			// Draw chunkMap
+			gc.save();
+			gc.beginPath();
+			gc.rect(20, 50, 75, 75);
+			gc.clip();
+			gc.closePath();
+			gc.setStroke(Color.BLACK);
+			gc.strokeRect(20, 50, 75, 75);
+			int chunkSize = 5;
+			gc.translate(20, 50);
+			for (Chunk chunk : world.getChunks().values()){
+				if (chunk.getY() != 2) continue;
+				gc.setFill((chunk.getX() == player.getChunkX() && chunk.getZ() == player.getChunkZ()) ? Color.RED : Color.WHITE);
+				for (MeshGroup mg : Engine3D.getInstance().getObjects()){
+					if (mg.tag != null && mg.tag.equals(World.getChunkTag(chunk.getX(), chunk.getY(), chunk.getZ()))){
+						if (mg.skipCondition.test(player.getCamera())) gc.setFill(Color.BLUE);
+						break;
+					}
+				}
+				gc.fillRect(chunk.getX()*chunkSize, chunk.getZ()*chunkSize, chunkSize, chunkSize);
+			}
+			gc.restore();
 		});
 		
 		stage.setResizable(false);
 		stage.setScene(engine.getScene());
 		stage.show();
-	}
-	
-	public static MeshGroup getMeshGroup(Chunk chunk){
-		MeshGroup mgroup = new MeshGroup(chunk.getMesh());
-		mgroup.tag = chunk.getTag();
-		mgroup.skipCondition = cam -> {
-			Point3D cpos = new Point3D(cam.getX()/Chunk.CHUNK_SIZE, cam.getY()/Chunk.CHUNK_SIZE, cam.getZ()/Chunk.CHUNK_SIZE);
-			Point3D chunkPos = new Point3D(chunk.getX(), chunk.getY(), chunk.getZ());
-			return cpos.distance(chunkPos) > RENDER_DISTANCE;
-		};
-		return mgroup;
 	}
 	
 	public static void main(String[] args){		

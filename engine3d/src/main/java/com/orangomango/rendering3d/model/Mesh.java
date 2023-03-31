@@ -37,7 +37,7 @@ public class Mesh{
 	public Map<Camera, double[][][]> cache = new HashMap<>();
 	private double[][][] rotationCache;
 	
-	public static double SHADOW_FACTOR = 0.0005;
+	public static double SHADOW_EPSILON = 0.0005;
 	
 	public Mesh(Image[] images, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, int[] facesImages, Color[] colors, Point3D[][] ns, Color[][] fcs){
 		this.color = Color.RED; //Color.color(Math.random(), Math.random(), Math.random());
@@ -647,7 +647,7 @@ public class Mesh{
 									int index_y = (int)Math.round(shadow[1]);
 									if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
 										double depth = cam2.depthBuffer[index_x][index_y];
-										if (Math.abs(shadow[2]-depth) > SHADOW_FACTOR){
+										if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
 											color = color.darker();
 										}
 									}
@@ -728,7 +728,7 @@ public class Mesh{
 									int index_y = (int)Math.round(shadow[1]);
 									if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
 										double depth = cam2.depthBuffer[index_x][index_y];
-										if (Math.abs(shadow[2]-depth) > SHADOW_FACTOR){
+										if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
 											color = color.darker();
 										}
 									}
@@ -864,7 +864,7 @@ public class Mesh{
 									int index_y = (int)Math.round(shadow[1]);
 									if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
 										double depth = cam2.depthBuffer[index_x][index_y];
-										if (Math.abs(shadow[2]-depth) > SHADOW_FACTOR){
+										if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
 											color = color.darker();
 										}
 									}
@@ -942,7 +942,7 @@ public class Mesh{
 									int index_y = (int)Math.round(shadow[1]);
 									if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
 										double depth = cam2.depthBuffer[index_x][index_y];
-										if (Math.abs(shadow[2]-depth) > SHADOW_FACTOR){
+										if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
 											color = color.darker();
 										}
 									}

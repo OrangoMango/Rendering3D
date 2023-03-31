@@ -116,7 +116,6 @@ public class Engine3D{
 		pane.getChildren().add(canvas);
 		
 		this.robot = new Robot();
-		Mesh.SHADOW_FACTOR /= this.width/640.0;
 		
 		Timeline mouse = new Timeline(new KeyFrame(Duration.millis(1000.0/15*2), e -> {
 			if (this.stage.isFocused() && this.mouseMovement) this.robot.mouseMove(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);

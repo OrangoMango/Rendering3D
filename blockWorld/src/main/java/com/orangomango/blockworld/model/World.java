@@ -24,7 +24,7 @@ public class World{
 
 	public Chunk addChunk(int x, int y, int z){
 		Chunk c = new Chunk(this, x, y, z);
-		chunks.put(c.getTag(), c);
+		chunks.put(getChunkTag(x, y, z), c);
 		return c;
 	}
 	
@@ -72,7 +72,7 @@ public class World{
 	}
 	
 	public Chunk getChunkAt(int x, int y, int z){
-		return getChunkAt(String.format("%d %d %d", x, y, z));
+		return getChunkAt(getChunkTag(x, y, z));
 	}
 	
 	public Chunk getChunkAt(String tag){
@@ -85,5 +85,9 @@ public class World{
 			output.add(chunk.getMesh());
 		}
 		return output;
+	}
+	
+	public static String getChunkTag(int x, int y, int z){
+		return String.format("%d %d %d", x, y, z);
 	}
 }

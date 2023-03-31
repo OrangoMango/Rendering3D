@@ -131,7 +131,7 @@ public class Chunk{
 
 	public static void updateMesh(Chunk chunk){
 		for (MeshGroup mg : Engine3D.getInstance().getObjects()){
-			if (mg.tag != null && mg.tag.equals(String.format("%d %d %d", chunk.getX(), chunk.getY(), chunk.getZ()))){
+			if (mg.tag != null && mg.tag.equals(World.getChunkTag(chunk.getX(), chunk.getY(), chunk.getZ()))){
 				mg.updateMesh(chunk.getMesh());
 			}
 		}
@@ -158,10 +158,6 @@ public class Chunk{
 				}
 			}
 		}
-	}
-	
-	public String getTag(){
-		return String.format("%d %d %d", getX(), getY(), getZ());
 	}
 
 	@Override
