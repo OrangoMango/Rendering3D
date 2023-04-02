@@ -38,7 +38,7 @@ public class Engine3D{
 	private boolean mouseMovement = true;
 	private Scene scene;
 	public SimpleStringProperty extraText = new SimpleStringProperty();
-	private int renderedMeshes = 0;
+	private int renderedMeshes = 0; // This variable is used only for performance information
 	
 	private static Image POINTER = new Image(Engine3D.class.getResourceAsStream("/pointer.png"));
 	
@@ -216,11 +216,11 @@ public class Engine3D{
 
 		boolean stateChanged = this.camera.stateChanged;
 		for (MeshGroup mg : this.objects){
-			if (mg.skipCondition != null && mg.skipCondition.test(this.camera)) continue;
 			this.renderedMeshes++;
 			for (Mesh object : mg.getMeshes()){
+				if (object.skipCondition != null && object.skipCondition.test(this.camera)) continue;
 				if (stateChanged) object.cache.remove(this.camera);
-				object.showLines = SHOW_LINES;
+				object.setShowLines(SHOW_LINES);
 				object.evaluate(this.camera);
 				object.render(this.camera, sceneLights, gc);
 			}

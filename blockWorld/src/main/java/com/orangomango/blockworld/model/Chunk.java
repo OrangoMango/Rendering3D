@@ -1,20 +1,23 @@
 package com.orangomango.blockworld.model;
 
+import javafx.geometry.Point3D;
+
 import java.util.*;
 
 import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.rendering3d.model.Mesh;
 import com.orangomango.rendering3d.model.MeshGroup;
 
-public class Chunk{
-	public static final int CHUNK_SIZE = 8;
+public class Chunk{	
+	public static final int CHUNK_SIZE = 4;
 	public static final int HEIGHT_LIMIT = 2;
 	
 	private Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	private int x, y, z;
-	private final World world;
+	private transient World world;
 
 	private static List<Block> pendingBlocks = new ArrayList<>();
+	private static Atlas atlas = new Atlas("/atlas.json");
 	
 	public Chunk(World world, int x, int y, int z){
 		this.world = world;
@@ -30,7 +33,8 @@ public class Chunk{
 					if (this.y < HEIGHT_LIMIT){
 						this.blocks[i][j][k] = null;
 					} else {
-						float n = (noise.noise((i+this.x*CHUNK_SIZE)*frequency, 0, (k+this.z*CHUNK_SIZE)*frequency)+1)/2;
+						// TODO Replace 16 with "CHUNK_SIZE"
+						float n = (noise.noise((i+this.x*16)*frequency, 0, (k+this.z*16)*frequency)+1)/2;
 						int h = Math.round(n*(CHUNK_SIZE*2-1))+CHUNK_SIZE*HEIGHT_LIMIT;
 						int pos = this.y*CHUNK_SIZE+j;
 						if (pos >= h){
@@ -75,6 +79,32 @@ public class Chunk{
 			}
 		}
 
+		buildPendingBlocks();
+	}
+	
+	public Chunk(World world, int x, int y, int z, int[][][] input){
+		this.world = world;
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		
+		for (int i = 0; i < CHUNK_SIZE; i++){ // x
+			for (int j = 0; j < CHUNK_SIZE; j++){ // y
+				for (int k = 0; k < CHUNK_SIZE; k++){ // z
+					int id = input[i][j][k];
+					if (id == 0){
+						this.blocks[i][j][k] = null;
+					} else {
+						this.blocks[i][j][k] = new Block(this, i, j, k, atlas.getBlockType(id));
+					}
+				}
+			}
+		}
+		
+		buildPendingBlocks();
+	}
+	
+	private void buildPendingBlocks(){
 		// Build pending blocks generated from other chunks
 		Iterator<Block> iterator = pendingBlocks.iterator();
 		while (iterator.hasNext()){
@@ -98,8 +128,11 @@ public class Chunk{
 		}
 	}
 	
+	public void setWorld(World world){
+		this.world = world;
+	}
+	
 	public void setBlock(Block block, int x, int y, int z){
-		//System.out.format("%d %d %d %s\n", x, y, z, block);
 		if (containsBlock(x, y, z)){
 			this.blocks[x][y][z] = block;
 		} else if (block != null){
@@ -130,10 +163,15 @@ public class Chunk{
 	}
 
 	public static void updateMesh(Chunk chunk){
+		boolean found = false;
 		for (MeshGroup mg : Engine3D.getInstance().getObjects()){
 			if (mg.tag != null && mg.tag.equals(World.getChunkTag(chunk.getX(), chunk.getY(), chunk.getZ()))){
 				mg.updateMesh(chunk.getMesh());
+				found = true;
 			}
+		}
+		if (!found){
+			Engine3D.getInstance().getObjects().add(ChunkManager.getMeshGroup(chunk));
 		}
 		chunk.setupFaces();
 	}
@@ -147,6 +185,30 @@ public class Chunk{
 				}
 			}
 		}
+		
+		Point3D[] bounds = new Point3D[]{
+			new Point3D(this.x, this.y, this.z), new Point3D(this.x, 1+this.y, this.z), new Point3D(1+this.x, 1+this.y, this.z),
+			new Point3D(1+this.x, this.y, this.z), new Point3D(this.x, this.y, 1+this.z), new Point3D(this.x, 1+this.y, 1+this.z),
+			new Point3D(1+this.x, 1+this.y, 1+this.z), new Point3D(1+this.x, this.y, 1+this.z)};
+		for (int i = 0; i < bounds.length; i++){
+			bounds[i] = bounds[i].multiply(CHUNK_SIZE);
+		}
+		
+		Mesh chunkBound = new Mesh(null, bounds, new int[][]{
+				{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
+				{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
+				{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
+				{1, 6, 2}, {4, 0, 3}, {4, 3, 7}
+		}, null, new int[12][], null, null, null, null); // Everything is null because it's rendered only as a wireframe
+		chunkBound.wireframe = true;
+		chunkBound.setShowLines(true);
+		chunkBound.skipCondition = cam -> {
+			int camX = (int)(cam.getX()/Chunk.CHUNK_SIZE);
+			int camY = (int)(cam.getY()/Chunk.CHUNK_SIZE);
+			int camZ = (int)(cam.getZ()/Chunk.CHUNK_SIZE);
+			return !(camX == this.x && camY == this.y && camZ+1 == this.z);
+		};
+		output.add(chunkBound);
 		return output;
 	}
 

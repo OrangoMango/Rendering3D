@@ -66,10 +66,6 @@ public class World{
 			chunk.setBlock(new Block(chunk, blockX, blockY, blockZ, type), blockX, blockY, blockZ);
 		}
 	}
-
-	public void clearChunks(){
-		this.chunks.clear();
-	}
 	
 	public Chunk getChunkAt(int x, int y, int z){
 		return getChunkAt(getChunkTag(x, y, z));

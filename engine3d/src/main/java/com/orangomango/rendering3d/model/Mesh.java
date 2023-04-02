@@ -8,6 +8,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.io.*;
 
 import static com.orangomango.rendering3d.Engine3D.*;
@@ -31,8 +32,10 @@ public class Mesh{
 	private Point3D[][] trianglePoints;
 	private Color[][] vertexCol;
 	private double crx, cry, crz;
-	public boolean showLines;
+	private boolean showLines;
+	public boolean wireframe = false;
 	private List<Integer> hiddenTriangles = new ArrayList<>();
+	public Predicate<Camera> skipCondition;
 	
 	public Map<Camera, double[][][]> cache = new HashMap<>();
 	private double[][][] rotationCache;
@@ -93,6 +96,14 @@ public class Mesh{
 	
 	private Point3D[] getPoints(){
 		return this.points;
+	}
+	
+	public void setShowLines(boolean value){
+		if (this.wireframe){
+			this.showLines = true;
+		} else {
+			this.showLines = value;
+		}
 	}
 	
 	private Point3D[][] getTrianglePoints(Color[][] vertexColors){
@@ -179,8 +190,8 @@ public class Mesh{
 			double factor1 = distanceToPlane(planeN, planeA, inside[0], dp1);
 			double factor2 = distanceToPlane(planeN, planeA, inside[0], dp2);
 			texCoords[0] = insideTexture[0];
-			texCoords[1] = insideTexture[0].add(outsideTexture[0].subtract(insideTexture[0]).normalize().multiply(factor1)); // i0 o0 f1
-			texCoords[2] = insideTexture[0].add(outsideTexture[1].subtract(insideTexture[0]).normalize().multiply(factor2)); // i0 o1 f2
+			texCoords[1] = insideTexture[0] == null || outsideTexture[0] == null ? null : insideTexture[0].add(outsideTexture[0].subtract(insideTexture[0]).normalize().multiply(factor1)); // i0 o0 f1
+			texCoords[2] = insideTexture[0] == null || outsideTexture[1] == null ? null : insideTexture[0].add(outsideTexture[1].subtract(insideTexture[0]).normalize().multiply(factor2)); // i0 o1 f2
 			return new Point3D[][]{{inside[0], inside[0].add(dp1.multiply(factor1)), inside[0].add(dp2.multiply(factor2))}};
 		} else if (insideN == 2){
 			Point3D dp1 = outside[0].subtract(inside[0]).normalize();
@@ -188,13 +199,13 @@ public class Mesh{
 			Point3D tempP = inside[0].add(dp1.multiply(factor1));
 			Point3D dp2 = outside[0].subtract(inside[1]).normalize();
 			double factor2 = distanceToPlane(planeN, planeA, inside[1], dp2);
-			Point2D textureP = insideTexture[0].add(outsideTexture[0].subtract(insideTexture[0]).normalize().multiply(factor1));
+			Point2D textureP = insideTexture[0] == null || outsideTexture[0] == null ? null : insideTexture[0].add(outsideTexture[0].subtract(insideTexture[0]).normalize().multiply(factor1));
 			texCoords[0] = insideTexture[0];
 			texCoords[1] = insideTexture[1];
 			texCoords[2] = textureP; // i0 o0 f1 (temp)
 			secOutput[0] = textureP; // i0 o0 f1 (temp)
 			secOutput[1] = insideTexture[1];
-			secOutput[2] = insideTexture[1].add(outsideTexture[0].subtract(insideTexture[1]).normalize().multiply(factor2)); // i1 o0 f2
+			secOutput[2] = insideTexture[1] == null || outsideTexture[0] == null ? null : insideTexture[1].add(outsideTexture[0].subtract(insideTexture[1]).normalize().multiply(factor2)); // i1 o0 f2
 			return new Point3D[][]{{inside[0], inside[1], tempP}, {tempP, inside[1], inside[1].add(dp2.multiply(factor2))}};
 		} else {
 			return null;
@@ -206,9 +217,10 @@ public class Mesh{
 		this.vertexColors = new Color[this.faces.length][3];
 		this.extraProjected.clear();
 		this.extraProjectedTex.clear();
+		Point3D cameraPos = new Point3D(camera.getX(), camera.getY(), camera.getZ());
+		Point3D cameraDir = new Point3D(Math.cos(camera.getRy()+Math.PI/2), 0, Math.sin(camera.getRy()+Math.PI/2)).normalize();
 		for (Point3D[] points : getTrianglePoints(vertexColors)){
-			// TODO if the meshes are behind the camera there is no need to calculate the projection
-			if (this.hiddenTriangles.contains(i)){
+			if (this.hiddenTriangles.contains(i) || Math.round(points[0].midpoint(points[1]).midpoint(points[2]).subtract(cameraPos).normalize().dotProduct(cameraDir)) < 0){
 				setProjectedPoint(i, 0, null, null);
 				setProjectedPoint(i, 1, null, null);
 				setProjectedPoint(i, 2, null, null);
@@ -994,7 +1006,7 @@ public class Mesh{
 		}
 	}
 	
-	public static Mesh loadFromFile(File file, double x, double y, double z, double scale, String singleObject, boolean invertVaxis){
+	public static Mesh loadFromFile(File file, double x, double y, double z, double scale, String singleObject){
 		Map<String, double[]> mtllib = null;
 		Image image = null; //new Image(Mesh.class.getResourceAsStream("/truck_red.jpg"));
 		
@@ -1032,7 +1044,7 @@ public class Mesh{
 					}
 					normals.add(new Point3D(narray[0], narray[1], narray[2]));
 				} else if (line.startsWith("vt ")){
-					vertexCoords.add(new Point2D(Double.parseDouble(line.split(" ")[1]), invertVaxis ? 1-Double.parseDouble(line.split(" ")[2]) : Double.parseDouble(line.split(" ")[2])));
+					vertexCoords.add(new Point2D(Double.parseDouble(line.split(" ")[1]), 1-Double.parseDouble(line.split(" ")[2])));
 				} else if (line.startsWith("f ")){
 					String[] pieces = line.split(" ");
 					int[] farray = new int[pieces.length-1];

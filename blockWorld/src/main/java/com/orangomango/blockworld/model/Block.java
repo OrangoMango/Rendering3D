@@ -11,6 +11,7 @@ public class Block{
 	private Chunk chunk;
 	private Mesh mesh;
 	private String type;
+	private int id;
 
 	private static Atlas atlas = new Atlas("/atlas.json");
 	
@@ -20,6 +21,11 @@ public class Block{
 		this.y = y+chunk.getY()*Chunk.CHUNK_SIZE;
 		this.z = z+chunk.getZ()*Chunk.CHUNK_SIZE;
 		this.type = type;
+		this.id = atlas.getBlockId(this.type);
+	}
+	
+	public int getId(){
+		return this.id;
 	}
 
 	public void setupFaces(){

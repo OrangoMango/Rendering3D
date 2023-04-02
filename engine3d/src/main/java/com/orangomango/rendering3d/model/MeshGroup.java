@@ -1,11 +1,9 @@
 package com.orangomango.rendering3d.model;
 
 import java.util.*;
-import java.util.function.Predicate;
 
 public class MeshGroup{
 	private List<Mesh> meshes = new ArrayList<>();
-	public Predicate<Camera> skipCondition;
 	public String tag;
 
 	public MeshGroup(List<Mesh> m){

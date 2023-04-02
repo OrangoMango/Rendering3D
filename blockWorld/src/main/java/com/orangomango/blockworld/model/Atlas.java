@@ -10,6 +10,7 @@ public class Atlas{
 	private JSONObject json;
 	private Map<String, Image[]> images = new HashMap<>();
 	private Map<String, int[]> imageFaces = new HashMap<>();
+	private Map<Integer, String> blockIds = new HashMap<>();
 
 	public Atlas(String name){
 		try {
@@ -41,6 +42,19 @@ public class Atlas{
 
 			this.imageFaces.put(blockType, imageF);
 		}
+		
+		for (Object block : this.json.getJSONObject("blocks").keySet()){
+			String blockType = (String)block;
+			blockIds.put(getBlockId(blockType), blockType);
+		}
+	}
+	
+	public int getBlockId(String blockType){
+		return this.json.getJSONObject("blocks").getJSONObject(blockType).getInt("id");
+	}
+	
+	public String getBlockType(int id){
+		return this.blockIds.get(id);
 	}
 
 	public Map<String, Image[]> getImages(){

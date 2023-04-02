@@ -73,7 +73,7 @@ public class MainApplication extends Application{
 			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05, null, false);
 			//model.setRotation(Math.PI/2, 0, 0);
 			//engine.getObjects().add(new MeshGroup(model));
-			engine.getObjects().add(new MeshGroup(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane2.obj").toURI()), 0, 0.5, 0, 0.5, null, false)));
+			engine.getObjects().add(new MeshGroup(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane2.obj").toURI()), 0, 0.5, 0, 0.5, null)));
 			
 			/*Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/truck.obj").toURI()), 0, 0, 0, 0.05, null, true);
 			model.setRotation(Math.PI, 0, 0);

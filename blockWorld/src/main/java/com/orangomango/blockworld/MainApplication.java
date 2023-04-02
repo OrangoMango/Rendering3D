@@ -18,8 +18,9 @@ public class MainApplication extends Application{
 	private static final int HEIGHT = 180;
 	private static final int CHUNKS = 5;
 
-	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "stone", "wood_log", "dirt"};
+	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "stone", "wood_log", "dirt", "cobblestone"};
 	private int currentBlock = 0;
+	private boolean loadChunks = true;
 	
 	@Override
 	public void start(Stage stage){
@@ -93,16 +94,16 @@ public class MainApplication extends Application{
 							}
 						}
 					}
+					int chunkX = block.getX() / Chunk.CHUNK_SIZE;
+					int chunkY = block.getY() / Chunk.CHUNK_SIZE;
+					int chunkZ = block.getZ() / Chunk.CHUNK_SIZE;
+					chunkManager.saveChunkToFile(world.getChunkAt(chunkX, chunkY, chunkZ)); // TODO Add a cooldown
 				}
 			}
 		});
 
-		engine.setOnKey(KeyCode.P, () -> {
-			engine.getObjects().clear();
-			world.clearChunks();
-		}, true);
-
 		engine.setOnKey(KeyCode.O, engine::toggleMouseMovement, true);
+		engine.setOnKey(KeyCode.I, () -> this.loadChunks = !this.loadChunks, true);
 		engine.setOnKey(KeyCode.R, () -> player.reset(), true);
 		engine.setOnKey(KeyCode.DIGIT1, () -> this.currentBlock = 0, true);
 		engine.setOnKey(KeyCode.DIGIT2, () -> this.currentBlock = 1, true);
@@ -110,6 +111,24 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.DIGIT4, () -> this.currentBlock = 3, true);
 		engine.setOnKey(KeyCode.DIGIT5, () -> this.currentBlock = 4, true);
 		engine.setOnKey(KeyCode.DIGIT6, () -> this.currentBlock = 5, true);
+		engine.setOnKey(KeyCode.DIGIT7, () -> this.currentBlock = 6, true);
+		
+		engine.setOnKey(KeyCode.B, () -> {
+			int chunkX = player.getChunkX();
+			int chunkY = player.getChunkY();
+			int chunkZ = player.getChunkZ();
+			Chunk chunk = world.getChunkAt(chunkX, chunkY, chunkZ);
+			if (chunk != null){
+				chunkManager.saveChunkToFile(chunk);
+				System.out.println(chunk+" saved");
+			}
+		}, true);
+		engine.setOnKey(KeyCode.V, () -> {
+			chunkManager.loadChunkFromFile(0, 2, 0);
+			for (Chunk chunk : world.getChunks().values()){
+				chunk.setupFaces();
+			}
+		}, true);
 
 		final double speed = 0.4;
 		engine.setOnKey(KeyCode.W, () -> player.move(world, speed*Math.cos(player.getRy()+Math.PI/2), 0, speed*Math.sin(player.getRy()+Math.PI/2)), false);
@@ -122,53 +141,56 @@ public class MainApplication extends Application{
 		engine.setOnUpdate(gc -> {
 			engine.extraText.set("Chunks generated: "+engine.getRenderedMeshes()+String.format(" Chunk: %d %d %d", player.getChunkX(), player.getChunkY(), player.getChunkZ()));
 			
-			int chunkX = player.getChunkX();
-			int chunkY = player.getChunkY();
-			int chunkZ = player.getChunkZ();
-			boolean updated = false;
-			for (int i = -CHUNKS/2; i < -CHUNKS/2+CHUNKS; i++){
-				for (int j = -CHUNKS/2; j < -CHUNKS/2+CHUNKS; j++){
-					for (int k = 0; k < 2; k++){ // y-chunks
-						if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
-						if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
-							if ((new Point3D(chunkX, chunkY, chunkZ)).distance(new Point3D(chunkX+i, chunkY+k, chunkZ+j)) <= ChunkManager.RENDER_DISTANCE){
-								chunkManager.loadChunk(chunkX+i, chunkY+k, chunkZ+j);
-								updated = true;
+			if (loadChunks){
+				int chunkX = player.getChunkX();
+				int chunkY = player.getChunkY();
+				int chunkZ = player.getChunkZ();
+				boolean updated = false;
+				for (int i = -CHUNKS/2; i < -CHUNKS/2+CHUNKS; i++){
+					for (int j = -CHUNKS/2; j < -CHUNKS/2+CHUNKS; j++){
+						for (int k = 0; k < 3; k++){ // y-chunks
+							if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
+							if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
+								if ((new Point3D(chunkX, chunkY, chunkZ)).distance(new Point3D(chunkX+i, chunkY+k, chunkZ+j)) <= ChunkManager.RENDER_DISTANCE){
+									chunkManager.loadChunk(chunkX+i, chunkY+k, chunkZ+j);
+									updated = true;
+								}
 							}
 						}
 					}
 				}
-			}
-			if (updated){
-				for (Chunk chunk : world.getChunks().values()){
-					chunk.setupFaces();
+				if (updated){
+					for (Chunk chunk : world.getChunks().values()){
+						chunk.setupFaces();
+					}
 				}
 			}
 			
 			chunkManager.manage();
 			
 			// Draw chunkMap
-			gc.save();
+			// TODO Math.round(chunkPos.subtract(cpos).dotProduct(camDir)) < 0
+			/*gc.save();
 			gc.beginPath();
 			gc.rect(20, 50, 75, 75);
 			gc.clip();
 			gc.closePath();
 			gc.setStroke(Color.BLACK);
 			gc.strokeRect(20, 50, 75, 75);
-			int chunkSize = 5;
+			int chunkSize = 15;
 			gc.translate(20, 50);
 			for (Chunk chunk : world.getChunks().values()){
 				if (chunk.getY() != 2) continue;
 				gc.setFill((chunk.getX() == player.getChunkX() && chunk.getZ() == player.getChunkZ()) ? Color.RED : Color.WHITE);
 				for (MeshGroup mg : Engine3D.getInstance().getObjects()){
 					if (mg.tag != null && mg.tag.equals(World.getChunkTag(chunk.getX(), chunk.getY(), chunk.getZ()))){
-						if (mg.skipCondition.test(player.getCamera())) gc.setFill(Color.BLUE);
+						//if (mg.skipCondition.test(player.getCamera())) gc.setFill(Color.BLUE);
 						break;
 					}
 				}
 				gc.fillRect(chunk.getX()*chunkSize, chunk.getZ()*chunkSize, chunkSize, chunkSize);
 			}
-			gc.restore();
+			gc.restore();*/
 		});
 		
 		stage.setResizable(false);
