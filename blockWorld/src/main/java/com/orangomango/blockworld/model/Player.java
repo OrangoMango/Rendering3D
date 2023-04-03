@@ -20,7 +20,7 @@ public class Player{
 
     public void move(World world, double mx, double my, double mz){
 		// TODO improve AABB collision (multiple directions)
-		//if (my > 0 && checkCollision(world, (int)(this.x+mx), (int)(this.y+my), (int)(this.z+mz))) return;
+		if (checkCollision(world, this.x, this.y, this.z, mx, my, mz)) return;
         this.x += mx;
         this.y += my;
         this.z += mz;
@@ -28,15 +28,28 @@ public class Player{
     }
     
     // AABB
-    public boolean checkCollision(World world, int px, int py, int pz){
-		Block block = world.getBlockAt((int)px, (int)(py+2), (int)pz);
+    private boolean checkCollision(World world, double px, double py, double pz, double mx, double my, double mz){
+		// z+ z- x+ x- y- y+
+		final int[][] blocks = new int[][]{{0, 0, 1}, {0, 1, 1}, {0, 0, -1}, {0, 1, -1}, {1, 0, 0}, {1, 1, 0}, {-1, 0, 0}, {-1, 1, 0}, {0, -1, 0}, {0, 2, 0}};
+		final boolean[] conditions = new boolean[]{mz <= 0, mz <= 0, mz >= 0, mz >= 0, mx <= 0, mx <= 0, mx >= 0, mx >= 0, my >= 0, my <= 0};
+		for (int i = 0; i < blocks.length; i++){
+			if (conditions[i]) continue; // skip conditions
+			int[] bl = blocks[i];
+			boolean col = checkBlockCollision(world, (int)(px+mx), (int)(py+my), (int)(pz+mz), bl[0], bl[1], bl[2]);
+			if (col) return true;
+		}
+		return false;
+	}
+	
+	private boolean checkBlockCollision(World world, int px, int py, int pz, int bx, int by, int bz){
+		Block block = world.getBlockAt((int)(px+bx), (int)(py+by), (int)(pz+bz));
 		if (block == null){
 			return false;
 		}
 		Point3D blockMin = new Point3D(block.getX(), block.getY(), block.getZ());
-		Point3D blockMax = new Point3D(block.getX(), block.getY(), block.getZ()+1);
+		Point3D blockMax = new Point3D(block.getX()+1, block.getY()+1, block.getZ()+1);
 		Point3D playerMin = new Point3D(px, py, pz);
-		Point3D playerMax = new Point3D(px, py+2, pz+0.5);
+		Point3D playerMax = new Point3D(px+1, py+2, pz+1);
 		if (playerMax.getX() < blockMin.getX() || playerMin.getX() > blockMax.getX()) return false;
 		if (playerMax.getY() < blockMin.getY() || playerMin.getY() > blockMax.getY()) return false;
 		if (playerMax.getZ() < blockMin.getZ() || playerMin.getZ() > blockMax.getZ()) return false;

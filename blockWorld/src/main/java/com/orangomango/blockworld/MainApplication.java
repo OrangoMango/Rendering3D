@@ -135,7 +135,7 @@ public class MainApplication extends Application{
 			}
 		}, true);
 
-		final double speed = 0.4;
+		final double speed = 0.2;
 		engine.setOnKey(KeyCode.W, () -> player.move(world, speed*Math.cos(player.getRy()+Math.PI/2), 0, speed*Math.sin(player.getRy()+Math.PI/2)), false);
 		engine.setOnKey(KeyCode.A, () -> player.move(world, -speed*Math.cos(player.getRy()), 0, -speed*Math.sin(player.getRy())), false);
 		engine.setOnKey(KeyCode.S, () -> player.move(world, -speed*Math.cos(player.getRy()+Math.PI/2), 0, -speed*Math.sin(player.getRy()+Math.PI/2)), false);
