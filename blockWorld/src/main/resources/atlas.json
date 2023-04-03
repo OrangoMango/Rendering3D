@@ -95,6 +95,18 @@
 				"front" : 0,
 				"back" : 0
 			}
+		},
+		"sand" : {
+			"id" : 9,
+			"images" : ["/sand.png"],
+			"config" : {
+				"top" : 0,
+				"down" : 0,
+				"right" : 0,
+				"left" : 0,
+				"front" : 0,
+				"back" : 0
+			}
 		}
 	}
 }

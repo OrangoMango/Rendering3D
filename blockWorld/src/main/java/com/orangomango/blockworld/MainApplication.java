@@ -13,12 +13,16 @@ import com.orangomango.rendering3d.model.*;
 import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.blockworld.model.*;
 
+/*
+ * RaspberryPi settings: CHUNKS: 5, RENDER_DISTANCE: 4, CHUNK_SIZE: 4
+ * Normal settings: CHUNKS: 5, RENDER_DISTANCE: 4/5, CHUNK_SIZE: 8
+ */
 public class MainApplication extends Application{
 	private static final int WIDTH = 320;
 	private static final int HEIGHT = 180;
 	private static final int CHUNKS = 5;
 
-	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "stone", "wood_log", "dirt", "cobblestone"};
+	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "stone", "wood_log", "dirt", "cobblestone", "sand"};
 	private int currentBlock = 0;
 	private boolean loadChunks = true;
 	
@@ -97,7 +101,7 @@ public class MainApplication extends Application{
 					int chunkX = block.getX() / Chunk.CHUNK_SIZE;
 					int chunkY = block.getY() / Chunk.CHUNK_SIZE;
 					int chunkZ = block.getZ() / Chunk.CHUNK_SIZE;
-					chunkManager.saveChunkToFile(world.getChunkAt(chunkX, chunkY, chunkZ)); // TODO Add a cooldown
+					chunkManager.saveChunkToFile(world.getChunkAt(chunkX, chunkY, chunkZ));
 				}
 			}
 		});
@@ -112,6 +116,7 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.DIGIT5, () -> this.currentBlock = 4, true);
 		engine.setOnKey(KeyCode.DIGIT6, () -> this.currentBlock = 5, true);
 		engine.setOnKey(KeyCode.DIGIT7, () -> this.currentBlock = 6, true);
+		engine.setOnKey(KeyCode.DIGIT8, () -> this.currentBlock = 7, true);
 		
 		engine.setOnKey(KeyCode.B, () -> {
 			int chunkX = player.getChunkX();

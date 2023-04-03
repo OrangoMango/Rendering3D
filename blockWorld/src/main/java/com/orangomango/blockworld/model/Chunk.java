@@ -14,7 +14,7 @@ public class Chunk{
 	
 	private Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	private int x, y, z;
-	private transient World world;
+	private World world;
 
 	private static List<Block> pendingBlocks = new ArrayList<>();
 	private static Atlas atlas = new Atlas("/atlas.json");
@@ -128,10 +128,6 @@ public class Chunk{
 		}
 	}
 	
-	public void setWorld(World world){
-		this.world = world;
-	}
-	
 	public void setBlock(Block block, int x, int y, int z){
 		if (containsBlock(x, y, z)){
 			this.blocks[x][y][z] = block;
@@ -194,7 +190,7 @@ public class Chunk{
 			bounds[i] = bounds[i].multiply(CHUNK_SIZE);
 		}
 		
-		Mesh chunkBound = new Mesh(null, bounds, new int[][]{
+		/*Mesh chunkBound = new Mesh(null, bounds, new int[][]{
 				{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
 				{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
 				{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
@@ -208,7 +204,7 @@ public class Chunk{
 			int camZ = (int)(cam.getZ()/Chunk.CHUNK_SIZE);
 			return !(camX == this.x && camY == this.y && camZ+1 == this.z);
 		};
-		output.add(chunkBound);
+		output.add(chunkBound);*/
 		return output;
 	}
 
