@@ -14,7 +14,13 @@ public class Player{
         this.z = z;
         this.camera = new Camera(this.x, this.y, this.z);
         this.camera.zNear = 0.1;
-        this.camera.zFar = 50;        
+        this.camera.zFar = 50;
+        
+        for (Point3D[] ps : this.camera.getViewFrustum()){
+			System.out.println(java.util.Arrays.toString(ps));
+		}
+		//System.exit(0);
+        
         this.camera.lookAtCenter();
     }
 

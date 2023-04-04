@@ -219,6 +219,7 @@ public class Mesh{
 		this.extraProjectedTex.clear();
 		Point3D cameraPos = new Point3D(camera.getX(), camera.getY(), camera.getZ());
 		Point3D cameraDir = new Point3D(Math.cos(camera.getRy()+Math.PI/2), 0, Math.sin(camera.getRy()+Math.PI/2)).normalize();
+		Point3D[][] planes = camera.getViewFrustum();
 		for (Point3D[] points : getTrianglePoints(vertexColors)){
 			if (this.hiddenTriangles.contains(i) || Math.round(points[0].midpoint(points[1]).midpoint(points[2]).subtract(cameraPos).normalize().dotProduct(cameraDir)) < 0){
 				setProjectedPoint(i, 0, null, null);
@@ -229,7 +230,37 @@ public class Mesh{
 			}
 			
 			// Frustum culling
-			
+			boolean point1Inside = true;
+			for (Point3D[] plane : planes){
+				double distance = distanceToPlane(plane[1], plane[0], points[0], plane[1].multiply(-1));
+				if (distance > 0){
+					point1Inside = false;
+					break;
+				}
+			}
+			boolean point2Inside = true;
+			for (Point3D[] plane : planes){
+				double distance = distanceToPlane(plane[1], plane[0], points[1], plane[1].multiply(-1));
+				if (distance > 0){
+					point2Inside = false;
+					break;
+				}
+			}
+			boolean point3Inside = true;
+			for (Point3D[] plane : planes){
+				double distance = distanceToPlane(plane[1], plane[0], points[2], plane[1].multiply(-1));
+				if (distance > 0){
+					point3Inside = false;
+					break;
+				}
+			}
+			if (!point1Inside && !point2Inside && !point3Inside){
+				setProjectedPoint(i, 0, null, null);
+				setProjectedPoint(i, 1, null, null);
+				setProjectedPoint(i, 2, null, null);
+				i++;
+				continue;
+			}
 			
 			double[][] cam = camera.getViewMatrix();
 			

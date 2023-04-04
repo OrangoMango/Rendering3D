@@ -63,7 +63,7 @@ public class ChunkManager{
 			this.engine.getObjects().add(getMeshGroup(chunk));
 			saveChunkToFile(chunk);
 		}
-		System.out.println("Loaded chunk");
+		//System.out.println("Loaded chunk");
 	}
 	
 	public boolean loadChunkFromFile(int x, int y, int z){
@@ -89,7 +89,7 @@ public class ChunkManager{
 			Chunk chunk = new Chunk(this.world, x, y, z, chunkData);
 			this.world.getChunks().put(World.getChunkTag(x, y, z), chunk);
 			Chunk.updateMesh(chunk);
-			System.out.println("Loaded a new chunk from file: "+chunk);
+			//System.out.println("Loaded a new chunk from file: "+chunk);
 			return true;
 		} catch (IOException ex){
 			ex.printStackTrace();

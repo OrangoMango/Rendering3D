@@ -95,55 +95,40 @@ public class Camera{
 	}
 	
 	public Point3D[][] getViewFrustum(){
-		double stepX = Math.cos(getRx())*Math.cos(getRy()+Math.PI/2);
-		double stepY = -Math.sin(getRx());
-		double stepZ = Math.cos(getRx())*Math.sin(getRy()+Math.PI/2);
+		double stepX = Math.round(Math.cos(getRx())*Math.cos(getRy()+Math.PI/2));
+		double stepY = Math.round(-Math.sin(getRx()));
+		double stepZ = Math.round(Math.cos(getRx())*Math.sin(getRy()+Math.PI/2));
 		Point3D frontPoint = new Point3D(this.cx+this.zNear*stepX, this.cy+this.zNear*stepY, this.cz+this.zNear*stepZ);
 		Point3D backPoint = new Point3D(this.cx+this.zFar*stepX, this.cy+this.zFar*stepY, this.cz+this.zFar*stepZ);
 		
-		stepX = Math.cos(getRx())*Math.cos(getRy()+Math.PI/2-this.fov/2);
-		stepY = -Math.sin(getRx());
-		stepZ = Math.cos(getRx())*Math.sin(getRy()+Math.PI/2-this.fov/2);
-		Point3D rightPoint = new Point3D(this.cx+this.zNear*stepX, this.cy+this.zNear*stepY, this.cz+this.zNear*stepZ);
-		
-		stepX = Math.cos(getRx())*Math.cos(getRy()+Math.PI/2+this.fov/2);
-		stepY = -Math.sin(getRx());
-		stepZ = Math.cos(getRx())*Math.sin(getRy()+Math.PI/2+this.fov/2);
-		Point3D leftPoint = new Point3D(this.cx+this.zNear*stepX, this.cy+this.zNear*stepY, this.cz+this.zNear*stepZ);
-		
-		stepX = Math.cos(getRx()+this.fov/2)*Math.cos(getRy()+Math.PI/2);
-		stepY = -Math.sin(getRx()+this.fov/2);
-		stepZ = Math.cos(getRx()+this.fov/2)*Math.sin(getRy()+Math.PI/2);
-		Point3D topPoint = new Point3D(this.cx+this.zNear*stepX, this.cy+this.zNear*stepY, this.cz+this.zNear*stepZ);
-		
-		stepX = Math.cos(getRx()-this.fov/2)*Math.cos(getRy()+Math.PI/2);
-		stepY = -Math.sin(getRx()-this.fov/2);
-		stepZ = Math.cos(getRx()-this.fov/2)*Math.sin(getRy()+Math.PI/2);
-		Point3D bottomPoint = new Point3D(this.cx+this.zNear*stepX, this.cy+this.zNear*stepY, this.cz+this.zNear*stepZ);
-		
 		Point3D eye = new Point3D(this.cx, this.cy, this.cz);
-		Point3D frontNormal = frontPoint.subtract(eye).normalize();
+		Point3D frontNormal = frontPoint.subtract(eye).multiply(-1).normalize();
 		Point3D backNormal = backPoint.subtract(eye).normalize();
 		
-		stepX = Math.cos(getRx())*Math.cos(getRy()-this.fov/2);
-		stepY = -Math.sin(getRx());
-		stepZ = Math.cos(getRx())*Math.sin(getRy()-this.fov/2);
+		stepX = Math.round(Math.cos(getRx())*Math.cos(getRy()-this.fov/2));
+		stepY = Math.round(-Math.sin(getRx()));
+		stepZ = Math.round(Math.cos(getRx())*Math.sin(getRy()-this.fov/2));
 		Point3D rightNormal = new Point3D(stepX, stepY, stepZ).normalize();
 		
-		stepX = Math.cos(getRx())*Math.cos(getRy()+Math.PI+this.fov/2);
-		stepY = -Math.sin(getRx());
-		stepZ = Math.cos(getRx())*Math.sin(getRy()+Math.PI+this.fov/2);
+		stepX = Math.round(Math.cos(getRx())*Math.cos(getRy()+Math.PI+this.fov/2));
+		stepY = Math.round(-Math.sin(getRx()));
+		stepZ = Math.round(Math.cos(getRx())*Math.sin(getRy()+Math.PI+this.fov/2));
 		Point3D leftNormal = new Point3D(stepX, stepY, stepZ).normalize();
 		
-		stepX = Math.cos(getRx()+this.fov/2+Math.PI/2)*Math.cos(getRy()+Math.PI/2);
-		stepY = -Math.sin(getRx()+this.fov/2+Math.PI/2);
-		stepZ = Math.cos(getRx()+this.fov/2+Math.PI/2)*Math.sin(getRy()+Math.PI/2);
+		stepX = Math.round(Math.cos(getRx()+this.fov/2+Math.PI/2)*Math.cos(getRy()+Math.PI/2));
+		stepY = Math.round(-Math.sin(getRx()+this.fov/2+Math.PI/2));
+		stepZ = Math.round(Math.cos(getRx()+this.fov/2+Math.PI/2)*Math.sin(getRy()+Math.PI/2));
 		Point3D topNormal = new Point3D(stepX, stepY, stepZ).normalize();
 		
-		stepX = Math.cos(getRx()-this.fov/2-Math.PI/2)*Math.cos(getRy()+Math.PI/2);
-		stepY = -Math.sin(getRx()-this.fov/2-Math.PI/2);
-		stepZ = Math.cos(getRx()-this.fov/2-Math.PI/2)*Math.sin(getRy()+Math.PI/2);
+		stepX = Math.round(Math.cos(getRx()-this.fov/2-Math.PI/2)*Math.cos(getRy()+Math.PI/2));
+		stepY = Math.round(-Math.sin(getRx()-this.fov/2-Math.PI/2));
+		stepZ = Math.round(Math.cos(getRx()-this.fov/2-Math.PI/2)*Math.sin(getRy()+Math.PI/2));
 		Point3D bottomNormal = new Point3D(stepX, stepY, stepZ).normalize();
+		
+		Point3D rightPoint = frontPoint.add(rightNormal);
+		Point3D leftPoint = frontPoint.add(leftNormal);
+		Point3D topPoint = frontPoint.add(topNormal);
+		Point3D bottomPoint = frontPoint.add(bottomNormal);
 		
 		return new Point3D[][]{{frontPoint, frontNormal}, {backPoint, backNormal}, {rightPoint, rightNormal}, {leftPoint, leftNormal}, {topPoint, topNormal}, {bottomPoint, bottomNormal}};
 	}
