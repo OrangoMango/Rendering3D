@@ -14,13 +14,12 @@ public class Player{
         this.z = z;
         this.camera = new Camera(this.x, this.y, this.z);
         this.camera.zNear = 0.1;
-        this.camera.zFar = 50;
+        this.camera.zFar = 50;        
         this.camera.lookAtCenter();
     }
 
     public void move(World world, double mx, double my, double mz){
-		// TODO improve AABB collision (multiple directions)
-		if (checkCollision(world, this.x, this.y, this.z, mx, my, mz)) return;
+		//if (checkCollision(world, this.x, this.y, this.z, mx, my, mz)) return;
         this.x += mx;
         this.y += my;
         this.z += mz;

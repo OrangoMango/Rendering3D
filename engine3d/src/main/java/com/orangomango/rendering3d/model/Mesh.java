@@ -228,6 +228,9 @@ public class Mesh{
 				continue;
 			}
 			
+			// Frustum culling
+			
+			
 			double[][] cam = camera.getViewMatrix();
 			
 			// Apply transforms

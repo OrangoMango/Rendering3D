@@ -94,6 +94,60 @@ public class Camera{
 		return String.format("Cx: %.2f Cy: %.2f Cz: %.2f | Rx: %.2f Ry: %.2f", this.cx, this.cy, this.cz, this.rx, this.ry);
 	}
 	
+	public Point3D[][] getViewFrustum(){
+		double stepX = Math.cos(getRx())*Math.cos(getRy()+Math.PI/2);
+		double stepY = -Math.sin(getRx());
+		double stepZ = Math.cos(getRx())*Math.sin(getRy()+Math.PI/2);
+		Point3D frontPoint = new Point3D(this.cx+this.zNear*stepX, this.cy+this.zNear*stepY, this.cz+this.zNear*stepZ);
+		Point3D backPoint = new Point3D(this.cx+this.zFar*stepX, this.cy+this.zFar*stepY, this.cz+this.zFar*stepZ);
+		
+		stepX = Math.cos(getRx())*Math.cos(getRy()+Math.PI/2-this.fov/2);
+		stepY = -Math.sin(getRx());
+		stepZ = Math.cos(getRx())*Math.sin(getRy()+Math.PI/2-this.fov/2);
+		Point3D rightPoint = new Point3D(this.cx+this.zNear*stepX, this.cy+this.zNear*stepY, this.cz+this.zNear*stepZ);
+		
+		stepX = Math.cos(getRx())*Math.cos(getRy()+Math.PI/2+this.fov/2);
+		stepY = -Math.sin(getRx());
+		stepZ = Math.cos(getRx())*Math.sin(getRy()+Math.PI/2+this.fov/2);
+		Point3D leftPoint = new Point3D(this.cx+this.zNear*stepX, this.cy+this.zNear*stepY, this.cz+this.zNear*stepZ);
+		
+		stepX = Math.cos(getRx()+this.fov/2)*Math.cos(getRy()+Math.PI/2);
+		stepY = -Math.sin(getRx()+this.fov/2);
+		stepZ = Math.cos(getRx()+this.fov/2)*Math.sin(getRy()+Math.PI/2);
+		Point3D topPoint = new Point3D(this.cx+this.zNear*stepX, this.cy+this.zNear*stepY, this.cz+this.zNear*stepZ);
+		
+		stepX = Math.cos(getRx()-this.fov/2)*Math.cos(getRy()+Math.PI/2);
+		stepY = -Math.sin(getRx()-this.fov/2);
+		stepZ = Math.cos(getRx()-this.fov/2)*Math.sin(getRy()+Math.PI/2);
+		Point3D bottomPoint = new Point3D(this.cx+this.zNear*stepX, this.cy+this.zNear*stepY, this.cz+this.zNear*stepZ);
+		
+		Point3D eye = new Point3D(this.cx, this.cy, this.cz);
+		Point3D frontNormal = frontPoint.subtract(eye).normalize();
+		Point3D backNormal = backPoint.subtract(eye).normalize();
+		
+		stepX = Math.cos(getRx())*Math.cos(getRy()-this.fov/2);
+		stepY = -Math.sin(getRx());
+		stepZ = Math.cos(getRx())*Math.sin(getRy()-this.fov/2);
+		Point3D rightNormal = new Point3D(stepX, stepY, stepZ).normalize();
+		
+		stepX = Math.cos(getRx())*Math.cos(getRy()+Math.PI+this.fov/2);
+		stepY = -Math.sin(getRx());
+		stepZ = Math.cos(getRx())*Math.sin(getRy()+Math.PI+this.fov/2);
+		Point3D leftNormal = new Point3D(stepX, stepY, stepZ).normalize();
+		
+		stepX = Math.cos(getRx()+this.fov/2+Math.PI/2)*Math.cos(getRy()+Math.PI/2);
+		stepY = -Math.sin(getRx()+this.fov/2+Math.PI/2);
+		stepZ = Math.cos(getRx()+this.fov/2+Math.PI/2)*Math.sin(getRy()+Math.PI/2);
+		Point3D topNormal = new Point3D(stepX, stepY, stepZ).normalize();
+		
+		stepX = Math.cos(getRx()-this.fov/2-Math.PI/2)*Math.cos(getRy()+Math.PI/2);
+		stepY = -Math.sin(getRx()-this.fov/2-Math.PI/2);
+		stepZ = Math.cos(getRx()-this.fov/2-Math.PI/2)*Math.sin(getRy()+Math.PI/2);
+		Point3D bottomNormal = new Point3D(stepX, stepY, stepZ).normalize();
+		
+		return new Point3D[][]{{frontPoint, frontNormal}, {backPoint, backNormal}, {rightPoint, rightNormal}, {leftPoint, leftNormal}, {topPoint, topNormal}, {bottomPoint, bottomNormal}};
+	}
+	
 	public double[][] getViewMatrix(){
 		if (this.stateChanged){
 			this.savedMatrix = Engine3D.multiply(Engine3D.getTranslation(-getX(), -getY(), -getZ()),
