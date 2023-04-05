@@ -1,5 +1,5 @@
 # Rendering3D
-My own implementation of a 3D engine
+My own implementation of a 3D engine. There are still some bugs. :(
 
 ## How to run
 `./gradlew :engine3d:run`  
