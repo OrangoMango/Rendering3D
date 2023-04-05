@@ -9,7 +9,7 @@ public class Camera{
 	public double[][] depthBuffer = new double[Engine3D.getInstance().getWidth()][Engine3D.getInstance().getHeight()];
 	
 	public double aspectRatio = (double)Engine3D.getInstance().getHeight()/Engine3D.getInstance().getWidth();
-	public double fov = Math.toRadians(45);
+	public double fov = Math.PI/4;
 	public double zFar = 100;
 	public double zNear = 0.3;
 	
@@ -95,41 +95,44 @@ public class Camera{
 	}
 	
 	public Point3D[][] getViewFrustum(){
-		double stepX = Math.round(Math.cos(getRx())*Math.cos(getRy()+Math.PI/2));
-		double stepY = Math.round(-Math.sin(getRx()));
-		double stepZ = Math.round(Math.cos(getRx())*Math.sin(getRy()+Math.PI/2));
+		double stepX = Math.cos(getRx())*Math.cos(getRy()+Math.PI/2);
+		double stepY = -Math.sin(getRx());
+		double stepZ = Math.cos(getRx())*Math.sin(getRy()+Math.PI/2);
 		Point3D frontPoint = new Point3D(this.cx+this.zNear*stepX, this.cy+this.zNear*stepY, this.cz+this.zNear*stepZ);
 		Point3D backPoint = new Point3D(this.cx+this.zFar*stepX, this.cy+this.zFar*stepY, this.cz+this.zFar*stepZ);
-		
+
 		Point3D eye = new Point3D(this.cx, this.cy, this.cz);
 		Point3D frontNormal = frontPoint.subtract(eye).multiply(-1).normalize();
 		Point3D backNormal = backPoint.subtract(eye).normalize();
-		
-		stepX = Math.round(Math.cos(getRx())*Math.cos(getRy()-this.fov/2));
-		stepY = Math.round(-Math.sin(getRx()));
-		stepZ = Math.round(Math.cos(getRx())*Math.sin(getRy()-this.fov/2));
+
+		stepX = Math.cos(getRx())*Math.cos(getRy()-this.fov/2);
+		stepY = -Math.sin(getRx());
+		stepZ = Math.cos(getRx())*Math.sin(getRy()-this.fov/2);
 		Point3D rightNormal = new Point3D(stepX, stepY, stepZ).normalize();
-		
-		stepX = Math.round(Math.cos(getRx())*Math.cos(getRy()+Math.PI+this.fov/2));
-		stepY = Math.round(-Math.sin(getRx()));
-		stepZ = Math.round(Math.cos(getRx())*Math.sin(getRy()+Math.PI+this.fov/2));
+
+		stepX = Math.cos(getRx())*Math.cos(getRy()+Math.PI+this.fov/2);
+		stepY = -Math.sin(getRx());
+		stepZ = Math.cos(getRx())*Math.sin(getRy()+Math.PI+this.fov/2);
 		Point3D leftNormal = new Point3D(stepX, stepY, stepZ).normalize();
-		
-		stepX = Math.round(Math.cos(getRx()+this.fov/2+Math.PI/2)*Math.cos(getRy()+Math.PI/2));
-		stepY = Math.round(-Math.sin(getRx()+this.fov/2+Math.PI/2));
-		stepZ = Math.round(Math.cos(getRx()+this.fov/2+Math.PI/2)*Math.sin(getRy()+Math.PI/2));
+
+		stepX = Math.cos(getRx()+this.fov/2+Math.PI/2)*Math.cos(getRy()+Math.PI/2);
+		stepY = -Math.sin(getRx()+this.fov/2+Math.PI/2);
+		stepZ = Math.cos(getRx()+this.fov/2+Math.PI/2)*Math.sin(getRy()+Math.PI/2);
 		Point3D topNormal = new Point3D(stepX, stepY, stepZ).normalize();
-		
-		stepX = Math.round(Math.cos(getRx()-this.fov/2-Math.PI/2)*Math.cos(getRy()+Math.PI/2));
-		stepY = Math.round(-Math.sin(getRx()-this.fov/2-Math.PI/2));
-		stepZ = Math.round(Math.cos(getRx()-this.fov/2-Math.PI/2)*Math.sin(getRy()+Math.PI/2));
+
+		stepX = Math.cos(getRx()-this.fov/2-Math.PI/2)*Math.cos(getRy()+Math.PI/2);
+		stepY = -Math.sin(getRx()-this.fov/2-Math.PI/2);
+		stepZ = Math.cos(getRx()-this.fov/2-Math.PI/2)*Math.sin(getRy()+Math.PI/2);
 		Point3D bottomNormal = new Point3D(stepX, stepY, stepZ).normalize();
-		
-		Point3D rightPoint = frontPoint.add(rightNormal);
-		Point3D leftPoint = frontPoint.add(leftNormal);
-		Point3D topPoint = frontPoint.add(topNormal);
-		Point3D bottomPoint = frontPoint.add(bottomNormal);
-		
+
+		Point3D verticalDirection = new Point3D(Math.cos(getRx()+Math.PI/2)*Math.cos(getRy()+Math.PI/2), -Math.sin(getRx()+Math.PI/2), Math.cos(getRx()+Math.PI/2)*Math.sin(getRy()+Math.PI/2));
+		Point3D horizontalDirection = new Point3D(Math.cos(getRx())*Math.cos(getRy()), -Math.sin(getRx()), Math.cos(getRx())*Math.sin(getRy()));
+
+		Point3D rightPoint = frontPoint.add(horizontalDirection);
+		Point3D leftPoint = frontPoint.add(horizontalDirection.multiply(-1));
+		Point3D topPoint = frontPoint.add(verticalDirection);
+		Point3D bottomPoint = frontPoint.add(verticalDirection.multiply(-1));
+
 		return new Point3D[][]{{frontPoint, frontNormal}, {backPoint, backNormal}, {rightPoint, rightNormal}, {leftPoint, leftNormal}, {topPoint, topNormal}, {bottomPoint, bottomNormal}};
 	}
 	

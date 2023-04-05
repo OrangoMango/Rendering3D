@@ -66,6 +66,7 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.A, () -> camera.move(-speed*Math.cos(camera.getRy()), 0, -speed*Math.sin(camera.getRy())), false);
 		engine.setOnKey(KeyCode.S, () -> camera.move(-speed*Math.cos(camera.getRy()+Math.PI/2), 0, -speed*Math.sin(camera.getRy()+Math.PI/2)), false);
 		engine.setOnKey(KeyCode.D, () -> camera.move(speed*Math.cos(camera.getRy()), 0, speed*Math.sin(camera.getRy())), false);
+		engine.setOnKey(KeyCode.R, () -> camera.reset(), true);
 		engine.setOnKey(KeyCode.SPACE, () -> camera.move(0, -speed, 0), false);
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(0, speed, 0), false);
 		

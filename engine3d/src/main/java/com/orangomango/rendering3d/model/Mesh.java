@@ -40,7 +40,7 @@ public class Mesh{
 	public Map<Camera, double[][][]> cache = new HashMap<>();
 	private double[][][] rotationCache;
 	
-	public static double SHADOW_EPSILON = 0.0005;
+	public static double SHADOW_EPSILON = 0.001;
 	
 	public Mesh(Image[] images, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, int[] facesImages, Color[] colors, Point3D[][] ns, Color[][] fcs){
 		this.color = Color.RED; //Color.color(Math.random(), Math.random(), Math.random());
@@ -140,7 +140,7 @@ public class Mesh{
 		this.projectedTex[f][tr] = tex;
 	}
 
-	private double distanceToPlane(Point3D normal, Point3D planePoint, Point3D point, Point3D direction){
+	public static double distanceToPlane(Point3D normal, Point3D planePoint, Point3D point, Point3D direction){
 		if (normal.dotProduct(direction) == 0) throw new IllegalStateException("Debug: dp is 0");
 		return (normal.dotProduct(planePoint)-normal.dotProduct(point))/normal.dotProduct(direction);
 	}
@@ -229,39 +229,6 @@ public class Mesh{
 				continue;
 			}
 			
-			// Frustum culling
-			boolean point1Inside = true;
-			for (Point3D[] plane : planes){
-				double distance = distanceToPlane(plane[1], plane[0], points[0], plane[1].multiply(-1));
-				if (distance > 0){
-					point1Inside = false;
-					break;
-				}
-			}
-			boolean point2Inside = true;
-			for (Point3D[] plane : planes){
-				double distance = distanceToPlane(plane[1], plane[0], points[1], plane[1].multiply(-1));
-				if (distance > 0){
-					point2Inside = false;
-					break;
-				}
-			}
-			boolean point3Inside = true;
-			for (Point3D[] plane : planes){
-				double distance = distanceToPlane(plane[1], plane[0], points[2], plane[1].multiply(-1));
-				if (distance > 0){
-					point3Inside = false;
-					break;
-				}
-			}
-			if (!point1Inside && !point2Inside && !point3Inside){
-				setProjectedPoint(i, 0, null, null);
-				setProjectedPoint(i, 1, null, null);
-				setProjectedPoint(i, 2, null, null);
-				i++;
-				continue;
-			}
-			
 			double[][] cam = camera.getViewMatrix();
 			
 			// Apply transforms
@@ -335,6 +302,43 @@ public class Mesh{
 				if (proj[i][2] == null){
 					proj[i][2] = multiply(cam, p3);
 				}
+				
+				// Frustum culling
+				boolean point1Inside = true;
+				Point3D poi1 = new Point3D(proj[i][0][0], proj[i][0][1], proj[i][0][2]);
+				for (Point3D[] plane : planes){
+					double distance = distanceToPlane(plane[1], plane[0], poi1, plane[1].multiply(-1));
+					if (distance > 0){
+						point1Inside = false;
+						break;
+					}
+				}
+				boolean point2Inside = true;
+				Point3D poi2 = new Point3D(proj[i][1][0], proj[i][1][1], proj[i][1][2]);
+				for (Point3D[] plane : planes){
+					double distance = distanceToPlane(plane[1], plane[0], poi2, plane[1].multiply(-1));
+					if (distance > 0){
+						point2Inside = false;
+						break;
+					}
+				}
+				boolean point3Inside = true;
+				Point3D poi3 = new Point3D(proj[i][2][0], proj[i][2][1], proj[i][2][2]);
+				for (Point3D[] plane : planes){
+					double distance = distanceToPlane(plane[1], plane[0], poi3, plane[1].multiply(-1));
+					if (distance > 0){
+						point3Inside = false;
+						break;
+					}
+				}
+				/*if (!point1Inside && !point2Inside && !point3Inside){
+					setProjectedPoint(i, 0, null, null);
+					setProjectedPoint(i, 1, null, null);
+					setProjectedPoint(i, 2, null, null);
+					i++;
+					continue;
+				}*/
+				
 				Point2D[] secOut = new Point2D[3];
 				Point2D t1 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][0]];
 				Point2D t2 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][1]];

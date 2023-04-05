@@ -13,11 +13,18 @@ public class Player{
         this.y = y;
         this.z = z;
         this.camera = new Camera(this.x, this.y, this.z);
+        this.camera.setRy(Math.PI/3);
         this.camera.zNear = 0.1;
-        this.camera.zFar = 50;
+        this.camera.zFar = 75;
         
+        // TODO Make distanceToPlain private
+        int i = 0;
         for (Point3D[] ps : this.camera.getViewFrustum()){
 			System.out.println(java.util.Arrays.toString(ps));
+			//if (i == 0){
+				System.out.println(com.orangomango.rendering3d.model.Mesh.distanceToPlane(ps[1], ps[0], new Point3D(0, 12.5, 3), ps[1].multiply(-1)));
+			//}
+			i++;
 		}
 		//System.exit(0);
         
