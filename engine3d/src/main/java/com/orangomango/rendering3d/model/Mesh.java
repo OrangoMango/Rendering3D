@@ -331,13 +331,13 @@ public class Mesh{
 						break;
 					}
 				}
-				/*if (!point1Inside && !point2Inside && !point3Inside){
+				if (!point1Inside && !point2Inside && !point3Inside){
 					setProjectedPoint(i, 0, null, null);
 					setProjectedPoint(i, 1, null, null);
 					setProjectedPoint(i, 2, null, null);
 					i++;
 					continue;
-				}*/
+				}
 				
 				Point2D[] secOut = new Point2D[3];
 				Point2D t1 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][0]];

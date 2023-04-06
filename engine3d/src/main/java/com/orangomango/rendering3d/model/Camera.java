@@ -98,10 +98,12 @@ public class Camera{
 		double stepX = Math.cos(getRx())*Math.cos(getRy()+Math.PI/2);
 		double stepY = -Math.sin(getRx());
 		double stepZ = Math.cos(getRx())*Math.sin(getRy()+Math.PI/2);
-		Point3D frontPoint = new Point3D(this.cx+this.zNear*stepX, this.cy+this.zNear*stepY, this.cz+this.zNear*stepZ);
-		Point3D backPoint = new Point3D(this.cx+this.zFar*stepX, this.cy+this.zFar*stepY, this.cz+this.zFar*stepZ);
-
+		Point3D direction = new Point3D(stepX, stepY, stepZ);
 		Point3D eye = new Point3D(this.cx, this.cy, this.cz);
+
+		Point3D frontPoint = eye.add(direction.multiply(this.zNear));
+		Point3D backPoint = eye.add(direction.multiply(this.zFar));
+
 		Point3D frontNormal = frontPoint.subtract(eye).multiply(-1).normalize();
 		Point3D backNormal = backPoint.subtract(eye).normalize();
 
@@ -125,13 +127,13 @@ public class Camera{
 		stepZ = Math.cos(getRx()-this.fov/2-Math.PI/2)*Math.sin(getRy()+Math.PI/2);
 		Point3D bottomNormal = new Point3D(stepX, stepY, stepZ).normalize();
 
-		Point3D verticalDirection = new Point3D(Math.cos(getRx()+Math.PI/2)*Math.cos(getRy()+Math.PI/2), -Math.sin(getRx()+Math.PI/2), Math.cos(getRx()+Math.PI/2)*Math.sin(getRy()+Math.PI/2));
-		Point3D horizontalDirection = new Point3D(Math.cos(getRx())*Math.cos(getRy()), -Math.sin(getRx()), Math.cos(getRx())*Math.sin(getRy()));
+		Point3D horizontalDirection = direction.crossProduct(new Point3D(0, 1, 0)).normalize();
+		Point3D verticalDirection = horizontalDirection.crossProduct(direction).normalize();
 
-		Point3D rightPoint = frontPoint.add(horizontalDirection);
-		Point3D leftPoint = frontPoint.add(horizontalDirection.multiply(-1));
-		Point3D topPoint = frontPoint.add(verticalDirection);
-		Point3D bottomPoint = frontPoint.add(verticalDirection.multiply(-1));
+		Point3D rightPoint = frontPoint.add(horizontalDirection.multiply(-1));
+		Point3D leftPoint = frontPoint.add(horizontalDirection);
+		Point3D topPoint = frontPoint.add(verticalDirection.multiply(-1));
+		Point3D bottomPoint = frontPoint.add(verticalDirection);
 
 		return new Point3D[][]{{frontPoint, frontNormal}, {backPoint, backNormal}, {rightPoint, rightNormal}, {leftPoint, leftNormal}, {topPoint, topNormal}, {bottomPoint, bottomNormal}};
 	}
