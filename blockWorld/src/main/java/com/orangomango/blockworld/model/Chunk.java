@@ -9,7 +9,7 @@ import com.orangomango.rendering3d.model.Mesh;
 import com.orangomango.rendering3d.model.MeshGroup;
 
 public class Chunk{	
-	public static final int CHUNK_SIZE = 4;
+	public static final int CHUNK_SIZE = 8;
 	public static final int HEIGHT_LIMIT = 2;
 	
 	private Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
@@ -25,8 +25,8 @@ public class Chunk{
 		this.y = y;
 		this.z = z;
 		PerlinNoise noise = new PerlinNoise(world.getSeed());
-		float frequency = 0.071f;
-		float biomeFreq = 0.06f;
+		float frequency = 0.1575f;
+		float biomeFreq = 0.05f;
 
 		for (int i = 0; i < CHUNK_SIZE; i++){ // x
 			for (int j = 0; j < CHUNK_SIZE; j++){ // y
@@ -34,13 +34,12 @@ public class Chunk{
 					if (this.y < HEIGHT_LIMIT){
 						this.blocks[i][j][k] = null;
 					} else {
-						// TODO Replace 16 with "CHUNK_SIZE"
-						float n = (noise.noise((i+this.x*16)*frequency, 0, (k+this.z*16)*frequency)+1)/2;
-						float b = (noise.noise((i+this.x*16)*biomeFreq, 0, (k+this.z*16)*biomeFreq)+1)/2;
-						int h = Math.round(n*(CHUNK_SIZE*2-1))+CHUNK_SIZE*HEIGHT_LIMIT; // air column
+						float n = (noise.noise((i+this.x*CHUNK_SIZE)*frequency, 0, (k+this.z*CHUNK_SIZE)*frequency)+1)/2;
+						float b = (noise.noise((i+this.x*CHUNK_SIZE)*biomeFreq, 0, (k+this.z*CHUNK_SIZE)*biomeFreq)+1)/2;
+						int h = Math.round(n*(CHUNK_SIZE-1))+CHUNK_SIZE*HEIGHT_LIMIT; // air column
 						int pos = this.y*CHUNK_SIZE+j;
 						if (pos >= h){
-							String biome = b >= 2 ? "sand" : (pos == h ? "grass" : "dirt"); // TODO
+							String biome = b <= 0.4 ? "sand" : (pos == h ? "grass" : "dirt");
 							this.blocks[i][j][k] = new Block(this, i, j, k, pos > h+3 ? "stone" : biome);
 						}
 					}

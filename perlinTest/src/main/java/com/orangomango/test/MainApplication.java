@@ -71,8 +71,9 @@ public class MainApplication extends Application{
 		float freq = Float.parseFloat(this.frequency.get());
 		for (int i = 0; i < WIDTH; i += blockSize){
 			for (int j = 0; j < HEIGHT; j += blockSize){
-				float n = (noise.noise(i/blockSize*freq, 0, j/blockSize*freq)+1)/2;
-				Color color = Color.color(n, n, n);
+				float n = (noise.noise(i/blockSize*freq, 0, j/blockSize*freq)+1)/2; // air column 0->black
+				float n2 = (noise.noise(i/blockSize*0.05f, 0, j/blockSize*0.05f)+1)/2;
+				Color color = n2 <= 0.4 ? Color.YELLOW : Color.color(n, n, n);
 				for (int x = i; x < i+blockSize; x++){
 					for (int y = j; y < j+blockSize; y++){
 						gc.getPixelWriter().setColor(x, y, color);
@@ -82,7 +83,7 @@ public class MainApplication extends Application{
 		}
 		
 		gc.setStroke(Color.RED);
-		double size = 16*blockSize;
+		double size = 8*blockSize;
 		for (int i = 0; i < WIDTH/size; i++){
 			for (int j = 0; j < HEIGHT/size; j++){
 				gc.strokeRect(i*size, j*size, size, size);

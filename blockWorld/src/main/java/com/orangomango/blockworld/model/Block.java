@@ -81,7 +81,11 @@ public class Block{
 			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
 		}, atlas.getBlockFaces().get(this.type), null, null, null);
-		//System.out.format("Applying mesh for block at %d %d %d...\n", this.x, this.y, this.z);
+		this.mesh.skipCondition = cam -> {
+			Point3D pos = new Point3D(this.x, this.y, this.z);
+			Point3D camPos = new Point3D(cam.getX(), cam.getY(), cam.getZ());
+			return pos.distance(camPos) > ChunkManager.RENDER_DISTANCE*Chunk.CHUNK_SIZE;
+		};
 		return this.mesh;
 	}
 	

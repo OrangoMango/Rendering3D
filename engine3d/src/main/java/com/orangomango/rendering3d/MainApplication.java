@@ -15,6 +15,9 @@ import com.orangomango.rendering3d.model.Light;
 import com.orangomango.rendering3d.model.Mesh;
 import com.orangomango.rendering3d.model.MeshGroup;
 
+/*
+ * @author OrangoMango (https://orangomango.github.io)
+ */
 public class MainApplication extends Application{
 	private static final int WIDTH = 320;
 	private static final int HEIGHT = 180;

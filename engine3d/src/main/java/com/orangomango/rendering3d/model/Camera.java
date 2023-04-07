@@ -137,8 +137,8 @@ public class Camera{
 		Point3D topPoint = frontPoint.add(verticalDirection);
 		Point3D bottomPoint = frontPoint.add(verticalDirection.multiply(-1));
 
-		return new Point3D[][]{{rightPoint, new Point3D(1, 0, 0)}, {leftPoint, new Point3D(-1, 0, 0)}};
-		//return new Point3D[][]{{frontPoint, frontNormal}, {backPoint, backNormal}, {rightPoint, rightNormal}, {leftPoint, leftNormal}, {topPoint, topNormal}, {bottomPoint, bottomNormal}};
+		//return new Point3D[][]{{rightPoint, new Point3D(1, 0, 0)}, {leftPoint, new Point3D(-1, 0, 0)}};
+		return new Point3D[][]{{frontPoint, frontNormal}, {backPoint, backNormal}, {rightPoint, rightNormal}, {leftPoint, leftNormal}, {topPoint, topNormal}, {bottomPoint, bottomNormal}};
 	}
 	
 	public double[][] getViewMatrix(){

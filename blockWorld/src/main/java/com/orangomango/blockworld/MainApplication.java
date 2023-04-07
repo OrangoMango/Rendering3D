@@ -16,11 +16,13 @@ import com.orangomango.blockworld.model.*;
 /*
  * RaspberryPi settings: CHUNKS: 5, RENDER_DISTANCE: 4, CHUNK_SIZE: 4
  * Normal settings: CHUNKS: 5, RENDER_DISTANCE: 4/5, CHUNK_SIZE: 8
+ * 
+ * @author OrangoMango (https://orangomango.github.io)
  */
 public class MainApplication extends Application{
 	private static final int WIDTH = 320;
 	private static final int HEIGHT = 180;
-	private static final int CHUNKS = 5;
+	private static final int CHUNKS = 3;
 
 	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "stone", "wood_log", "dirt", "cobblestone", "sand"};
 	private int currentBlock = 0;
@@ -158,7 +160,7 @@ public class MainApplication extends Application{
 				boolean updated = false;
 				for (int i = -CHUNKS/2; i < -CHUNKS/2+CHUNKS; i++){
 					for (int j = -CHUNKS/2; j < -CHUNKS/2+CHUNKS; j++){
-						for (int k = 0; k < 3; k++){ // y-chunks
+						for (int k = -1; k < 2; k++){ // y-chunks
 							if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
 							if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
 								if ((new Point3D(chunkX, chunkY, chunkZ)).distance(new Point3D(chunkX+i, chunkY+k, chunkZ+j)) <= ChunkManager.RENDER_DISTANCE){
