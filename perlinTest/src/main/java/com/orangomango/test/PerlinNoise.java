@@ -1,4 +1,4 @@
-package com.orangomango.blockworld.model;
+package com.orangomango.test;
 
 import java.util.Random;
 

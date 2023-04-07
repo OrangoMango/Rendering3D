@@ -5,42 +5,41 @@ import javafx.geometry.Point3D;
 import com.orangomango.rendering3d.model.Camera;
 
 public class Player{
-    private double x, y, z;
-    private Camera camera;
+	private double x, y, z;
+	private Camera camera;
 
-    public Player(double x, double y, double z){
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.camera = new Camera(this.x, this.y, this.z);
-        this.camera.setRy(Math.PI/3);
-        this.camera.zNear = 0.1;
-        this.camera.zFar = 75;
-        
-        // TODO Make distanceToPlain private
-        int i = 0;
-        for (Point3D[] ps : this.camera.getViewFrustum()){
+	public Player(double x, double y, double z){
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.camera = new Camera(this.x, this.y, this.z);
+		this.camera.zNear = 0.1;
+		this.camera.zFar = 75;
+		
+		// TODO Make distanceToPlain private
+		int i = 0;
+		for (Point3D[] ps : this.camera.getViewFrustum()){
 			System.out.println(java.util.Arrays.toString(ps));
 			//if (i == 0){
-				System.out.println(com.orangomango.rendering3d.model.Mesh.distanceToPlane(ps[1], ps[0], new Point3D(0, 12.5, 3), ps[1].multiply(-1)));
+				//System.out.println(com.orangomango.rendering3d.model.Mesh.distanceToPlane(ps[1], ps[0], new Point3D(6, 8, 18), ps[1].multiply(-1)));
 			//}
 			i++;
 		}
 		//System.exit(0);
-        
-        this.camera.lookAtCenter();
-    }
+		
+		this.camera.lookAtCenter();
+	}
 
-    public void move(World world, double mx, double my, double mz){
+	public void move(World world, double mx, double my, double mz){
 		//if (checkCollision(world, this.x, this.y, this.z, mx, my, mz)) return;
-        this.x += mx;
-        this.y += my;
-        this.z += mz;
-        this.camera.move(mx, my, mz);
-    }
-    
-    // AABB
-    private boolean checkCollision(World world, double px, double py, double pz, double mx, double my, double mz){
+		this.x += mx;
+		this.y += my;
+		this.z += mz;
+		this.camera.move(mx, my, mz);
+	}
+	
+	// AABB
+	private boolean checkCollision(World world, double px, double py, double pz, double mx, double my, double mz){
 		// z+ z- x+ x- y- y+
 		final int[][] blocks = new int[][]{{0, 0, 1}, {0, 1, 1}, {0, 0, -1}, {0, 1, -1}, {1, 0, 0}, {1, 1, 0}, {-1, 0, 0}, {-1, 1, 0}, {0, -1, 0}, {0, 2, 0}};
 		final boolean[] conditions = new boolean[]{mz <= 0, mz <= 0, mz >= 0, mz >= 0, mx <= 0, mx <= 0, mx >= 0, mx >= 0, my >= 0, my <= 0};
@@ -75,40 +74,40 @@ public class Player{
 		this.camera.reset();
 	}
 
-    public double getRx(){
-        return this.camera.getRx();
-    }
+	public double getRx(){
+		return this.camera.getRx();
+	}
 
-    public double getRy(){
-        return this.camera.getRy();
-    }
+	public double getRy(){
+		return this.camera.getRy();
+	}
 
-    public double getX(){
-        return this.x;
-    }
+	public double getX(){
+		return this.x;
+	}
 
-    public double getY(){
-        return this.y;
-    }
+	public double getY(){
+		return this.y;
+	}
 
-    public double getZ(){
-        return this.z;
-    }
+	public double getZ(){
+		return this.z;
+	}
 
-    public int getChunkX(){
-        return (int)(getX()/Chunk.CHUNK_SIZE);
-    }
+	public int getChunkX(){
+		return (int)(getX()/Chunk.CHUNK_SIZE);
+	}
 
-    public int getChunkY(){
-        return (int)(getY()/Chunk.CHUNK_SIZE);
-    }
+	public int getChunkY(){
+		return (int)(getY()/Chunk.CHUNK_SIZE);
+	}
 
-    public int getChunkZ(){
-        return (int)(getZ()/Chunk.CHUNK_SIZE);
-    }
+	public int getChunkZ(){
+		return (int)(getZ()/Chunk.CHUNK_SIZE);
+	}
 
-    public Camera getCamera(){
-        return this.camera;
-    }
+	public Camera getCamera(){
+		return this.camera;
+	}
 
 }

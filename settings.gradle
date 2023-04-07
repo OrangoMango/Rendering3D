@@ -1,3 +1,4 @@
 rootProject.name = "Rendering3D"
 include "blockWorld"
 include "engine3d"
+include "perlinTest"

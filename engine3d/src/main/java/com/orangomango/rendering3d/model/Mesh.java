@@ -274,6 +274,25 @@ public class Mesh{
 			Point3D point1 = new Point3D(p1[0], p1[1], p1[2]);
 			Point3D point2 = new Point3D(p2[0], p2[1], p2[2]);
 			Point3D point3 = new Point3D(p3[0], p3[1], p3[2]);
+			
+			// Frustum culling
+			boolean inside = true;
+			for (Point3D[] plane : planes){
+				double distance1 = distanceToPlane(plane[1], plane[0], point1, plane[1].multiply(-1));
+				double distance2 = distanceToPlane(plane[1], plane[0], point2, plane[1].multiply(-1));
+				double distance3 = distanceToPlane(plane[1], plane[0], point3, plane[1].multiply(-1));
+				if (distance1 > 0 && distance2 > 0 && distance3 > 0){
+					inside = false;
+					break;
+				}
+			}
+			/*if (!inside){
+				setProjectedPoint(i, 0, null, null);
+				setProjectedPoint(i, 1, null, null);
+				setProjectedPoint(i, 2, null, null);
+				i++;
+				continue;
+			}*/
 		
 			Point3D normal = this.normals[i][0]; 
 
@@ -303,48 +322,12 @@ public class Mesh{
 					proj[i][2] = multiply(cam, p3);
 				}
 				
-				// Frustum culling
-				boolean point1Inside = true;
-				Point3D poi1 = new Point3D(proj[i][0][0], proj[i][0][1], proj[i][0][2]);
-				for (Point3D[] plane : planes){
-					double distance = distanceToPlane(plane[1], plane[0], poi1, plane[1].multiply(-1));
-					if (distance > 0){
-						point1Inside = false;
-						break;
-					}
-				}
-				boolean point2Inside = true;
-				Point3D poi2 = new Point3D(proj[i][1][0], proj[i][1][1], proj[i][1][2]);
-				for (Point3D[] plane : planes){
-					double distance = distanceToPlane(plane[1], plane[0], poi2, plane[1].multiply(-1));
-					if (distance > 0){
-						point2Inside = false;
-						break;
-					}
-				}
-				boolean point3Inside = true;
-				Point3D poi3 = new Point3D(proj[i][2][0], proj[i][2][1], proj[i][2][2]);
-				for (Point3D[] plane : planes){
-					double distance = distanceToPlane(plane[1], plane[0], poi3, plane[1].multiply(-1));
-					if (distance > 0){
-						point3Inside = false;
-						break;
-					}
-				}
-				if (!point1Inside && !point2Inside && !point3Inside){
-					setProjectedPoint(i, 0, null, null);
-					setProjectedPoint(i, 1, null, null);
-					setProjectedPoint(i, 2, null, null);
-					i++;
-					continue;
-				}
-				
 				Point2D[] secOut = new Point2D[3];
 				Point2D t1 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][0]];
 				Point2D t2 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][1]];
 				Point2D t3 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][2]];
 				Point2D[] fOut = new Point2D[]{t1, t2, t3};
-				Point3D[][] clippedTriangles = clipTriangle(new Point3D(0, 0, 1), new Point3D(0, 0, camera.zNear),
+				Point3D[][] clippedTriangles = clipTriangle(new Point3D(0, 0, 1), new Point3D(camera.getX()+Math.cos(camera.getRx())*Math.cos(camera.getRy()+Math.PI/2)*camera.zNear, camera.getY()-Math.sin(camera.getRx())*camera.zNear, camera.getZ()+Math.cos(camera.getRx())*Math.sin(camera.getRy()+Math.PI/2)*camera.zNear),
 												new Point3D(proj[i][0][0], proj[i][0][1], proj[i][0][2]),
 												new Point3D(proj[i][1][0], proj[i][1][1], proj[i][1][2]),
 												new Point3D(proj[i][2][0], proj[i][2][1], proj[i][2][2]),

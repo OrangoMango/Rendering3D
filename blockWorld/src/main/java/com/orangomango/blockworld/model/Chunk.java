@@ -25,7 +25,8 @@ public class Chunk{
 		this.y = y;
 		this.z = z;
 		PerlinNoise noise = new PerlinNoise(world.getSeed());
-		float frequency = 0.1575f;
+		float frequency = 0.071f;
+		float biomeFreq = 0.06f;
 
 		for (int i = 0; i < CHUNK_SIZE; i++){ // x
 			for (int j = 0; j < CHUNK_SIZE; j++){ // y
@@ -35,10 +36,12 @@ public class Chunk{
 					} else {
 						// TODO Replace 16 with "CHUNK_SIZE"
 						float n = (noise.noise((i+this.x*16)*frequency, 0, (k+this.z*16)*frequency)+1)/2;
-						int h = Math.round(n*(CHUNK_SIZE*2-1))+CHUNK_SIZE*HEIGHT_LIMIT;
+						float b = (noise.noise((i+this.x*16)*biomeFreq, 0, (k+this.z*16)*biomeFreq)+1)/2;
+						int h = Math.round(n*(CHUNK_SIZE*2-1))+CHUNK_SIZE*HEIGHT_LIMIT; // air column
 						int pos = this.y*CHUNK_SIZE+j;
 						if (pos >= h){
-							this.blocks[i][j][k] = new Block(this, i, j, k, pos > h+3 ? "stone" : (pos == h ? "grass" : "dirt"));
+							String biome = b >= 2 ? "sand" : (pos == h ? "grass" : "dirt"); // TODO
+							this.blocks[i][j][k] = new Block(this, i, j, k, pos > h+3 ? "stone" : biome);
 						}
 					}
 				}

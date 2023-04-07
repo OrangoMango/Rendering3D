@@ -127,15 +127,18 @@ public class Camera{
 		stepZ = Math.cos(getRx()-this.fov/2-Math.PI/2)*Math.sin(getRy()+Math.PI/2);
 		Point3D bottomNormal = new Point3D(stepX, stepY, stepZ).normalize();
 
-		Point3D horizontalDirection = direction.crossProduct(new Point3D(0, 1, 0)).normalize();
-		Point3D verticalDirection = horizontalDirection.crossProduct(direction).normalize();
+		double nearPlaneHeight = this.zNear*Math.tan(this.fov/2)*2;
+		double nearPlaneWidth = nearPlaneHeight/this.aspectRatio;
+		Point3D horizontalDirection = direction.crossProduct(new Point3D(0, -1, 0)).normalize().multiply(nearPlaneWidth/2);
+		Point3D verticalDirection = horizontalDirection.crossProduct(direction).normalize().multiply(nearPlaneHeight/2);
+		
+		Point3D rightPoint = frontPoint.add(horizontalDirection);
+		Point3D leftPoint = frontPoint.add(horizontalDirection.multiply(-1));
+		Point3D topPoint = frontPoint.add(verticalDirection);
+		Point3D bottomPoint = frontPoint.add(verticalDirection.multiply(-1));
 
-		Point3D rightPoint = frontPoint.add(horizontalDirection.multiply(-1));
-		Point3D leftPoint = frontPoint.add(horizontalDirection);
-		Point3D topPoint = frontPoint.add(verticalDirection.multiply(-1));
-		Point3D bottomPoint = frontPoint.add(verticalDirection);
-
-		return new Point3D[][]{{frontPoint, frontNormal}, {backPoint, backNormal}, {rightPoint, rightNormal}, {leftPoint, leftNormal}, {topPoint, topNormal}, {bottomPoint, bottomNormal}};
+		return new Point3D[][]{{rightPoint, new Point3D(1, 0, 0)}, {leftPoint, new Point3D(-1, 0, 0)}};
+		//return new Point3D[][]{{frontPoint, frontNormal}, {backPoint, backNormal}, {rightPoint, rightNormal}, {leftPoint, leftNormal}, {topPoint, topNormal}, {bottomPoint, bottomNormal}};
 	}
 	
 	public double[][] getViewMatrix(){

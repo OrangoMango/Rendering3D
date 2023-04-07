@@ -32,7 +32,7 @@ public class MainApplication extends Application{
 		
 		Engine3D engine = new Engine3D(stage, WIDTH, HEIGHT);
 
-        Player player = new Player(0, 15, 0);
+		Player player = new Player(0, 15, 0);
 		
 		engine.setCamera(player.getCamera());
 		Light light = new Light(0, 0, 0); // -5, 3, 5
@@ -144,6 +144,11 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.SHIFT, () -> player.move(world, 0, speed, 0), false);
 
 		engine.setOnUpdate(gc -> {
+			//StringBuilder builder = new StringBuilder();
+			//for (Point3D[] plane : player.getCamera().getViewFrustum()){
+			//	builder.append(Arrays.toString(plane).replace("], ", "],\n")+"\n\n");
+			//}
+			
 			engine.extraText.set("Chunks generated: "+engine.getRenderedMeshes()+String.format(" Chunk: %d %d %d", player.getChunkX(), player.getChunkY(), player.getChunkZ()));
 			
 			if (loadChunks){
