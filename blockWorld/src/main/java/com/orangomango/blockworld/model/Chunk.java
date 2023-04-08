@@ -36,7 +36,9 @@ public class Chunk{
 					} else {
 						float n = (noise.noise((i+this.x*CHUNK_SIZE)*frequency, 0, (k+this.z*CHUNK_SIZE)*frequency)+1)/2;
 						float b = (noise.noise((i+this.x*CHUNK_SIZE)*biomeFreq, 0, (k+this.z*CHUNK_SIZE)*biomeFreq)+1)/2;
-						int h = Math.round(n*(CHUNK_SIZE-1))+CHUNK_SIZE*HEIGHT_LIMIT; // air column
+						// TODO Replace 16 with CHUNK_SIZE
+						int h = Math.round(n*(16-1))+16*HEIGHT_LIMIT; // air column
+						if (world.superFlat) h = 16*HEIGHT_LIMIT+1;
 						int pos = this.y*CHUNK_SIZE+j;
 						if (pos >= h){
 							String biome = b <= 0.4 ? "sand" : (pos == h ? "grass" : "dirt");

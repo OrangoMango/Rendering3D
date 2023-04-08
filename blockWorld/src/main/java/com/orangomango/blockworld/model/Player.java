@@ -14,6 +14,7 @@ public class Player{
 		this.z = z;
 		this.camera = new Camera(this.x, this.y, this.z);
 		this.camera.zNear = 0.1;
+		this.camera.fov = Math.PI/2;
 		this.camera.zFar = 75;
 		
 		// TODO Make distanceToPlain private

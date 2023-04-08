@@ -8,6 +8,7 @@ public class World{
 	private final Map<String, Chunk> chunks = new HashMap<>();
 	private int seed;
 	private Random random;
+	public boolean superFlat = false;
 
 	public World(int seed){
 		this.seed = seed;

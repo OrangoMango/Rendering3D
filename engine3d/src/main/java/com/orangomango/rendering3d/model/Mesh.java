@@ -14,6 +14,7 @@ import java.io.*;
 import static com.orangomango.rendering3d.Engine3D.*;
 
 public class Mesh{
+	private MeshGroup meshGroup;
 	private Point3D[] points;
 	private double[][][] projected;
 	private Point2D[][] projectedTex;
@@ -56,6 +57,10 @@ public class Mesh{
 		this.textureFaces = vertexFaces;
 		this.normals = ns == null ? new Point3D[faces.length][3] : ns;
 		this.rotationCache = new double[faces.length][3][];
+	}
+	
+	public void setMeshGroup(MeshGroup mg){
+		this.meshGroup = mg;
 	}
 
 	public void addHiddenFace(int n){
@@ -221,7 +226,8 @@ public class Mesh{
 		Point3D cameraDir = new Point3D(Math.cos(camera.getRy()+Math.PI/2), 0, Math.sin(camera.getRy()+Math.PI/2)).normalize();
 		Point3D[][] planes = camera.getViewFrustum();
 		for (Point3D[] points : getTrianglePoints(vertexColors)){
-			if (this.hiddenTriangles.contains(i) || Math.round(points[0].midpoint(points[1]).midpoint(points[2]).subtract(cameraPos).normalize().dotProduct(cameraDir)) < 0){
+			// TODO || Math.round(points[0].midpoint(points[1]).midpoint(points[2]).subtract(cameraPos).normalize().dotProduct(cameraDir)) < 0
+			if (this.hiddenTriangles.contains(i)){
 				setProjectedPoint(i, 0, null, null);
 				setProjectedPoint(i, 1, null, null);
 				setProjectedPoint(i, 2, null, null);
@@ -327,7 +333,9 @@ public class Mesh{
 				Point2D t2 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][1]];
 				Point2D t3 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][2]];
 				Point2D[] fOut = new Point2D[]{t1, t2, t3};
-				Point3D[][] clippedTriangles = clipTriangle(new Point3D(0, 0, 1), new Point3D(camera.getX()+Math.cos(camera.getRx())*Math.cos(camera.getRy()+Math.PI/2)*camera.zNear, camera.getY()-Math.sin(camera.getRx())*camera.zNear, camera.getZ()+Math.cos(camera.getRx())*Math.sin(camera.getRy()+Math.PI/2)*camera.zNear),
+				// Objects are already in view space so the plane stays at (0,0,camera.zNear)
+				Point3D[][] clippedTriangles = clipTriangle(new Point3D(0, 0, 1),
+												new Point3D(0, 0, camera.zNear),
 												new Point3D(proj[i][0][0], proj[i][0][1], proj[i][0][2]),
 												new Point3D(proj[i][1][0], proj[i][1][1], proj[i][1][2]),
 												new Point3D(proj[i][2][0], proj[i][2][1], proj[i][2][2]),
@@ -447,14 +455,14 @@ public class Mesh{
 
 					renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
 							t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(),
-							proj1[2], proj2[2], proj3[2], i, gc, camera, lights, this.images[this.facesImages[i]]);
+							proj1[2], proj2[2], proj3[2], i, camera, lights, this.images[this.facesImages[i]]);
 				} else {
 					Color c1 = this.facesColors != null ? this.facesColors[i][0] : this.vertexColors[i][0];
 					Color c2 = this.facesColors != null ? this.facesColors[i][1] : this.vertexColors[i][1];
 					Color c3 = this.facesColors != null ? this.facesColors[i][2] : this.vertexColors[i][2];
 
 					renderColoredTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
-							c1, c2, c3, proj1[2], proj2[2], proj3[2], i, gc, camera, lights);
+							c1, c2, c3, proj1[2], proj2[2], proj3[2], i, camera, lights);
 				}
 			}
 		}
@@ -563,7 +571,7 @@ public class Mesh{
 	}
 	
 	private void renderColoredTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Color c1, Color c2, Color c3, 
-											double w1, double w2, double w3, int index, GraphicsContext gc, Camera camera, List<Light> lights){
+											double w1, double w2, double w3, int index, Camera camera, List<Light> lights){
 	
 		double l1 = 0, l2 = 0, l3 = 0;
 		for (Light light : lights){
@@ -602,6 +610,7 @@ public class Mesh{
 		double dr1 = c2.getRed()-c1.getRed();
 		double dg1 = c2.getGreen()-c1.getGreen();
 		double db1 = c2.getBlue()-c1.getBlue();
+		double da1 = c2.getOpacity()-c1.getOpacity();
 		double dw1 = w2-w1;
 		double dl1 = l2-l1;
 		
@@ -610,12 +619,13 @@ public class Mesh{
 		double dr2 = c3.getRed()-c1.getRed();
 		double dg2 = c3.getGreen()-c1.getGreen();
 		double db2 = c3.getBlue()-c1.getBlue();
+		double da2 = c3.getOpacity()-c1.getOpacity();
 		double dw2 = w3-w1;
 		double dl2 = l3-l1;
 		
-		double col_r, col_g, col_b, col_w, col_l;
+		double col_r, col_g, col_b, col_a, col_w, col_l;
 		
-		double dax_step = 0, dbx_step = 0, dr1_step = 0, dg1_step = 0, db1_step = 0, dr2_step = 0, dg2_step = 0, db2_step = 0, dw1_step = 0, dw2_step = 0, dl1_step = 0, dl2_step = 0;
+		double dax_step = 0, dbx_step = 0, dr1_step = 0, dg1_step = 0, db1_step = 0, da1_step = 0, dr2_step = 0, dg2_step = 0, db2_step = 0, da2_step = 0, dw1_step = 0, dw2_step = 0, dl1_step = 0, dl2_step = 0;
 		
 		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
 		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
@@ -623,12 +633,14 @@ public class Mesh{
 		if (dy1 != 0) dr1_step = dr1/Math.abs(dy1);
 		if (dy1 != 0) dg1_step = dg1/Math.abs(dy1);
 		if (dy1 != 0) db1_step = db1/Math.abs(dy1);
+		if (dy1 != 0) da1_step = da1/Math.abs(dy1);
 		if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
 		if (dy1 != 0) dl1_step = dl1/Math.abs(dy1);
 		
 		if (dy2 != 0) dr2_step = dr2/Math.abs(dy2);
 		if (dy2 != 0) dg2_step = dg2/Math.abs(dy2);
 		if (dy2 != 0) db2_step = db2/Math.abs(dy2);
+		if (dy2 != 0) da2_step = da2/Math.abs(dy2);
 		if (dy2 != 0) dw2_step = dw2/Math.abs(dy2);
 		if (dy2 != 0) dl2_step = dl2/Math.abs(dy2);
 
@@ -640,12 +652,14 @@ public class Mesh{
 				double col_sr = c1.getRed()+(i-y1)*dr1_step;
 				double col_sg = c1.getGreen()+(i-y1)*dg1_step;
 				double col_sb = c1.getBlue()+(i-y1)*db1_step;
+				double col_sa = c1.getOpacity()+(i-y1)*da1_step;
 				double col_sw = w1+(i-y1)*dw1_step;
 				double col_sl = l1+(i-y1)*dl1_step;
 				
 				double col_er = c1.getRed()+(i-y1)*dr2_step;
 				double col_eg = c1.getGreen()+(i-y1)*dg2_step;
 				double col_eb = c1.getBlue()+(i-y1)*db2_step;
+				double col_ea = c1.getOpacity()+(i-y1)*da2_step;
 				double col_ew = w1+(i-y1)*dw2_step;
 				double col_el = l1+(i-y1)*dl2_step;
 				
@@ -654,6 +668,7 @@ public class Mesh{
 					col_sr = swap(col_er, col_er = col_sr);
 					col_sg = swap(col_eg, col_eg = col_sg);
 					col_sb = swap(col_eb, col_eb = col_sb);
+					col_sa = swap(col_ea, col_ea = col_sa);
 					col_sw = swap(col_ew, col_ew = col_sw);
 					col_sl = swap(col_el, col_el = col_sl);
 				}
@@ -665,29 +680,34 @@ public class Mesh{
 					col_r = (1-t)*col_sr+t*col_er;
 					col_g = (1-t)*col_sg+t*col_eg;
 					col_b = (1-t)*col_sb+t*col_eb;
+					col_a = (1-t)*col_sa+t*col_ea;
 					col_w = (1-t)*col_sw+t*col_ew;
 					col_l = (1-t)*col_sl+t*col_el;
 					
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= col_w){
 						camera.depthBuffer[j][i] = col_w;
-						if (gc != null){
-							Color color = Color.color(col_r, col_g, col_b);
-							if (SHADOWS){
-								for (Light light : lights){
-									Camera cam2 = light.getCamera();
-									double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
-									int index_x = (int)Math.round(shadow[0]);
-									int index_y = (int)Math.round(shadow[1]);
-									if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
-										double depth = cam2.depthBuffer[index_x][index_y];
-										if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
-											color = color.darker();
-										}
+						Color color = Color.color(col_r, col_g, col_b);
+						Color backColor = canvas[j][i];
+						if (backColor == null) backColor = Color.CYAN;
+						
+						// Transparency
+						if (col_a < 1) color = Color.color(Math.min(1, backColor.getRed()+col_r*(1-col_a)), Math.min(1, backColor.getGreen()+col_g*(1-col_a)), Math.min(1, backColor.getBlue()+col_b*(1-col_a)));
+						
+						if (SHADOWS){
+							for (Light light : lights){
+								Camera cam2 = light.getCamera();
+								double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
+								int index_x = (int)Math.round(shadow[0]);
+								int index_y = (int)Math.round(shadow[1]);
+								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
+									double depth = cam2.depthBuffer[index_x][index_y];
+									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
+										color = color.darker();
 									}
 								}
 							}
-							gc.getPixelWriter().setColor(j, i, Light.getLight(color, Math.max(col_l, 0)));
 						}
+						canvas[j][i] = Light.getLight(color, Math.max(col_l, 0));
 					}
 
 					t += tstep;
@@ -700,6 +720,7 @@ public class Mesh{
 		dr1 = c3.getRed()-c2.getRed();
 		dg1 = c3.getGreen()-c2.getGreen();
 		db1 = c3.getBlue()-c2.getBlue();
+		da1 = c3.getOpacity()-c2.getOpacity();
 		dw1 = w3-w2;
 		dl1 = l3-l2;
 		
@@ -710,6 +731,7 @@ public class Mesh{
 		if (dy1 != 0) dr1_step = dr1/Math.abs(dy1);
 		if (dy1 != 0) dg1_step = dg1/Math.abs(dy1);
 		if (dy1 != 0) db1_step = db1/Math.abs(dy1);
+		if (dy1 != 0) da1_step = da1/Math.abs(dy1);
 		if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
 		if (dy1 != 0) dl1_step = dl1/Math.abs(dy1);
 		
@@ -721,12 +743,14 @@ public class Mesh{
 				double col_sr = c2.getRed()+(i-y2)*dr1_step;
 				double col_sg = c2.getGreen()+(i-y2)*dg1_step;
 				double col_sb = c2.getBlue()+(i-y2)*db1_step;
+				double col_sa = c2.getOpacity()+(i-y2)*da1_step;
 				double col_sw = w2+(i-y2)*dw1_step;
 				double col_sl = l2+(i-y2)*dl1_step;
 				
 				double col_er = c1.getRed()+(i-y1)*dr2_step;
 				double col_eg = c1.getGreen()+(i-y1)*dg2_step;
 				double col_eb = c1.getBlue()+(i-y1)*db2_step;
+				double col_ea = c1.getOpacity()+(i-y1)*da2_step;
 				double col_ew = w1+(i-y1)*dw2_step;
 				double col_el = l1+(i-y1)*dl2_step;
 				
@@ -735,6 +759,7 @@ public class Mesh{
 					col_sr = swap(col_er, col_er = col_sr);
 					col_sg = swap(col_eg, col_eg = col_sg);
 					col_sb = swap(col_eb, col_eb = col_sb);
+					col_sa = swap(col_ea, col_ea = col_sa);
 					col_sw = swap(col_ew, col_ew = col_sw);
 					col_sl = swap(col_el, col_el = col_sl);
 				}
@@ -746,29 +771,34 @@ public class Mesh{
 					col_r = (1-t)*col_sr+t*col_er;
 					col_g = (1-t)*col_sg+t*col_eg;
 					col_b = (1-t)*col_sb+t*col_eb;
+					col_a = (1-t)*col_sa+t*col_ea;
 					col_w = (1-t)*col_sw+t*col_ew;
 					col_l = (1-t)*col_sl+t*col_el;
 					
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= col_w){
 						camera.depthBuffer[j][i] = col_w;
-						if (gc != null){
-							Color color = Color.color(col_r, col_g, col_b);
-							if (SHADOWS){
-								for (Light light : lights){
-									Camera cam2 = light.getCamera();
-									double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
-									int index_x = (int)Math.round(shadow[0]);
-									int index_y = (int)Math.round(shadow[1]);
-									if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
-										double depth = cam2.depthBuffer[index_x][index_y];
-										if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
-											color = color.darker();
-										}
+						Color color = Color.color(col_r, col_g, col_b);
+						Color backColor = canvas[j][i];
+						if (backColor == null) backColor = Color.CYAN;
+						
+						// Transparency
+						if (col_a < 1) color = Color.color(Math.min(1, backColor.getRed()+col_r*(1-col_a)), Math.min(1, backColor.getGreen()+col_g*(1-col_a)), Math.min(1, backColor.getBlue()+col_b*(1-col_a)));
+						
+						if (SHADOWS){
+							for (Light light : lights){
+								Camera cam2 = light.getCamera();
+								double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
+								int index_x = (int)Math.round(shadow[0]);
+								int index_y = (int)Math.round(shadow[1]);
+								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
+									double depth = cam2.depthBuffer[index_x][index_y];
+									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
+										color = color.darker();
 									}
 								}
 							}
-							gc.getPixelWriter().setColor(j, i, Light.getLight(color, Math.max(col_l, 0)));
 						}
+						canvas[j][i] = Light.getLight(color, Math.max(col_l, 0));
 					}
 
 					t += tstep;
@@ -778,7 +808,7 @@ public class Mesh{
 	}
 	
 	private void renderTriangle(int x1, int y1, int x2, int y2, int x3, int y3, double u1, double v1, double u2, double v2, double u3, double v3, 
-								double w1, double w2, double w3, int index, GraphicsContext gc, Camera camera, List<Light> lights, Image image){
+								double w1, double w2, double w3, int index, Camera camera, List<Light> lights, Image image){
 		
 		double l1 = 0, l2 = 0, l3 = 0;
 		for (Light light : lights){
@@ -887,24 +917,28 @@ public class Mesh{
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
-						if (gc != null){
-							Color color = reader.getColor(Math.min(15, pix_x), Math.min(15, pix_y));
-							if (SHADOWS){
-								for (Light light : lights){
-									Camera cam2 = light.getCamera();
-									double[] shadow = convertPoint(new double[]{j, i, tex_w}, camera, cam2);
-									int index_x = (int)Math.round(shadow[0]);
-									int index_y = (int)Math.round(shadow[1]);
-									if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
-										double depth = cam2.depthBuffer[index_x][index_y];
-										if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
-											color = color.darker();
-										}
+						Color color = reader.getColor(Math.min(15, pix_x), Math.min(15, pix_y));
+						Color backColor = canvas[j][i];
+						if (backColor == null) backColor = Color.CYAN;
+						
+						// Transparency
+						if (color.getOpacity() < 1) color = Color.color(Math.min(1, backColor.getRed()+color.getRed()*(1-color.getOpacity())), Math.min(1, backColor.getGreen()+color.getGreen()*(1-color.getOpacity())), Math.min(1, backColor.getBlue()+color.getBlue()*(1-color.getOpacity())));
+						
+						if (SHADOWS){
+							for (Light light : lights){
+								Camera cam2 = light.getCamera();
+								double[] shadow = convertPoint(new double[]{j, i, tex_w}, camera, cam2);
+								int index_x = (int)Math.round(shadow[0]);
+								int index_y = (int)Math.round(shadow[1]);
+								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
+									double depth = cam2.depthBuffer[index_x][index_y];
+									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
+										color = color.darker();
 									}
 								}
 							}
-							gc.getPixelWriter().setColor(j, i, Light.getLight(color, Math.max(tex_l, 0)));
 						}
+						canvas[j][i] = Light.getLight(color, Math.max(tex_l, 0));
 					}
 					
 					t += tstep;
@@ -965,24 +999,28 @@ public class Mesh{
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						camera.depthBuffer[j][i] = tex_w;
-						if (gc != null){
-							Color color = reader.getColor(Math.min(15, pix_x), Math.min(15, pix_y));
-							if (SHADOWS){
-								for (Light light : lights){
-									Camera cam2 = light.getCamera();
-									double[] shadow = convertPoint(new double[]{j, i, tex_w}, camera, cam2);
-									int index_x = (int)Math.round(shadow[0]);
-									int index_y = (int)Math.round(shadow[1]);
-									if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
-										double depth = cam2.depthBuffer[index_x][index_y];
-										if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
-											color = color.darker();
-										}
+						Color color = reader.getColor(Math.min(15, pix_x), Math.min(15, pix_y));
+						Color backColor = canvas[j][i];
+						if (backColor == null) backColor = Color.CYAN;
+						
+						// Transparency
+						if (color.getOpacity() < 1) color = Color.color(Math.min(1, backColor.getRed()+color.getRed()*(1-color.getOpacity())), Math.min(1, backColor.getGreen()+color.getGreen()*(1-color.getOpacity())), Math.min(1, backColor.getBlue()+color.getBlue()*(1-color.getOpacity())));
+
+						if (SHADOWS){
+							for (Light light : lights){
+								Camera cam2 = light.getCamera();
+								double[] shadow = convertPoint(new double[]{j, i, tex_w}, camera, cam2);
+								int index_x = (int)Math.round(shadow[0]);
+								int index_y = (int)Math.round(shadow[1]);
+								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
+									double depth = cam2.depthBuffer[index_x][index_y];
+									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
+										color = color.darker();
 									}
 								}
 							}
-							gc.getPixelWriter().setColor(j, i, Light.getLight(color, Math.max(tex_l, 0)));
 						}
+						canvas[j][i] = Light.getLight(color, Math.max(tex_l, 0));
 					}
 					
 					t += tstep;
@@ -991,7 +1029,7 @@ public class Mesh{
 		}
 	}
 	
-	private static Map<String, double[]> loadMaterialLib(File file){
+	private static Map<String, Color> loadMaterialLib(File file){
 		if (!file.exists()) return null;
 		Map<String, double[]> output = new HashMap<>();
 		try {
@@ -1005,13 +1043,14 @@ public class Mesh{
 						output.put(name, current);
 					}
 					name = line.split(" ")[1];
-					current = new double[3];
+					current = new double[4];
+					current[3] = 1.0;
 				} else if (line.toLowerCase().startsWith("kd") && current != null){
 					current[0] = Double.parseDouble(line.split(" ")[1]);
 					current[1] = Double.parseDouble(line.split(" ")[2]);
 					current[2] = Double.parseDouble(line.split(" ")[3]);
 				} else if (line.toLowerCase().startsWith("d") && current != null){
-					// nothing
+					current[3] = Double.parseDouble(line.split(" ")[1]);
 				} else if (line.toLowerCase().startsWith("map_kd")){
 					
 				}
@@ -1020,7 +1059,13 @@ public class Mesh{
 				output.put(name, current);
 			}
 			reader.close();
-			return output;
+			
+			Map<String, Color> result = new HashMap<>();
+			for (Map.Entry<String, double[]> entry : output.entrySet()){
+				result.put(entry.getKey(), Color.color(entry.getValue()[0], entry.getValue()[1], entry.getValue()[2], entry.getValue()[3]));
+			}
+			
+			return result;
 		} catch (IOException ex){
 			ex.printStackTrace();
 			return null;
@@ -1028,7 +1073,7 @@ public class Mesh{
 	}
 	
 	public static Mesh loadFromFile(File file, double x, double y, double z, double scale, String singleObject){
-		Map<String, double[]> mtllib = null;
+		Map<String, Color> mtllib = null;
 		Image image = null; //new Image(Mesh.class.getResourceAsStream("/truck_red.jpg"));
 		
 		try {
@@ -1096,9 +1141,7 @@ public class Mesh{
 					
 					if (mtllib != null){
 						for (int i = 0; i < farray.length-2; i++){
-							facesColors.add(new Color[]{Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]), 
-								Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2]), 
-								Color.color(mtllib.get(currentMaterial)[0], mtllib.get(currentMaterial)[1], mtllib.get(currentMaterial)[2])});
+							facesColors.add(new Color[]{mtllib.get(currentMaterial), mtllib.get(currentMaterial), mtllib.get(currentMaterial)});
 						}
 					}
 				} else if (line.startsWith("usemtl ")){

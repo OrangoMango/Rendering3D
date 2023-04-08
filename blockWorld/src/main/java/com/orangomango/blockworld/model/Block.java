@@ -61,7 +61,7 @@ public class Block{
 	 * F F R R B B L L D D U  U
 	 * 0 1 2 3 4 5 6 7 8 9 10 11
 	 * 
-	 * Texture coordinates are 1-x because the y-axis is inverted
+	 * Texture coordinates are 1-y because the y-axis is inverted
 	 */
 	public Mesh getMesh(){
 		if (this.mesh != null) return this.mesh;

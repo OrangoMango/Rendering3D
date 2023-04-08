@@ -55,6 +55,7 @@ public class Engine3D{
 	private Camera camera;
 	
 	private static Engine3D instance = null;
+	public static Color[][] canvas;
 	
 	public Engine3D(Stage stage, int w, int h){
 		if (instance == null){
@@ -79,6 +80,7 @@ public class Engine3D{
 		});
 		counter.setDaemon(true);
 		counter.start();
+		canvas = new Color[this.width][this.height];
 	}
 
 	public void setOnKey(KeyCode code, Runnable r, boolean singleClick){
@@ -143,7 +145,13 @@ public class Engine3D{
 	}
 	
 	private void update(GraphicsContext gc){
+		// Clear canvas
 		gc.clearRect(0, 0, width, height);
+		for (int i = 0; i < this.width; i++){
+			for (int j = 0; j < this.height; j++){
+				this.canvas[i][j] = null;
+			}
+		}
 		gc.setFill(Color.CYAN);
 		gc.fillRect(0, 0, width, height);
 		this.camera.clearDepthBuffer();
@@ -223,6 +231,15 @@ public class Engine3D{
 				object.setShowLines(SHOW_LINES);
 				object.evaluate(this.camera);
 				object.render(this.camera, sceneLights, gc);
+			}
+		}
+		
+		for (int i = 0; i < this.width; i++){
+			for (int j = 0; j < this.height; j++){
+				Color color = this.canvas[i][j];
+				if (color != null){
+					gc.getPixelWriter().setColor(i, j, color);
+				}
 			}
 		}
 		

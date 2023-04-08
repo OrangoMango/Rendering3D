@@ -83,7 +83,7 @@ public class MainApplication extends Application{
 		}
 		
 		gc.setStroke(Color.RED);
-		double size = 8*blockSize;
+		double size = 16*blockSize;
 		for (int i = 0; i < WIDTH/size; i++){
 			for (int j = 0; j < HEIGHT/size; j++){
 				gc.strokeRect(i*size, j*size, size, size);

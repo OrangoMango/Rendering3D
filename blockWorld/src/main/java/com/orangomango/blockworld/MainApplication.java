@@ -43,6 +43,7 @@ public class MainApplication extends Application{
 		//Engine3D.LIGHT_AVAILABLE = false;
 		
 		World world = new World((int)System.currentTimeMillis());
+		world.superFlat = true;
 		ChunkManager chunkManager = new ChunkManager(world, player);
 		/*final int worldChunks = 8;
 		for (int i = 0; i < worldChunks; i++){
