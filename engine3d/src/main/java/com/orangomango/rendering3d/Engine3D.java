@@ -208,7 +208,7 @@ public class Engine3D{
 					for (Mesh object : mg.getMeshes()){
 						if (stateChanged) object.cache.remove(lightCamera);
 						object.evaluate(lightCamera);
-						object.render(lightCamera, null, null);
+						object.render(lightCamera, null, null, false);
 					}
 				}
 			}
@@ -221,6 +221,8 @@ public class Engine3D{
 			this.camera.setRx(this.camera.getRx()+Math.toRadians((int)(center.getY()-mouse.getY())*sensibility));
 			this.camera.setRy(this.camera.getRy()+Math.toRadians((int)(center.getX()-mouse.getX())*sensibility));
 		}
+		
+		List<Mesh.ProjectedTriangle> transparentMeshes = new ArrayList<>();
 
 		boolean stateChanged = this.camera.stateChanged;
 		for (MeshGroup mg : this.objects){
@@ -230,7 +232,11 @@ public class Engine3D{
 				if (stateChanged) object.cache.remove(this.camera);
 				object.setShowLines(SHOW_LINES);
 				object.evaluate(this.camera);
-				object.render(this.camera, sceneLights, gc);
+				if (object.isTransparent()){
+					transparentMeshes.addAll(object.getProjectedTriangles());
+				} else {
+					object.render(this.camera, sceneLights, gc, false);
+				}
 			}
 		}
 		
@@ -244,6 +250,9 @@ public class Engine3D{
 				}
 			}
 		}
+
+		transparentMeshes.sort((pt1, pt2) -> Double.compare(pt1.getMeanZ(), pt2.getMeanZ()));
+		Mesh.render(transparentMeshes, this.camera, sceneLights, gc, true);
 		
 		if (LIGHT_ROTATION){
 			for (Light light : sceneLights){

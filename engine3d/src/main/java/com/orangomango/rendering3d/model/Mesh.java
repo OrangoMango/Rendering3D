@@ -29,54 +29,43 @@ public class Mesh{
 	private Image[] images;
 	private int[] facesImages;
 	private Point3D[][] trianglePoints;
-	private Color[][] vertexCol;
 	private double crx, cry, crz;
 	private boolean showLines;
 	public boolean wireframe = false;
 	private List<Integer> hiddenTriangles = new ArrayList<>();
 	public Predicate<Camera> skipCondition;
+	private boolean transparent;
 	
-	private static class ProjectedTriangle{
-		private int index;
-		private double[] point1, point2, point3;
-		private Point2D tex1, tex2, tex3;
+	public static class ProjectedTriangle{
+		public double[] point1, point2, point3;
+		public Point2D tex1, tex2, tex3;
+		public Color c1, c2, c3;
+		public Image image;
+		public boolean showLines;
+		public Point3D n1, n2, n3;
+		public Point3D t1, t2, t3;
 		
-		public ProjectedTriangle(int index, double[] p1, double[] p2, double[] p3, Point2D t1, Point2D t2, Point2D t3){
-			this.index = index;
+		public ProjectedTriangle(double[] p1, double[] p2, double[] p3, Point2D t1, Point2D t2, Point2D t3, Color c1, Color c2, Color c3, Image image, Point3D n1, Point3D n2, Point3D n3, Point3D tr1, Point3D tr2, Point3D tr3){
 			this.point1 = p1;
 			this.point2 = p2;
 			this.point3 = p3;
 			this.tex1 = t1;
 			this.tex2 = t2;
 			this.tex3 = t3;
+			this.c1 = c1;
+			this.c2 = c2;
+			this.c3 = c3;
+			this.image = image;
+			this.n1 = n1;
+			this.n2 = n2;
+			this.n3 = n3;
+			this.t1 = tr1;
+			this.t2 = tr2;
+			this.t3 = tr3;
 		}
 		
-		public double[] getPoint1(){
-			return this.point1;
-		}
-		
-		public double[] getPoint2(){
-			return this.point2;
-		}
-		
-		public double[] getPoint3(){
-			return this.point3;
-		}
-		
-		public Point2D getTexture1(){
-			return this.tex1;
-		}
-		
-		public Point2D getTexture2(){
-			return this.tex2;
-		}
-		
-		public Point2D getTexture3(){
-			return this.tex3;
-		}
-		
-		public int getIndex(){
-			return this.index;
+		public double getMeanZ(){
+			return (this.point1[2]+this.point2[2]+this.point3[2])/3;
 		}
 	}
 	
@@ -108,6 +97,18 @@ public class Mesh{
 
 	public void clearHiddenFaces(){
 		this.hiddenTriangles.clear();
+	}
+	
+	public void setTransparentProcessing(boolean t){
+		this.transparent = t;
+	}
+	
+	public boolean isTransparent(){
+		return this.transparent;
+	}
+	
+	public List<ProjectedTriangle> getProjectedTriangles(){
+		return this.projectedTriangles;
 	}
 	
 	public void setRotation(double crx, double cry, double crz){
@@ -150,16 +151,12 @@ public class Mesh{
 		}
 	}
 	
-	private Point3D[][] getTrianglePoints(Color[][] vertexColors){
+	private Point3D[][] getTrianglePoints(){
 		if (this.trianglePoints != null){
-			if (this.colors != null){
-				for (int i = 0; i < this.vertexCol.length; i++){
-					System.arraycopy(this.vertexCol[i], 0, vertexColors[i], 0, vertexColors[i].length);
-				}
-			}
 			return this.trianglePoints;
 		}
 		Point3D[][] output = new Point3D[this.faces.length][3];
+		Color[][] vertexColors = new Color[this.faces.length][3];
 		for (int i = 0; i < output.length; i++){
 			Point3D[] tr = new Point3D[3];
 			tr[0] = getPoints()[this.faces[i][0]];
@@ -174,7 +171,7 @@ public class Mesh{
 				vertexColors[i] = cr;
 			}
 		}
-		this.vertexCol = vertexColors;
+		this.vertexColors = vertexColors;
 		this.trianglePoints = output;
 		return output;
 	}
@@ -253,12 +250,11 @@ public class Mesh{
 	
 	public void evaluate(Camera camera){
 		int i = 0;
-		this.vertexColors = new Color[this.faces.length][3];
 		this.projectedTriangles.clear();
 		Point3D cameraPos = new Point3D(camera.getX(), camera.getY(), camera.getZ());
 		Point3D cameraDir = new Point3D(Math.cos(camera.getRy()+Math.PI/2), 0, Math.sin(camera.getRy()+Math.PI/2)).normalize();
 		Point3D[][] planes = camera.getViewFrustum();
-		for (Point3D[] points : getTrianglePoints(vertexColors)){
+		for (Point3D[] points : getTrianglePoints()){
 			// TODO Efficient way to check objects that are behind the camera
 			if (this.hiddenTriangles.contains(i) || Math.round(points[0].midpoint(points[1]).midpoint(points[2]).subtract(cameraPos).normalize().dotProduct(cameraDir)) < 0){
 				i++;
@@ -343,7 +339,7 @@ public class Mesh{
 				this.cache.put(camera, proj);
 			}
 			
-			if (dot < 0){
+			if (dot < 0 || this.transparent){
 				// Project 3D -> View space
 				if (proj[i][0] == null){
 					proj[i][0] = multiply(cam, p1);
@@ -423,21 +419,42 @@ public class Mesh{
 		px3 *= 0.5*getInstance().getWidth();
 		py3 *= 0.5*getInstance().getHeight();
 
-		ProjectedTriangle projectedTriangle = new ProjectedTriangle(i, new double[]{px1, py1, 1/p1[3]}, new double[]{px2, py2, 1/p2[3]}, new double[]{px3, py3, 1/p3[3]}, t1, t2, t3);
+		Color c1 = this.facesColors != null ? this.facesColors[i][0] : this.vertexColors[i][0];
+		Color c2 = this.facesColors != null ? this.facesColors[i][1] : this.vertexColors[i][1];
+		Color c3 = this.facesColors != null ? this.facesColors[i][2] : this.vertexColors[i][2];
+		Image image = this.images == null ? null : this.images[this.facesImages[i]];
+		Point3D n1 = this.normals[i][0];
+		Point3D n2 = this.normals[i][1];
+		Point3D n3 = this.normals[i][2];
+		Point3D tr1 = this.trianglePoints[i][0];
+		Point3D tr2 = this.trianglePoints[i][1];
+		Point3D tr3 = this.trianglePoints[i][2];
+
+		ProjectedTriangle projectedTriangle = new ProjectedTriangle(new double[]{px1, py1, 1/p1[3]}, new double[]{px2, py2, 1/p2[3]}, new double[]{px3, py3, 1/p3[3]},
+																	t1, t2, t3, c1, c2, c3, image, n1, n2, n3, tr1, tr2, tr3);
+		projectedTriangle.showLines = this.showLines;
 		this.projectedTriangles.add(projectedTriangle);
 	}
 	
-	public void render(Camera camera, List<Light> lights, GraphicsContext gc){
+	public void render(Camera camera, List<Light> lights, GraphicsContext gc, boolean directUpdate){
 		if (this.showLines){
 			gc.setStroke(Color.RED);
 			gc.setLineWidth(1);
 		}
-		for (ProjectedTriangle pt : this.projectedTriangles){
-			makeRendering(gc, pt.getIndex(), camera, lights, pt.getPoint1(), pt.getPoint2(), pt.getPoint3(), pt.getTexture1(), pt.getTexture2(), pt.getTexture3());
+		render(projectedTriangles, camera, lights, gc, directUpdate);
+	}
+	
+	public static void render(List<ProjectedTriangle> projectedTriangles, Camera camera, List<Light> lights, GraphicsContext gc, boolean directUpdate){
+		for (ProjectedTriangle pt : projectedTriangles){
+			makeRendering(gc, camera, lights, pt, directUpdate);
 		}
 	}
 
-	private void makeRendering(GraphicsContext gc, int i, Camera camera, List<Light> lights, double[] proj1, double[] proj2, double[] proj3, Point2D t1, Point2D t2, Point2D t3){
+	private static void makeRendering(GraphicsContext gc, Camera camera, List<Light> lights, ProjectedTriangle pt, boolean directUpdate){
+		double[] proj1 = pt.point1;
+		double[] proj2 = pt.point2;
+		double[] proj3 = pt.point3;
+		
 		Point2D p1 = new Point2D(proj1[0], proj1[1]);
 		Point2D p2 = new Point2D(proj2[0], proj2[1]);
 		Point2D p3 = new Point2D(proj3[0], proj3[1]);
@@ -446,32 +463,21 @@ public class Mesh{
 			calculateDepthBuffer((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
 					proj1[2], proj2[2], proj3[2], camera);
 		} else {
-			if (this.showLines){
+			if (pt.showLines){
 				gc.strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
 				gc.strokeLine(p2.getX(), p2.getY(), p3.getX(), p3.getY());
 				gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
 			} else {
-				if (t1 != null && t2 != null && t3 != null){
-					t1 = t1.multiply(proj1[2]);
-					t2 = t2.multiply(proj2[2]);
-					t3 = t3.multiply(proj3[2]);
-
-					renderTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
-							t1.getX(), t1.getY(), t2.getX(), t2.getY(), t3.getX(), t3.getY(),
-							proj1[2], proj2[2], proj3[2], i, camera, lights, this.images[this.facesImages[i]]);
+				if (pt.tex1 != null && pt.tex2 != null && pt.tex3 != null){
+					renderTriangle(pt, camera, lights, gc, directUpdate);
 				} else {
-					Color c1 = this.facesColors != null ? this.facesColors[i][0] : this.vertexColors[i][0];
-					Color c2 = this.facesColors != null ? this.facesColors[i][1] : this.vertexColors[i][1];
-					Color c3 = this.facesColors != null ? this.facesColors[i][2] : this.vertexColors[i][2];
-
-					renderColoredTriangle((int)p1.getX(), (int)p1.getY(), (int)p2.getX(), (int)p2.getY(), (int)p3.getX(), (int)p3.getY(),
-							c1, c2, c3, proj1[2], proj2[2], proj3[2], i, camera, lights);
+					renderColoredTriangle(pt, camera, lights, gc, directUpdate);
 				}
 			}
 		}
 	}
 	
-	private void calculateDepthBuffer(int x1, int y1, int x2, int y2, int x3, int y3, double w1, double w2, double w3, Camera camera){
+	private static void calculateDepthBuffer(int x1, int y1, int x2, int y2, int x3, int y3, double w1, double w2, double w3, Camera camera){
 		if (y2 < y1){
 			y1 = swap(y2, y2 = y1);
 			x1 = swap(x2, x2 = x1);
@@ -573,14 +579,25 @@ public class Mesh{
 		}
 	}
 	
-	private void renderColoredTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Color c1, Color c2, Color c3, 
-											double w1, double w2, double w3, int index, Camera camera, List<Light> lights){
-	
+	private static void renderColoredTriangle(ProjectedTriangle pt, Camera camera, List<Light> lights, GraphicsContext gc, boolean directUpdate){
+		int x1 = (int)pt.point1[0];
+		int y1 = (int)pt.point1[1];
+		int x2 = (int)pt.point2[0];
+		int y2 = (int)pt.point2[1];
+		int x3 = (int)pt.point3[0];
+		int y3 = (int)pt.point3[1];
+		Color c1 = pt.c1;
+		Color c2 = pt.c2;
+		Color c3 = pt.c3;
+		double w1 = pt.point1[2];
+		double w2 = pt.point2[2];
+		double w3 = pt.point3[2];
+		
 		double l1 = 0, l2 = 0, l3 = 0;
 		for (Light light : lights){
-			l1 += light.getLightIntensity(this.normals[index][0], this.trianglePoints[index][0]);
-			l2 += light.getLightIntensity(this.normals[index][1], this.trianglePoints[index][1]);
-			l3 += light.getLightIntensity(this.normals[index][2], this.trianglePoints[index][2]);
+			l1 += light.getLightIntensity(pt.n1, pt.t1);
+			l2 += light.getLightIntensity(pt.n2, pt.t2);
+			l3 += light.getLightIntensity(pt.n3, pt.t3);
 		}
 		l1 = Math.min(1, l1);
 		l2 = Math.min(1, l2);
@@ -679,7 +696,7 @@ public class Mesh{
 				double tstep = 1.0/(bx-ax);
 				double t = 0.0;
 				
-				for (int j = ax; j < bx; j++){
+				for (int j = ax; j <= bx; j++){
 					col_r = (1-t)*col_sr+t*col_er;
 					col_g = (1-t)*col_sg+t*col_eg;
 					col_b = (1-t)*col_sb+t*col_eb;
@@ -710,6 +727,7 @@ public class Mesh{
 							}
 						}
 						canvas[j][i] = Light.getLight(color, Math.max(col_l, 0));
+						if (directUpdate) gc.getPixelWriter().setColor(j, i, canvas[j][i]);
 					}
 
 					t += tstep;
@@ -769,7 +787,7 @@ public class Mesh{
 				double tstep = 1.0/(bx-ax);
 				double t = 0.0;
 				
-				for (int j = ax; j < bx; j++){
+				for (int j = ax; j <= bx; j++){
 					col_r = (1-t)*col_sr+t*col_er;
 					col_g = (1-t)*col_sg+t*col_eg;
 					col_b = (1-t)*col_sb+t*col_eb;
@@ -800,6 +818,7 @@ public class Mesh{
 							}
 						}
 						canvas[j][i] = Light.getLight(color, Math.max(col_l, 0));
+						if (directUpdate) gc.getPixelWriter().setColor(j, i, canvas[j][i]);
 					}
 
 					t += tstep;
@@ -808,14 +827,32 @@ public class Mesh{
 		}
 	}
 	
-	private void renderTriangle(int x1, int y1, int x2, int y2, int x3, int y3, double u1, double v1, double u2, double v2, double u3, double v3, 
-								double w1, double w2, double w3, int index, Camera camera, List<Light> lights, Image image){
+	private static void renderTriangle(ProjectedTriangle pt, Camera camera, List<Light> lights, GraphicsContext gc, boolean directUpdate){
+		int x1 = (int)pt.point1[0];
+		int y1 = (int)pt.point1[1];
+		int x2 = (int)pt.point2[0];
+		int y2 = (int)pt.point2[1];
+		int x3 = (int)pt.point3[0];
+		int y3 = (int)pt.point3[1];
+		double w1 = pt.point1[2];
+		double w2 = pt.point2[2];
+		double w3 = pt.point3[2];
+		Image image = pt.image;
+		Point2D t1 = pt.tex1.multiply(w1);
+		Point2D t2 = pt.tex2.multiply(w2);
+		Point2D t3 = pt.tex3.multiply(w3);
+		double u1 = t1.getX();
+		double v1 = t1.getY();
+		double u2 = t2.getX();
+		double v2 = t2.getY();
+		double u3 = t3.getX();
+		double v3 = t3.getY();
 		
 		double l1 = 0, l2 = 0, l3 = 0;
 		for (Light light : lights){
-			l1 += light.getLightIntensity(this.normals[index][0], this.trianglePoints[index][0]);
-			l2 += light.getLightIntensity(this.normals[index][1], this.trianglePoints[index][1]);
-			l3 += light.getLightIntensity(this.normals[index][2], this.trianglePoints[index][2]);
+			l1 += light.getLightIntensity(pt.n1, pt.t1);
+			l2 += light.getLightIntensity(pt.n2, pt.t2);
+			l3 += light.getLightIntensity(pt.n3, pt.t3);
 		}
 		l1 = Math.min(1, l1);
 		l2 = Math.min(1, l2);
@@ -939,6 +976,7 @@ public class Mesh{
 							}
 						}
 						canvas[j][i] = Light.getLight(color, Math.max(tex_l, 0));
+						if (directUpdate) gc.getPixelWriter().setColor(j, i, canvas[j][i]);
 					}
 					
 					t += tstep;
@@ -1020,6 +1058,7 @@ public class Mesh{
 							}
 						}
 						canvas[j][i] = Light.getLight(color, Math.max(tex_l, 0));
+						if (directUpdate) gc.getPixelWriter().setColor(j, i, canvas[j][i]);
 					}
 					
 					t += tstep;

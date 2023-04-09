@@ -53,6 +53,10 @@ public class Atlas{
 		return this.json.getJSONObject("blocks").getJSONObject(blockType).getInt("id");
 	}
 	
+	public boolean isTransparent(String blockType){
+		return this.json.getJSONObject("blocks").getJSONObject(blockType).getBoolean("transparent");
+	}
+	
 	public String getBlockType(int id){
 		return this.blockIds.get(id);
 	}

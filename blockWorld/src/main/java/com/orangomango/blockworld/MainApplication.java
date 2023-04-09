@@ -24,7 +24,7 @@ public class MainApplication extends Application{
 	private static final int HEIGHT = 180;
 	private static final int CHUNKS = 3;
 
-	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "stone", "wood_log", "dirt", "cobblestone", "sand"};
+	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "stone", "wood_log", "leaves", "cobblestone", "sand", "glass"};
 	private int currentBlock = 0;
 	private boolean loadChunks = true;
 	
@@ -120,6 +120,7 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.DIGIT6, () -> this.currentBlock = 5, true);
 		engine.setOnKey(KeyCode.DIGIT7, () -> this.currentBlock = 6, true);
 		engine.setOnKey(KeyCode.DIGIT8, () -> this.currentBlock = 7, true);
+		engine.setOnKey(KeyCode.DIGIT9, () -> this.currentBlock = 8, true);
 		
 		engine.setOnKey(KeyCode.B, () -> {
 			int chunkX = player.getChunkX();

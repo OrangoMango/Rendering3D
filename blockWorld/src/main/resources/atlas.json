@@ -10,7 +10,8 @@
 				"left" : 1,
 				"front" : 1,
 				"back" : 1
-			}
+			},
+			"transparent" : false
 		},
 		"coal" : {
 			"id" : 2,
@@ -22,7 +23,8 @@
 				"left" : 0,
 				"front" : 0,
 				"back" : 0
-			}
+			},
+			"transparent" : false
 		},
 		"stone" : {
 			"id" : 3,
@@ -34,7 +36,8 @@
 				"left" : 0,
 				"front" : 0,
 				"back" : 0
-			}
+			},
+			"transparent" : false
 		},
 		"wood" : {
 			"id" : 4,
@@ -46,7 +49,8 @@
 				"left" : 0,
 				"front" : 0,
 				"back" : 0
-			}
+			},
+			"transparent" : false
 		},
 		"wood_log" : {
 			"id" : 5,
@@ -58,7 +62,8 @@
 				"left" : 0,
 				"front" : 0,
 				"back" : 0
-			}
+			},
+			"transparent" : false
 		},
 		"leaves" : {
 			"id" : 6,
@@ -70,7 +75,8 @@
 				"left" : 0,
 				"front" : 0,
 				"back" : 0
-			}
+			},
+			"transparent" : true
 		},
 		"cobblestone" : {
 			"id" : 7,
@@ -82,7 +88,8 @@
 				"left" : 0,
 				"front" : 0,
 				"back" : 0
-			}
+			},
+			"transparent" : false
 		},
 		"dirt" : {
 			"id" : 8,
@@ -94,7 +101,8 @@
 				"left" : 0,
 				"front" : 0,
 				"back" : 0
-			}
+			},
+			"transparent" : false
 		},
 		"sand" : {
 			"id" : 9,
@@ -106,7 +114,21 @@
 				"left" : 0,
 				"front" : 0,
 				"back" : 0
-			}
+			},
+			"transparent" : false
+		},
+		"glass" : {
+			"id" : 10,
+			"images" : ["/glass.png"],
+			"config" : {
+				"top" : 0,
+				"down" : 0,
+				"right" : 0,
+				"left" : 0,
+				"front" : 0,
+				"back" : 0
+			},
+			"transparent" : true
 		}
 	}
 }

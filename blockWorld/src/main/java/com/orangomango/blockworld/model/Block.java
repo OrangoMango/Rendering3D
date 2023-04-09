@@ -12,6 +12,7 @@ public class Block{
 	private Mesh mesh;
 	private String type;
 	private int id;
+	private boolean transparent;
 
 	private static Atlas atlas = new Atlas("/atlas.json");
 	
@@ -22,35 +23,46 @@ public class Block{
 		this.z = z+chunk.getZ()*Chunk.CHUNK_SIZE;
 		this.type = type;
 		this.id = atlas.getBlockId(this.type);
+		this.transparent = atlas.isTransparent(this.type);
 	}
 	
 	public int getId(){
 		return this.id;
 	}
+	
+	public boolean isTransparent(){
+		return this.transparent;
+	}
 
 	public void setupFaces(){
 		mesh.clearHiddenFaces();
-		if (this.chunk.getWorld().getBlockAt(this.x+1, this.y, this.z) != null){
+		Block block = this.chunk.getWorld().getBlockAt(this.x+1, this.y, this.z);
+		if (block != null && !block.isTransparent()){
 			mesh.addHiddenFace(2);
 			mesh.addHiddenFace(3);
 		}
-		if (this.chunk.getWorld().getBlockAt(this.x, this.y+1, this.z) != null){
+		block = this.chunk.getWorld().getBlockAt(this.x, this.y+1, this.z);
+		if (block != null && !block.isTransparent()){
 			mesh.addHiddenFace(8);
 			mesh.addHiddenFace(9);
 		}
-		if (this.chunk.getWorld().getBlockAt(this.x, this.y, this.z+1) != null){
+		block = this.chunk.getWorld().getBlockAt(this.x, this.y, this.z+1);
+		if (block != null && !block.isTransparent()){
 			mesh.addHiddenFace(4);
 			mesh.addHiddenFace(5);
 		}
-		if (this.chunk.getWorld().getBlockAt(this.x-1, this.y, this.z) != null){
+		block = this.chunk.getWorld().getBlockAt(this.x-1, this.y, this.z);
+		if (block != null && !block.isTransparent()){
 			mesh.addHiddenFace(6);
 			mesh.addHiddenFace(7);
 		}
-		if (this.chunk.getWorld().getBlockAt(this.x, this.y-1, this.z) != null){
+		block = this.chunk.getWorld().getBlockAt(this.x, this.y-1, this.z);
+		if (block != null && !block.isTransparent()){
 			mesh.addHiddenFace(10);
 			mesh.addHiddenFace(11);
 		}
-		if (this.chunk.getWorld().getBlockAt(this.x, this.y, this.z-1) != null){
+		block = this.chunk.getWorld().getBlockAt(this.x, this.y, this.z-1);
+		if (block != null && !block.isTransparent()){
 			mesh.addHiddenFace(0);
 			mesh.addHiddenFace(1);
 		}
@@ -86,6 +98,7 @@ public class Block{
 			Point3D camPos = new Point3D(cam.getX(), cam.getY(), cam.getZ());
 			return pos.distance(camPos) > ChunkManager.RENDER_DISTANCE*Chunk.CHUNK_SIZE;
 		};
+		this.mesh.setTransparentProcessing(this.transparent);
 		return this.mesh;
 	}
 	
