@@ -13,18 +13,16 @@ import java.io.*;
 
 import static com.orangomango.rendering3d.Engine3D.*;
 
-public class Mesh{
+public class Mesh{	
 	private MeshGroup meshGroup;
 	private Point3D[] points;
-	private double[][][] projected;
-	private Point2D[][] projectedTex;
+	private List<ProjectedTriangle> projectedTriangles = new ArrayList<>();
 	private Map<Integer, double[][]> extraProjected = new HashMap<>();
 	private Map<Integer, Point2D[]> extraProjectedTex = new HashMap<>();
 	private Color[][] vertexColors;
 	private Color[][] facesColors;
 	private int[][] faces;
 	private Color[] colors;
-	private Color color;
 	private Point2D[] textureVertex;
 	private int[][] textureFaces;
 	private Point3D[][] normals;
@@ -38,18 +36,59 @@ public class Mesh{
 	private List<Integer> hiddenTriangles = new ArrayList<>();
 	public Predicate<Camera> skipCondition;
 	
+	private static class ProjectedTriangle{
+		private int index;
+		private double[] point1, point2, point3;
+		private Point2D tex1, tex2, tex3;
+		
+		public ProjectedTriangle(int index, double[] p1, double[] p2, double[] p3, Point2D t1, Point2D t2, Point2D t3){
+			this.index = index;
+			this.point1 = p1;
+			this.point2 = p2;
+			this.point3 = p3;
+			this.tex1 = t1;
+			this.tex2 = t2;
+			this.tex3 = t3;
+		}
+		
+		public double[] getPoint1(){
+			return this.point1;
+		}
+		
+		public double[] getPoint2(){
+			return this.point2;
+		}
+		
+		public double[] getPoint3(){
+			return this.point3;
+		}
+		
+		public Point2D getTexture1(){
+			return this.tex1;
+		}
+		
+		public Point2D getTexture2(){
+			return this.tex2;
+		}
+		
+		public Point2D getTexture3(){
+			return this.tex3;
+		}
+		
+		public int getIndex(){
+			return this.index;
+		}
+	}
+	
 	public Map<Camera, double[][][]> cache = new HashMap<>();
 	private double[][][] rotationCache;
 	
 	public static double SHADOW_EPSILON = 0.001;
 	
 	public Mesh(Image[] images, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, int[] facesImages, Color[] colors, Point3D[][] ns, Color[][] fcs){
-		this.color = Color.RED; //Color.color(Math.random(), Math.random(), Math.random());
 		this.images = images;
 		this.facesImages = facesImages;
 		this.points = points;
-		this.projected = new double[faces.length][3][3];
-		this.projectedTex = new Point2D[faces.length][3];
 		this.faces = faces;
 		this.colors = colors;
 		this.facesColors = fcs;
@@ -139,11 +178,6 @@ public class Mesh{
 		this.trianglePoints = output;
 		return output;
 	}
-	
-	private void setProjectedPoint(int f, int tr, double[] point, Point2D tex){
-		this.projected[f][tr] = point;
-		this.projectedTex[f][tr] = tex;
-	}
 
 	public static double distanceToPlane(Point3D normal, Point3D planePoint, Point3D point, Point3D direction){
 		if (normal.dotProduct(direction) == 0) throw new IllegalStateException("Debug: dp is 0");
@@ -220,17 +254,13 @@ public class Mesh{
 	public void evaluate(Camera camera){
 		int i = 0;
 		this.vertexColors = new Color[this.faces.length][3];
-		this.extraProjected.clear();
-		this.extraProjectedTex.clear();
+		this.projectedTriangles.clear();
 		Point3D cameraPos = new Point3D(camera.getX(), camera.getY(), camera.getZ());
 		Point3D cameraDir = new Point3D(Math.cos(camera.getRy()+Math.PI/2), 0, Math.sin(camera.getRy()+Math.PI/2)).normalize();
 		Point3D[][] planes = camera.getViewFrustum();
 		for (Point3D[] points : getTrianglePoints(vertexColors)){
-			// TODO || Math.round(points[0].midpoint(points[1]).midpoint(points[2]).subtract(cameraPos).normalize().dotProduct(cameraDir)) < 0
-			if (this.hiddenTriangles.contains(i)){
-				setProjectedPoint(i, 0, null, null);
-				setProjectedPoint(i, 1, null, null);
-				setProjectedPoint(i, 2, null, null);
+			// TODO Efficient way to check objects that are behind the camera
+			if (this.hiddenTriangles.contains(i) || Math.round(points[0].midpoint(points[1]).midpoint(points[2]).subtract(cameraPos).normalize().dotProduct(cameraDir)) < 0){
 				i++;
 				continue;
 			}
@@ -293,9 +323,6 @@ public class Mesh{
 				}
 			}
 			/*if (!inside){
-				setProjectedPoint(i, 0, null, null);
-				setProjectedPoint(i, 1, null, null);
-				setProjectedPoint(i, 2, null, null);
 				i++;
 				continue;
 			}*/
@@ -333,7 +360,7 @@ public class Mesh{
 				Point2D t2 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][1]];
 				Point2D t3 = this.textureFaces[i] == null ? null : this.textureVertex[this.textureFaces[i][2]];
 				Point2D[] fOut = new Point2D[]{t1, t2, t3};
-				// Objects are already in view space so the plane stays at (0,0,camera.zNear)
+				// The objects are already in view space so the plane stays at (0,0,camera.zNear)
 				Point3D[][] clippedTriangles = clipTriangle(new Point3D(0, 0, 1),
 												new Point3D(0, 0, camera.zNear),
 												new Point3D(proj[i][0][0], proj[i][0][1], proj[i][0][2]),
@@ -341,9 +368,6 @@ public class Mesh{
 												new Point3D(proj[i][2][0], proj[i][2][1], proj[i][2][2]),
 												fOut, secOut);
 				if (clippedTriangles == null){
-					setProjectedPoint(i, 0, null, null);
-					setProjectedPoint(i, 1, null, null);
-					setProjectedPoint(i, 2, null, null);
 					i++;
 					continue;
 				} else {
@@ -352,25 +376,21 @@ public class Mesh{
 					double[] pa = multiply(camera.getProjectionMatrix(), new double[]{tr1[0].getX(), tr1[0].getY(), tr1[0].getZ(), 1});
 					double[] pb = multiply(camera.getProjectionMatrix(), new double[]{tr1[1].getX(), tr1[1].getY(), tr1[1].getZ(), 1});
 					double[] pc = multiply(camera.getProjectionMatrix(), new double[]{tr1[2].getX(), tr1[2].getY(), tr1[2].getZ(), 1});
-					setupTriangle(i, pa, pb, pc, false, fOut[0], fOut[1], fOut[2]);
+					setupTriangle(i, pa, pb, pc, fOut[0], fOut[1], fOut[2]);
 					if (clippedTriangles.length == 2){
 						Point3D[] tr2 = clippedTriangles[1];
 						double[] a = multiply(camera.getProjectionMatrix(), new double[]{tr2[0].getX(), tr2[0].getY(), tr2[0].getZ(), 1});
 						double[] b = multiply(camera.getProjectionMatrix(), new double[]{tr2[1].getX(), tr2[1].getY(), tr2[1].getZ(), 1});
 						double[] c = multiply(camera.getProjectionMatrix(), new double[]{tr2[2].getX(), tr2[2].getY(), tr2[2].getZ(), 1});
-						setupTriangle(i, a, b, c, true, secOut[0], secOut[1], secOut[2]);
+						setupTriangle(i, a, b, c, secOut[0], secOut[1], secOut[2]);
 					}
 				}
-			} else {
-				setProjectedPoint(i, 0, null, null);
-				setProjectedPoint(i, 1, null, null);
-				setProjectedPoint(i, 2, null, null);
 			}
 			i++;
 		}
 	}
 
-	private void setupTriangle(int i, double[] p1, double[] p2, double[] p3, boolean extraList, Point2D t1, Point2D t2, Point2D t3){
+	private void setupTriangle(int i, double[] p1, double[] p2, double[] p3, Point2D t1, Point2D t2, Point2D t3){
 		// Scale
 		double px1 = p1[0]/(p1[3] == 0 ? 1 : p1[3]);
 		double py1 = p1[1]/(p1[3] == 0 ? 1 : p1[3]);
@@ -387,11 +407,6 @@ public class Mesh{
 		if ((isOutside(px1, bound) && isOutside(px2, bound) && isOutside(px3, bound))
 				|| (isOutside(py1, bound) && isOutside(py2, bound) && isOutside(py3, bound))
 				|| (isOutside(pz1, bound) || isOutside(pz2, bound) || isOutside(pz3, bound))){
-			if (!extraList){
-				setProjectedPoint(i, 0, null, null);
-				setProjectedPoint(i, 1, null, null);
-				setProjectedPoint(i, 2, null, null);
-			}
 			return;
 		}
 
@@ -408,33 +423,21 @@ public class Mesh{
 		px3 *= 0.5*getInstance().getWidth();
 		py3 *= 0.5*getInstance().getHeight();
 
-		if (extraList){
-			this.extraProjected.put(i, new double[][]{{px1, py1, 1/p1[3]}, {px2, py2, 1/p2[3]}, {px3, py3, 1/p3[3]}});
-			this.extraProjectedTex.put(i, new Point2D[]{t1, t2, t3});
-		} else {
-			setProjectedPoint(i, 0, new double[]{px1, py1, 1/p1[3]}, t1);
-			setProjectedPoint(i, 1, new double[]{px2, py2, 1/p2[3]}, t2);
-			setProjectedPoint(i, 2, new double[]{px3, py3, 1/p3[3]}, t3);
-		}
+		ProjectedTriangle projectedTriangle = new ProjectedTriangle(i, new double[]{px1, py1, 1/p1[3]}, new double[]{px2, py2, 1/p2[3]}, new double[]{px3, py3, 1/p3[3]}, t1, t2, t3);
+		this.projectedTriangles.add(projectedTriangle);
 	}
 	
 	public void render(Camera camera, List<Light> lights, GraphicsContext gc){
 		if (this.showLines){
-			gc.setStroke(this.color);
+			gc.setStroke(Color.RED);
 			gc.setLineWidth(1);
 		}
-		for (int i = 0; i < this.projected.length; i++){
-			makeRendering(gc, i, camera, lights, this.projected[i][0], this.projected[i][1], this.projected[i][2], this.projectedTex[i][0], this.projectedTex[i][1], this.projectedTex[i][2]);
-		}
-		for (Map.Entry<Integer, double[][]> entry : this.extraProjected.entrySet()){
-			Point2D[] ps = this.extraProjectedTex.get(entry.getKey());
-			makeRendering(gc, entry.getKey(), camera, lights, entry.getValue()[0], entry.getValue()[1], entry.getValue()[2], ps[0], ps[1], ps[2]);
+		for (ProjectedTriangle pt : this.projectedTriangles){
+			makeRendering(gc, pt.getIndex(), camera, lights, pt.getPoint1(), pt.getPoint2(), pt.getPoint3(), pt.getTexture1(), pt.getTexture2(), pt.getTexture3());
 		}
 	}
 
 	private void makeRendering(GraphicsContext gc, int i, Camera camera, List<Light> lights, double[] proj1, double[] proj2, double[] proj3, Point2D t1, Point2D t2, Point2D t3){
-		if (proj1 == null || proj2 == null || proj3 == null) return;
-
 		Point2D p1 = new Point2D(proj1[0], proj1[1]);
 		Point2D p2 = new Point2D(proj2[0], proj2[1]);
 		Point2D p3 = new Point2D(proj3[0], proj3[1]);
@@ -688,7 +691,6 @@ public class Mesh{
 						camera.depthBuffer[j][i] = col_w;
 						Color color = Color.color(col_r, col_g, col_b);
 						Color backColor = canvas[j][i];
-						if (backColor == null) backColor = Color.CYAN;
 						
 						// Transparency
 						if (col_a < 1) color = Color.color(Math.min(1, backColor.getRed()+col_r*(1-col_a)), Math.min(1, backColor.getGreen()+col_g*(1-col_a)), Math.min(1, backColor.getBlue()+col_b*(1-col_a)));
@@ -779,7 +781,6 @@ public class Mesh{
 						camera.depthBuffer[j][i] = col_w;
 						Color color = Color.color(col_r, col_g, col_b);
 						Color backColor = canvas[j][i];
-						if (backColor == null) backColor = Color.CYAN;
 						
 						// Transparency
 						if (col_a < 1) color = Color.color(Math.min(1, backColor.getRed()+col_r*(1-col_a)), Math.min(1, backColor.getGreen()+col_g*(1-col_a)), Math.min(1, backColor.getBlue()+col_b*(1-col_a)));
@@ -919,7 +920,6 @@ public class Mesh{
 						camera.depthBuffer[j][i] = tex_w;
 						Color color = reader.getColor(Math.min(15, pix_x), Math.min(15, pix_y));
 						Color backColor = canvas[j][i];
-						if (backColor == null) backColor = Color.CYAN;
 						
 						// Transparency
 						if (color.getOpacity() < 1) color = Color.color(Math.min(1, backColor.getRed()+color.getRed()*(1-color.getOpacity())), Math.min(1, backColor.getGreen()+color.getGreen()*(1-color.getOpacity())), Math.min(1, backColor.getBlue()+color.getBlue()*(1-color.getOpacity())));
@@ -1001,7 +1001,6 @@ public class Mesh{
 						camera.depthBuffer[j][i] = tex_w;
 						Color color = reader.getColor(Math.min(15, pix_x), Math.min(15, pix_y));
 						Color backColor = canvas[j][i];
-						if (backColor == null) backColor = Color.CYAN;
 						
 						// Transparency
 						if (color.getOpacity() < 1) color = Color.color(Math.min(1, backColor.getRed()+color.getRed()*(1-color.getOpacity())), Math.min(1, backColor.getGreen()+color.getGreen()*(1-color.getOpacity())), Math.min(1, backColor.getBlue()+color.getBlue()*(1-color.getOpacity())));

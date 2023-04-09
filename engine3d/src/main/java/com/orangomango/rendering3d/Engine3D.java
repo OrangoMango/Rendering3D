@@ -149,7 +149,7 @@ public class Engine3D{
 		gc.clearRect(0, 0, width, height);
 		for (int i = 0; i < this.width; i++){
 			for (int j = 0; j < this.height; j++){
-				this.canvas[i][j] = null;
+				this.canvas[i][j] = Color.CYAN;
 			}
 		}
 		gc.setFill(Color.CYAN);
@@ -234,11 +234,13 @@ public class Engine3D{
 			}
 		}
 		
-		for (int i = 0; i < this.width; i++){
-			for (int j = 0; j < this.height; j++){
-				Color color = this.canvas[i][j];
-				if (color != null){
-					gc.getPixelWriter().setColor(i, j, color);
+		if (!SHOW_LINES){
+			for (int i = 0; i < this.width; i++){
+				for (int j = 0; j < this.height; j++){
+					Color color = this.canvas[i][j];
+					if (color != null){
+						gc.getPixelWriter().setColor(i, j, color);
+					}
 				}
 			}
 		}
