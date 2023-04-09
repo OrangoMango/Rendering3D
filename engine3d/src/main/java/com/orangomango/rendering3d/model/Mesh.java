@@ -256,7 +256,8 @@ public class Mesh{
 		Point3D[][] planes = camera.getViewFrustum();
 		for (Point3D[] points : getTrianglePoints()){
 			// TODO Efficient way to check objects that are behind the camera
-			if (this.hiddenTriangles.contains(i) || Math.round(points[0].midpoint(points[1]).midpoint(points[2]).subtract(cameraPos).normalize().dotProduct(cameraDir)) < 0){
+			// || Math.round(points[0].midpoint(points[1]).midpoint(points[2]).subtract(cameraPos).normalize().dotProduct(cameraDir)) < 0
+			if (this.hiddenTriangles.contains(i)){
 				i++;
 				continue;
 			}
@@ -726,8 +727,11 @@ public class Mesh{
 								}
 							}
 						}
-						canvas[j][i] = Light.getLight(color, Math.max(col_l, 0));
-						if (directUpdate) gc.getPixelWriter().setColor(j, i, canvas[j][i]);
+						if (directUpdate){
+							gc.getPixelWriter().setColor(j, i, color);
+						} else {
+							canvas[j][i] = Light.getLight(color, Math.max(col_l, 0));
+						}
 					}
 
 					t += tstep;
@@ -817,8 +821,11 @@ public class Mesh{
 								}
 							}
 						}
-						canvas[j][i] = Light.getLight(color, Math.max(col_l, 0));
-						if (directUpdate) gc.getPixelWriter().setColor(j, i, canvas[j][i]);
+						if (directUpdate){
+							gc.getPixelWriter().setColor(j, i, color);
+						} else {
+							canvas[j][i] = Light.getLight(color, Math.max(col_l, 0));
+						}
 					}
 
 					t += tstep;
@@ -965,8 +972,8 @@ public class Mesh{
 							for (Light light : lights){
 								Camera cam2 = light.getCamera();
 								double[] shadow = convertPoint(new double[]{j, i, tex_w}, camera, cam2);
-								int index_x = (int)Math.round(shadow[0]);
-								int index_y = (int)Math.round(shadow[1]);
+								int index_x = (int)shadow[0];
+								int index_y = (int)shadow[1];
 								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
 									double depth = cam2.depthBuffer[index_x][index_y];
 									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
@@ -975,8 +982,11 @@ public class Mesh{
 								}
 							}
 						}
-						canvas[j][i] = Light.getLight(color, Math.max(tex_l, 0));
-						if (directUpdate) gc.getPixelWriter().setColor(j, i, canvas[j][i]);
+						if (directUpdate){
+							gc.getPixelWriter().setColor(j, i, color);
+						} else {
+							canvas[j][i] = Light.getLight(color, Math.max(tex_l, 0));
+						}
 					}
 					
 					t += tstep;
@@ -1047,8 +1057,8 @@ public class Mesh{
 							for (Light light : lights){
 								Camera cam2 = light.getCamera();
 								double[] shadow = convertPoint(new double[]{j, i, tex_w}, camera, cam2);
-								int index_x = (int)Math.round(shadow[0]);
-								int index_y = (int)Math.round(shadow[1]);
+								int index_x = (int)shadow[0];
+								int index_y = (int)shadow[1];
 								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
 									double depth = cam2.depthBuffer[index_x][index_y];
 									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
@@ -1057,8 +1067,11 @@ public class Mesh{
 								}
 							}
 						}
-						canvas[j][i] = Light.getLight(color, Math.max(tex_l, 0));
-						if (directUpdate) gc.getPixelWriter().setColor(j, i, canvas[j][i]);
+						if (directUpdate){
+							gc.getPixelWriter().setColor(j, i, color);
+						} else {
+							canvas[j][i] = Light.getLight(color, Math.max(tex_l, 0));
+						}
 					}
 					
 					t += tstep;
@@ -1090,7 +1103,7 @@ public class Mesh{
 				} else if (line.toLowerCase().startsWith("d") && current != null){
 					current[3] = Double.parseDouble(line.split(" ")[1]);
 				} else if (line.toLowerCase().startsWith("map_kd")){
-					
+					// TODO load also the image name
 				}
 			}
 			if (name != null){

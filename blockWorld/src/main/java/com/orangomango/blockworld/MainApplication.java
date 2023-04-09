@@ -88,6 +88,10 @@ public class MainApplication extends Application{
 					chunkUpdate = true;
 				} else if (e.getButton() == MouseButton.SECONDARY && lastX >= 0 && lastY >= 0 && lastZ >= 0){
 					world.setBlockAt(lastX, lastY, lastZ, inventoryBlocks[this.currentBlock]);
+					int chunkX = lastX / Chunk.CHUNK_SIZE;
+					int chunkY = lastY / Chunk.CHUNK_SIZE;
+					int chunkZ = lastZ / Chunk.CHUNK_SIZE;
+					chunkManager.saveChunkToFile(world.getChunkAt(chunkX, chunkY, chunkZ));
 					chunkUpdate = true;
 				}
 				if (chunkUpdate){
@@ -101,10 +105,6 @@ public class MainApplication extends Application{
 							}
 						}
 					}
-					int chunkX = block.getX() / Chunk.CHUNK_SIZE;
-					int chunkY = block.getY() / Chunk.CHUNK_SIZE;
-					int chunkZ = block.getZ() / Chunk.CHUNK_SIZE;
-					chunkManager.saveChunkToFile(world.getChunkAt(chunkX, chunkY, chunkZ));
 				}
 			}
 		});
