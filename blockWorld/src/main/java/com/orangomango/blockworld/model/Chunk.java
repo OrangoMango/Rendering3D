@@ -17,8 +17,8 @@ public class Chunk{
 	private int x, y, z;
 	private World world;
 
-	private static List<Block> pendingBlocks = new ArrayList<>();
-	private static Atlas atlas = new Atlas("/atlas.json");
+	public static List<Block> pendingBlocks = new ArrayList<>(); // pendingBlocks cannot contain blocks with special settings (like water's yOffset)
+	public static Atlas atlas = new Atlas("/atlas.json");
 	
 	public Chunk(World world, int x, int y, int z){
 		this.world = world;
@@ -39,7 +39,7 @@ public class Chunk{
 						float b = (noise.noise((i+this.x*CHUNK_SIZE)*biomeFreq, 0, (k+this.z*CHUNK_SIZE)*biomeFreq)+1)/2;
 						// TODO Replace 16 with CHUNK_SIZE
 						int h = Math.round(n*(16-1))+CHUNK_SIZE*HEIGHT_LIMIT; // air column
-						if (world.superFlat) h = 16*HEIGHT_LIMIT+1;
+						if (world.superFlat) h = CHUNK_SIZE*HEIGHT_LIMIT+1;
 						int pos = this.y*CHUNK_SIZE+j;
 						if (pos >= h){
 							String biome = b <= 0.4 ? "sand" : (pos == h ? "grass" : "dirt");
@@ -59,7 +59,7 @@ public class Chunk{
 					if (this.blocks[i][k][j] == null) h++;
 				}
 				if (h > 0 && h < CHUNK_SIZE && h-1+this.y*CHUNK_SIZE < WATER_HEIGHT){
-					if (random.nextInt(1000) < 7 && !this.blocks[i][h][j].getType().equals("sand") && !this.blocks[i][h][j].getType().equals("water")){
+					if (random.nextInt(1000) < 12 && !this.blocks[i][h][j].getType().equals("sand") && !this.blocks[i][h][j].getType().equals("water")){
 						int treeHeight = 5;
 						for (int k = 0; k < treeHeight; k++){
 							setBlock(new Block(this, i, h-1-k, j, "wood_log"), i, h-1-k, j);
@@ -79,7 +79,7 @@ public class Chunk{
 							}
 						}
 						setBlock(new Block(this, i, h-1-treeHeight, j, "leaves"), i, h-1-treeHeight, j);
-					} else if (random.nextInt(1000) < 12){
+					} else if (random.nextInt(1000) < 16){
 						String flowerType = "flower_"+(random.nextBoolean() ? "red" : "yellow");
 						if (this.blocks[i][h][j].getType().equals("sand")){
 							flowerType = "bush";

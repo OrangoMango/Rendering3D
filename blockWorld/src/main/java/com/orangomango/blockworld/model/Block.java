@@ -8,25 +8,36 @@ import com.orangomango.rendering3d.model.Mesh;
 
 public class Block{
 	private int x, y, z;
-	private Chunk chunk;
+	private World world;
 	private Mesh mesh;
 	private String type;
 	private int id;
 	private boolean transparent;
 	private boolean sprite;
 	private double yOffset;
-
-	private static Atlas atlas = new Atlas("/atlas.json");
 	
 	public Block(Chunk chunk, int x, int y, int z, String type){
-		this.chunk = chunk;
+		this.world = chunk.getWorld();
 		this.x = x+chunk.getX()*Chunk.CHUNK_SIZE;
 		this.y = y+chunk.getY()*Chunk.CHUNK_SIZE;
 		this.z = z+chunk.getZ()*Chunk.CHUNK_SIZE;
 		this.type = type;
-		this.id = atlas.getBlockId(this.type);
-		this.transparent = atlas.isTransparent(this.type);
-		this.sprite = atlas.isSprite(this.type);
+		setupSettings();
+	}
+	
+	public Block(World world, int gx, int gy, int gz, String type){
+		this.world = world;
+		this.x = gx;
+		this.y = gy;
+		this.z = gz;
+		this.type = type;
+		setupSettings();
+	}
+	
+	private void setupSettings(){
+		this.id = Chunk.atlas.getBlockId(this.type);
+		this.transparent = Chunk.atlas.isTransparent(this.type);
+		this.sprite = Chunk.atlas.isSprite(this.type);
 	}
 	
 	public int getId(){
@@ -42,38 +53,38 @@ public class Block{
 	}
 
 	/*
-	 * glass can "connect" as it's forced to the hiding process
+	 * glass and water can "connect" as it's forced to the hiding process
 	 */
 	public void setupFaces(){
 		if (this.sprite) return;
 		mesh.clearHiddenFaces();
-		Block block = this.chunk.getWorld().getBlockAt(this.x+1, this.y, this.z);
-		if (block != null && (!block.isTransparent() || this.type.equals("glass"))){
+		Block block = this.world.getBlockAt(this.x+1, this.y, this.z);
+		if (block != null && (!block.isTransparent() || Chunk.atlas.isForceHiding(this.type))){
 			mesh.addHiddenFace(2);
 			mesh.addHiddenFace(3);
 		}
-		block = this.chunk.getWorld().getBlockAt(this.x, this.y+1, this.z);
-		if (block != null && (!block.isTransparent() || this.type.equals("glass"))){
+		block = this.world.getBlockAt(this.x, this.y+1, this.z);
+		if (block != null && (!block.isTransparent() || Chunk.atlas.isForceHiding(this.type))){
 			mesh.addHiddenFace(8);
 			mesh.addHiddenFace(9);
 		}
-		block = this.chunk.getWorld().getBlockAt(this.x, this.y, this.z+1);
-		if (block != null && (!block.isTransparent() || this.type.equals("glass"))){
+		block = this.world.getBlockAt(this.x, this.y, this.z+1);
+		if (block != null && (!block.isTransparent() || Chunk.atlas.isForceHiding(this.type))){
 			mesh.addHiddenFace(4);
 			mesh.addHiddenFace(5);
 		}
-		block = this.chunk.getWorld().getBlockAt(this.x-1, this.y, this.z);
-		if (block != null && (!block.isTransparent() || this.type.equals("glass"))){
+		block = this.world.getBlockAt(this.x-1, this.y, this.z);
+		if (block != null && (!block.isTransparent() || Chunk.atlas.isForceHiding(this.type))){
 			mesh.addHiddenFace(6);
 			mesh.addHiddenFace(7);
 		}
-		block = this.chunk.getWorld().getBlockAt(this.x, this.y-1, this.z);
-		if (block != null && (!block.isTransparent() || this.type.equals("glass"))){
+		block = this.world.getBlockAt(this.x, this.y-1, this.z);
+		if (block != null && (!block.isTransparent() || Chunk.atlas.isForceHiding(this.type))){
 			mesh.addHiddenFace(10);
 			mesh.addHiddenFace(11);
 		}
-		block = this.chunk.getWorld().getBlockAt(this.x, this.y, this.z-1);
-		if (block != null && (!block.isTransparent() || this.type.equals("glass"))){
+		block = this.world.getBlockAt(this.x, this.y, this.z-1);
+		if (block != null && (!block.isTransparent() || Chunk.atlas.isForceHiding(this.type))){
 			mesh.addHiddenFace(0);
 			mesh.addHiddenFace(1);
 		}
@@ -89,7 +100,7 @@ public class Block{
 	public Mesh getMesh(){
 		if (this.mesh != null) return this.mesh;
 		if (this.sprite){
-			this.mesh = new Mesh(atlas.getImages().get(this.type), new Point3D[]{
+			this.mesh = new Mesh(Chunk.atlas.getImages().get(this.type), new Point3D[]{
 				new Point3D(this.x, this.y+this.yOffset, this.z), new Point3D(this.x, 1+this.y, this.z), new Point3D(1+this.x, 1+this.y, this.z),
 				new Point3D(1+this.x, this.y+this.yOffset, this.z), new Point3D(this.x, this.y+this.yOffset, 1+this.z), new Point3D(this.x, 1+this.y, 1+this.z),
 				new Point3D(1+this.x, 1+this.y, 1+this.z), new Point3D(1+this.x, this.y+this.yOffset, 1+this.z)}, new int[][]{
@@ -98,10 +109,10 @@ public class Block{
 					new Point2D(0, 1-1), new Point2D(0, 1-0), new Point2D(1, 1-0), new Point2D(1, 1-1)
 				}, new int[][]{
 					{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
-				}, atlas.getBlockFaces().get(this.type), null, null, null);
+				}, Chunk.atlas.getBlockFaces().get(this.type), null, null, null);
 			this.mesh.showAllFaces(true);
 		} else {
-			this.mesh = new Mesh(atlas.getImages().get(this.type), new Point3D[]{
+			this.mesh = new Mesh(Chunk.atlas.getImages().get(this.type), new Point3D[]{
 				new Point3D(this.x, this.y+this.yOffset, this.z), new Point3D(this.x, 1+this.y, this.z), new Point3D(1+this.x, 1+this.y, this.z),
 				new Point3D(1+this.x, this.y+this.yOffset, this.z), new Point3D(this.x, this.y+this.yOffset, 1+this.z), new Point3D(this.x, 1+this.y, 1+this.z),
 				new Point3D(1+this.x, 1+this.y, 1+this.z), new Point3D(1+this.x, this.y+this.yOffset, 1+this.z)}, new int[][]{
@@ -116,7 +127,7 @@ public class Block{
 				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
-			}, atlas.getBlockFaces().get(this.type), null, null, null);
+			}, Chunk.atlas.getBlockFaces().get(this.type), null, null, null);
 			this.mesh.skipCondition = cam -> {
 				Point3D pos = new Point3D(this.x, this.y, this.z);
 				Point3D camPos = new Point3D(cam.getX(), cam.getY(), cam.getZ());

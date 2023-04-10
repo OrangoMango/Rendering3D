@@ -128,7 +128,8 @@
 				"front" : 0,
 				"back" : 0
 			},
-			"transparent" : true
+			"transparent" : true,
+			"forceHiding" : true
 		},
 		"flower_red" : {
 			"id" : 11,
@@ -196,7 +197,8 @@
 				"front" : 0,
 				"back" : 0
 			},
-			"transparent" : true
+			"transparent" : true,
+			"forceHiding" : true
 		},
 	}
 }

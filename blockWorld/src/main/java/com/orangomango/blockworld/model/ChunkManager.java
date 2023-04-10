@@ -18,6 +18,7 @@ public class ChunkManager{
 		this.player = player;
 		this.world = world;
 		this.engine = Engine3D.getInstance();
+		loadPendingBlocks();
 	}
 	
 	public void manage(){
@@ -62,6 +63,7 @@ public class ChunkManager{
 			Chunk chunk = this.world.addChunk(x, y, z);
 			this.engine.getObjects().add(getMeshGroup(chunk));
 			saveChunkToFile(chunk);
+			savePendingBlocks();
 		}
 		//System.out.println("Loaded chunk");
 	}
@@ -115,6 +117,45 @@ public class ChunkManager{
 				writer.newLine();
 			}
 			writer.close();
+		} catch (IOException ex){
+			ex.printStackTrace();
+		}
+	}
+	
+	public void savePendingBlocks(){
+		try {
+			File dir = new File(System.getProperty("user.home"), ".blockWorld/");
+			if (!dir.exists()) dir.mkdir();
+			File file = new File(dir, "pendingBlocks.data");
+			if (!file.exists()) file.createNewFile();
+			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+			for (Block block : Chunk.pendingBlocks){
+				writer.write(String.format("%d %d %d %d\n", block.getX(), block.getY(), block.getZ(), block.getId()));
+			}
+			writer.close();
+		} catch (IOException ex){
+			ex.printStackTrace();
+		}
+	}
+	
+	public void loadPendingBlocks(){
+		try {
+			File dir = new File(System.getProperty("user.home"), ".blockWorld/");
+			if (!dir.exists()) dir.mkdir();
+			File file = new File(dir, "pendingBlocks.data");
+			if (!file.exists()) file.createNewFile();
+			BufferedReader reader = new BufferedReader(new FileReader(file));
+			Chunk.pendingBlocks.clear();
+			reader.lines().forEach(line -> {
+				String[] parts = line.split(" ");
+				int xp = Integer.parseInt(parts[0]);
+				int yp = Integer.parseInt(parts[1]);
+				int zp = Integer.parseInt(parts[2]);
+				int id = Integer.parseInt(parts[3]);
+				Block block = new Block(this.world, xp, yp, zp, Chunk.atlas.getBlockType(id));
+				Chunk.pendingBlocks.add(block);
+			});
+			reader.close();
 		} catch (IOException ex){
 			ex.printStackTrace();
 		}
