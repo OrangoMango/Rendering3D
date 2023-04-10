@@ -7,6 +7,7 @@ import com.orangomango.rendering3d.model.Camera;
 public class Player{
 	private double x, y, z;
 	private Camera camera;
+	private Point3D lastChunkPosition;
 
 	public Player(double x, double y, double z){
 		this.x = x;
@@ -16,6 +17,7 @@ public class Player{
 		this.camera.zNear = 0.1;
 		this.camera.fov = Math.PI/2;
 		this.camera.zFar = 75;
+		this.lastChunkPosition = new Point3D(getChunkX(), getChunkY(), getChunkZ());
 		
 		// TODO Make distanceToPlain private
 		int i = 0;
@@ -33,10 +35,17 @@ public class Player{
 
 	public void move(World world, double mx, double my, double mz){
 		//if (checkCollision(world, this.x, this.y, this.z, mx, my, mz)) return;
+		this.lastChunkPosition = new Point3D(getChunkX(), getChunkY(), getChunkZ());
 		this.x += mx;
 		this.y += my;
 		this.z += mz;
 		this.camera.move(mx, my, mz);
+	}
+	
+	public void runOnChunkChanged(Runnable r){
+		if (getChunkX() != lastChunkPosition.getX() || getChunkY() != lastChunkPosition.getY() || getChunkZ() != lastChunkPosition.getZ()){
+			r.run();
+		}
 	}
 	
 	// AABB

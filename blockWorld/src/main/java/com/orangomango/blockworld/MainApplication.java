@@ -156,28 +156,30 @@ public class MainApplication extends Application{
 			engine.extraText.set("Chunks generated: "+engine.getRenderedMeshes()+String.format(" Chunk: %d %d %d", player.getChunkX(), player.getChunkY(), player.getChunkZ()));
 			
 			if (loadChunks){
-				int chunkX = player.getChunkX();
-				int chunkY = player.getChunkY();
-				int chunkZ = player.getChunkZ();
-				boolean updated = false;
-				for (int i = -CHUNKS/2; i < -CHUNKS/2+CHUNKS; i++){
-					for (int j = -CHUNKS/2; j < -CHUNKS/2+CHUNKS; j++){
-						for (int k = -1; k < 2; k++){ // y-chunks
-							if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
-							if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
-								if ((new Point3D(chunkX, chunkY, chunkZ)).distance(new Point3D(chunkX+i, chunkY+k, chunkZ+j)) <= ChunkManager.RENDER_DISTANCE){
-									chunkManager.loadChunk(chunkX+i, chunkY+k, chunkZ+j);
-									updated = true;
+				player.runOnChunkChanged(() -> {
+					int chunkX = player.getChunkX();
+					int chunkY = player.getChunkY();
+					int chunkZ = player.getChunkZ();
+					boolean updated = false;
+					for (int i = -CHUNKS/2; i < -CHUNKS/2+CHUNKS; i++){
+						for (int j = -CHUNKS/2; j < -CHUNKS/2+CHUNKS; j++){
+							for (int k = -1; k < 2; k++){ // y-chunks
+								if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
+								if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
+									if ((new Point3D(chunkX, chunkY, chunkZ)).distance(new Point3D(chunkX+i, chunkY+k, chunkZ+j)) <= ChunkManager.RENDER_DISTANCE){
+										chunkManager.loadChunk(chunkX+i, chunkY+k, chunkZ+j);
+										updated = true;
+									}
 								}
 							}
 						}
 					}
-				}
-				if (updated){
-					for (Chunk chunk : world.getChunks().values()){
-						chunk.setupFaces();
+					if (updated){
+						for (Chunk chunk : world.getChunks().values()){
+							chunk.setupFaces();
+						}
 					}
-				}
+				});
 			}
 			
 			chunkManager.manage();

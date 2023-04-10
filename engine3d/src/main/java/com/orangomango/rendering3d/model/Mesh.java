@@ -44,8 +44,9 @@ public class Mesh{
 		public boolean showLines;
 		public Point3D n1, n2, n3;
 		public Point3D t1, t2, t3;
+		public double[] view1, view2, view3;
 		
-		public ProjectedTriangle(double[] p1, double[] p2, double[] p3, Point2D t1, Point2D t2, Point2D t3, Color c1, Color c2, Color c3, Image image, Point3D n1, Point3D n2, Point3D n3, Point3D tr1, Point3D tr2, Point3D tr3){
+		public ProjectedTriangle(double[] p1, double[] p2, double[] p3, Point2D t1, Point2D t2, Point2D t3, Color c1, Color c2, Color c3, Image image, Point3D n1, Point3D n2, Point3D n3, Point3D tr1, Point3D tr2, Point3D tr3, double[] v1, double[] v2, double[] v3){
 			this.point1 = p1;
 			this.point2 = p2;
 			this.point3 = p3;
@@ -62,6 +63,9 @@ public class Mesh{
 			this.t1 = tr1;
 			this.t2 = tr2;
 			this.t3 = tr3;
+			this.view1 = v1;
+			this.view2 = v2;
+			this.view3 = v3;
 		}
 		
 		public double getMeanZ(){
@@ -248,6 +252,19 @@ public class Mesh{
 		}
 	}
 	
+	private double[] getEvaluatedView(Point3D aPoint){
+		for (ProjectedTriangle pt : this.projectedTriangles){
+			if (pt.t1 == aPoint){
+				return pt.view1;
+			} else if (pt.t2 == aPoint){
+				return pt.view2;
+			} else if (pt.t3 == aPoint){
+				return pt.view3;
+			}
+		}
+		return null;
+	}
+	
 	public void evaluate(Camera camera){
 		int i = 0;
 		this.projectedTriangles.clear();
@@ -263,6 +280,11 @@ public class Mesh{
 			}
 			
 			double[][] cam = camera.getViewMatrix();
+			
+			// Maybe some points were already evaluated
+			double[] point1Evaluated = getEvaluatedView(points[0]);
+			double[] point2Evaluated = getEvaluatedView(points[1]);
+			double[] point3Evaluated = getEvaluatedView(points[2]);
 			
 			// Apply transforms
 			double[] p1 = new double[]{points[0].getX(), points[0].getY(), points[0].getZ(), 1};
@@ -309,7 +331,7 @@ public class Mesh{
 			Point3D point3 = new Point3D(p3[0], p3[1], p3[2]);
 			
 			// Frustum culling
-			boolean inside = true;
+			/*boolean inside = true;
 			for (Point3D[] plane : planes){
 				double distance1 = distanceToPlane(plane[1], plane[0], point1, plane[1].multiply(-1));
 				double distance2 = distanceToPlane(plane[1], plane[0], point2, plane[1].multiply(-1));
@@ -319,7 +341,7 @@ public class Mesh{
 					break;
 				}
 			}
-			/*if (!inside){
+			if (!inside){
 				i++;
 				continue;
 			}*/
@@ -343,13 +365,13 @@ public class Mesh{
 			if (dot < 0 || this.transparent){
 				// Project 3D -> View space
 				if (proj[i][0] == null){
-					proj[i][0] = multiply(cam, p1);
+					proj[i][0] = point1Evaluated == null ? multiply(cam, p1) : point1Evaluated;
 				}
 				if (proj[i][1] == null){
-					proj[i][1] = multiply(cam, p2);
+					proj[i][1] = point2Evaluated == null ? multiply(cam, p2) : point2Evaluated;
 				}
 				if (proj[i][2] == null){
-					proj[i][2] = multiply(cam, p3);
+					proj[i][2] = point3Evaluated == null ? multiply(cam, p3) : point3Evaluated;
 				}
 				
 				Point2D[] secOut = new Point2D[3];
@@ -370,16 +392,18 @@ public class Mesh{
 				} else {
 					Point3D[] tr1 = clippedTriangles[0];
 					// Project View space -> 2D
-					double[] pa = multiply(camera.getProjectionMatrix(), new double[]{tr1[0].getX(), tr1[0].getY(), tr1[0].getZ(), 1});
-					double[] pb = multiply(camera.getProjectionMatrix(), new double[]{tr1[1].getX(), tr1[1].getY(), tr1[1].getZ(), 1});
-					double[] pc = multiply(camera.getProjectionMatrix(), new double[]{tr1[2].getX(), tr1[2].getY(), tr1[2].getZ(), 1});
-					setupTriangle(i, pa, pb, pc, fOut[0], fOut[1], fOut[2]);
+					double[][] view1 = new double[][]{{tr1[0].getX(), tr1[0].getY(), tr1[0].getZ(), 1}, {tr1[1].getX(), tr1[1].getY(), tr1[1].getZ(), 1}, {tr1[2].getX(), tr1[2].getY(), tr1[2].getZ(), 1}};
+					double[] pa = multiply(camera.getProjectionMatrix(), view1[0]);
+					double[] pb = multiply(camera.getProjectionMatrix(), view1[1]);
+					double[] pc = multiply(camera.getProjectionMatrix(), view1[2]);
+					setupTriangle(i, pa, pb, pc, fOut[0], fOut[1], fOut[2], view1);
 					if (clippedTriangles.length == 2){
 						Point3D[] tr2 = clippedTriangles[1];
-						double[] a = multiply(camera.getProjectionMatrix(), new double[]{tr2[0].getX(), tr2[0].getY(), tr2[0].getZ(), 1});
-						double[] b = multiply(camera.getProjectionMatrix(), new double[]{tr2[1].getX(), tr2[1].getY(), tr2[1].getZ(), 1});
-						double[] c = multiply(camera.getProjectionMatrix(), new double[]{tr2[2].getX(), tr2[2].getY(), tr2[2].getZ(), 1});
-						setupTriangle(i, a, b, c, secOut[0], secOut[1], secOut[2]);
+						double[][] view2 = new double[][]{{tr2[0].getX(), tr2[0].getY(), tr2[0].getZ(), 1}, {tr2[1].getX(), tr2[1].getY(), tr2[1].getZ(), 1}, {tr2[2].getX(), tr2[2].getY(), tr2[2].getZ(), 1}};
+						double[] a = multiply(camera.getProjectionMatrix(), view2[0]);
+						double[] b = multiply(camera.getProjectionMatrix(), view2[1]);
+						double[] c = multiply(camera.getProjectionMatrix(), view2[2]);
+						setupTriangle(i, a, b, c, secOut[0], secOut[1], secOut[2], view2);
 					}
 				}
 			}
@@ -387,7 +411,7 @@ public class Mesh{
 		}
 	}
 
-	private void setupTriangle(int i, double[] p1, double[] p2, double[] p3, Point2D t1, Point2D t2, Point2D t3){
+	private void setupTriangle(int i, double[] p1, double[] p2, double[] p3, Point2D t1, Point2D t2, Point2D t3, double[][] viewSpace){
 		// Scale
 		double px1 = p1[0]/(p1[3] == 0 ? 1 : p1[3]);
 		double py1 = p1[1]/(p1[3] == 0 ? 1 : p1[3]);
@@ -432,7 +456,7 @@ public class Mesh{
 		Point3D tr3 = this.trianglePoints[i][2];
 
 		ProjectedTriangle projectedTriangle = new ProjectedTriangle(new double[]{px1, py1, 1/p1[3]}, new double[]{px2, py2, 1/p2[3]}, new double[]{px3, py3, 1/p3[3]},
-																	t1, t2, t3, c1, c2, c3, image, n1, n2, n3, tr1, tr2, tr3);
+																	t1, t2, t3, c1, c2, c3, image, n1, n2, n3, tr1, tr2, tr3, viewSpace[0], viewSpace[1], viewSpace[2]);
 		projectedTriangle.showLines = this.showLines;
 		this.projectedTriangles.add(projectedTriangle);
 	}
@@ -727,7 +751,7 @@ public class Mesh{
 						if (directUpdate){
 							gc.getPixelWriter().setColor(j, i, finalColor);
 						}
-						if (!directUpdate || col_a == 1)
+						if (!directUpdate || col_a == 1){
 							canvas[j][i] = finalColor;
 						}
 					}
@@ -823,7 +847,7 @@ public class Mesh{
 						if (directUpdate){
 							gc.getPixelWriter().setColor(j, i, finalColor);
 						}
-						if (!directUpdate || col_a == 1)
+						if (!directUpdate || col_a == 1){
 							canvas[j][i] = finalColor;
 						}
 					}
