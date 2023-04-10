@@ -350,10 +350,10 @@ public class Mesh{
 				continue;
 			}*/
 		
-			Point3D normal = this.normals[i][0]; 
-
+			Point3D normal = this.normals[i][0];
 			if (normal == null){
 				normal = point2.subtract(point1).crossProduct(point3.subtract(point1));
+				normal = normal.normalize();
 				this.normals[i][0] = normal;
 				this.normals[i][1] = normal;
 				this.normals[i][2] = normal;
@@ -462,6 +462,15 @@ public class Mesh{
 																	t1, t2, t3, c1, c2, c3, image, n1, n2, n3, tr1, tr2, tr3, viewSpace[0], viewSpace[1], viewSpace[2]);
 		projectedTriangle.showLines = this.showLines;
 		this.projectedTriangles.add(projectedTriangle);
+	}
+	
+	private static Color mixColors(Color color1, Color color2){
+		double alpha1 = color1.getOpacity();
+		double alpha2 = color2.getOpacity();
+		double red = color1.getRed()*alpha1+color2.getRed()*alpha2*(1.0-alpha1);
+		double green = color1.getGreen()*alpha1+color2.getGreen()*alpha2*(1.0-alpha1);
+		double blue = color1.getBlue()*alpha1+color2.getBlue()*alpha2*(1.0-alpha1);
+		return Color.color(red, green, blue, 1.0-(1.0-alpha1)*(1.0-alpha2));
 	}
 	
 	public static void render(List<ProjectedTriangle> projectedTriangles, Camera camera, List<Light> lights, GraphicsContext gc, boolean directUpdate){
@@ -733,7 +742,7 @@ public class Mesh{
 						Color backColor = canvas[j][i];
 						
 						// Transparency
-						if (col_a < 1) color = Color.color(Math.min(1, backColor.getRed()+col_r*(1-col_a)), Math.min(1, backColor.getGreen()+col_g*(1-col_a)), Math.min(1, backColor.getBlue()+col_b*(1-col_a)));
+						color = mixColors(color, backColor);
 						
 						if (SHADOWS){
 							for (Light light : lights){
@@ -829,8 +838,8 @@ public class Mesh{
 						Color backColor = canvas[j][i];
 						
 						// Transparency
-						if (col_a < 1) color = Color.color(Math.min(1, backColor.getRed()+col_r*(1-col_a)), Math.min(1, backColor.getGreen()+col_g*(1-col_a)), Math.min(1, backColor.getBlue()+col_b*(1-col_a)));
-						
+						color = mixColors(color, backColor);
+
 						if (SHADOWS){
 							for (Light light : lights){
 								Camera cam2 = light.getCamera();
@@ -993,7 +1002,7 @@ public class Mesh{
 						
 						// Transparency
 						double alpha = color.getOpacity();
-						if (alpha < 1) color = Color.color(Math.min(1, backColor.getRed()+color.getRed()*(1-color.getOpacity())), Math.min(1, backColor.getGreen()+color.getGreen()*(1-color.getOpacity())), Math.min(1, backColor.getBlue()+color.getBlue()*(1-color.getOpacity())));
+						color = mixColors(color, backColor);
 						
 						if (SHADOWS){
 							for (Light light : lights){
@@ -1081,8 +1090,8 @@ public class Mesh{
 						
 						// Transparency
 						double alpha = color.getOpacity();
-						if (alpha < 1) color = Color.color(Math.min(1, backColor.getRed()+color.getRed()*(1-color.getOpacity())), Math.min(1, backColor.getGreen()+color.getGreen()*(1-color.getOpacity())), Math.min(1, backColor.getBlue()+color.getBlue()*(1-color.getOpacity())));
-
+						color = mixColors(color, backColor);
+						
 						if (SHADOWS){
 							for (Light light : lights){
 								Camera cam2 = light.getCamera();
