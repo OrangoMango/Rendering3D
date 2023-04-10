@@ -24,7 +24,7 @@ public class MainApplication extends Application{
 	private static final int HEIGHT = 180;
 	private static final int CHUNKS = 3;
 
-	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "flower_red", "wood_log", "leaves", "cobblestone", "sand", "glass"};
+	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "flower_red", "wood_log", "water", "cobblestone", "bricks", "glass"};
 	private int currentBlock = 0;
 	private boolean loadChunks = true;
 	
@@ -43,7 +43,7 @@ public class MainApplication extends Application{
 		//Engine3D.LIGHT_AVAILABLE = false;
 		
 		World world = new World((int)System.currentTimeMillis());
-		world.superFlat = true;
+		//world.superFlat = true;
 		ChunkManager chunkManager = new ChunkManager(world, player);
 		/*final int worldChunks = 8;
 		for (int i = 0; i < worldChunks; i++){

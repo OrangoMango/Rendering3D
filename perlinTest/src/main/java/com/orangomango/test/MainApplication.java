@@ -74,6 +74,7 @@ public class MainApplication extends Application{
 				float n = (noise.noise(i/blockSize*freq, 0, j/blockSize*freq)+1)/2; // air column 0->black
 				float n2 = (noise.noise(i/blockSize*0.05f, 0, j/blockSize*0.05f)+1)/2;
 				Color color = n2 <= 0.4 ? Color.YELLOW : Color.color(n, n, n);
+				if (n >= 0.6) color = Color.BLUE;
 				for (int x = i; x < i+blockSize; x++){
 					for (int y = j; y < j+blockSize; y++){
 						gc.getPixelWriter().setColor(x, y, color);

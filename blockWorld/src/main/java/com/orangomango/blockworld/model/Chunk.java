@@ -11,6 +11,7 @@ import com.orangomango.rendering3d.model.MeshGroup;
 public class Chunk{	
 	public static final int CHUNK_SIZE = 4;
 	public static final int HEIGHT_LIMIT = 2;
+	public static final int WATER_HEIGHT = HEIGHT_LIMIT*CHUNK_SIZE+7;
 	
 	private Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 	private int x, y, z;
@@ -37,7 +38,7 @@ public class Chunk{
 						float n = (noise.noise((i+this.x*CHUNK_SIZE)*frequency, 0, (k+this.z*CHUNK_SIZE)*frequency)+1)/2;
 						float b = (noise.noise((i+this.x*CHUNK_SIZE)*biomeFreq, 0, (k+this.z*CHUNK_SIZE)*biomeFreq)+1)/2;
 						// TODO Replace 16 with CHUNK_SIZE
-						int h = Math.round(n*(16-1))+16*HEIGHT_LIMIT; // air column
+						int h = Math.round(n*(16-1))+CHUNK_SIZE*HEIGHT_LIMIT; // air column
 						if (world.superFlat) h = 16*HEIGHT_LIMIT+1;
 						int pos = this.y*CHUNK_SIZE+j;
 						if (pos >= h){
@@ -57,8 +58,8 @@ public class Chunk{
 				for (int k = 0; k < CHUNK_SIZE; k++){ // y
 					if (this.blocks[i][k][j] == null) h++;
 				}
-				if (h > 0 && h < CHUNK_SIZE){
-					if (random.nextInt(1000) < 7){
+				if (h > 0 && h < CHUNK_SIZE && h-1+this.y*CHUNK_SIZE < WATER_HEIGHT){
+					if (random.nextInt(1000) < 7 && !this.blocks[i][h][j].getType().equals("sand") && !this.blocks[i][h][j].getType().equals("water")){
 						int treeHeight = 5;
 						for (int k = 0; k < treeHeight; k++){
 							setBlock(new Block(this, i, h-1-k, j, "wood_log"), i, h-1-k, j);
@@ -78,8 +79,25 @@ public class Chunk{
 							}
 						}
 						setBlock(new Block(this, i, h-1-treeHeight, j, "leaves"), i, h-1-treeHeight, j);
-					} else if (random.nextInt(1000) < 8){
-						setBlock(new Block(this, i, h-1, j, "flower_"+(random.nextBoolean() ? "red" : "yellow")), i, h-1, j);
+					} else if (random.nextInt(1000) < 12){
+						String flowerType = "flower_"+(random.nextBoolean() ? "red" : "yellow");
+						if (this.blocks[i][h][j].getType().equals("sand")){
+							flowerType = "bush";
+						}
+						setBlock(new Block(this, i, h-1, j, flowerType), i, h-1, j);
+					}
+				}
+			}
+		}
+		
+		// Water generation
+		for (int i = 0; i < CHUNK_SIZE; i++){ // x
+			for (int j = 0; j < CHUNK_SIZE; j++){ // z
+				for (int k = 0; k < CHUNK_SIZE; k++){ // y
+					if (this.blocks[i][k][j] == null && k+this.y*CHUNK_SIZE >= WATER_HEIGHT){
+						Block waterBlock = new Block(this, i, k, j, "water");
+						if (waterBlock.getY() == WATER_HEIGHT) waterBlock.setYOffset(0.2);
+						setBlock(waterBlock, i, k, j);
 					}
 				}
 			}
@@ -102,6 +120,7 @@ public class Chunk{
 						this.blocks[i][j][k] = null;
 					} else {
 						this.blocks[i][j][k] = new Block(this, i, j, k, atlas.getBlockType(id));
+						if (this.blocks[i][j][k].getType().equals("water") && this.blocks[i][j][k].getY() == WATER_HEIGHT) this.blocks[i][j][k].setYOffset(0.2);
 					}
 				}
 			}

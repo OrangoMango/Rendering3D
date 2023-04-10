@@ -354,7 +354,6 @@ public class Mesh{
 
 			if (normal == null){
 				normal = point2.subtract(point1).crossProduct(point3.subtract(point1));
-				normal.normalize();
 				this.normals[i][0] = normal;
 				this.normals[i][1] = normal;
 				this.normals[i][2] = normal;

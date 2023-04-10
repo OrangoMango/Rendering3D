@@ -14,6 +14,7 @@ public class Block{
 	private int id;
 	private boolean transparent;
 	private boolean sprite;
+	private double yOffset;
 
 	private static Atlas atlas = new Atlas("/atlas.json");
 	
@@ -35,37 +36,44 @@ public class Block{
 	public boolean isTransparent(){
 		return this.transparent;
 	}
+	
+	public void setYOffset(double value){
+		this.yOffset = value;
+	}
 
+	/*
+	 * glass can "connect" as it's forced to the hiding process
+	 */
 	public void setupFaces(){
 		if (this.sprite) return;
 		mesh.clearHiddenFaces();
 		Block block = this.chunk.getWorld().getBlockAt(this.x+1, this.y, this.z);
-		if (block != null && (!block.isTransparent() || this.transparent)){
+		if (block != null && (!block.isTransparent() || this.type.equals("glass"))){
 			mesh.addHiddenFace(2);
 			mesh.addHiddenFace(3);
 		}
 		block = this.chunk.getWorld().getBlockAt(this.x, this.y+1, this.z);
-		if (block != null && (!block.isTransparent() || this.transparent)){
+		if (block != null && (!block.isTransparent() || this.type.equals("glass"))){
 			mesh.addHiddenFace(8);
 			mesh.addHiddenFace(9);
 		}
 		block = this.chunk.getWorld().getBlockAt(this.x, this.y, this.z+1);
-		if (block != null && (!block.isTransparent() || this.transparent)){
+		if (block != null && (!block.isTransparent() || this.type.equals("glass"))){
 			mesh.addHiddenFace(4);
 			mesh.addHiddenFace(5);
 		}
 		block = this.chunk.getWorld().getBlockAt(this.x-1, this.y, this.z);
-		if (block != null && (!block.isTransparent() || this.transparent)){
+		if (block != null && (!block.isTransparent() || this.type.equals("glass"))){
 			mesh.addHiddenFace(6);
 			mesh.addHiddenFace(7);
 		}
 		block = this.chunk.getWorld().getBlockAt(this.x, this.y-1, this.z);
-		if (block != null && (!block.isTransparent() || this.transparent)){
+		if (block != null && (!block.isTransparent() || this.type.equals("glass"))){
 			mesh.addHiddenFace(10);
 			mesh.addHiddenFace(11);
 		}
 		block = this.chunk.getWorld().getBlockAt(this.x, this.y, this.z-1);
-		if (block != null && (!block.isTransparent() || this.transparent)){
+		if (block != null && (!block.isTransparent() || this.type.equals("glass"))){
 			mesh.addHiddenFace(0);
 			mesh.addHiddenFace(1);
 		}
@@ -82,9 +90,9 @@ public class Block{
 		if (this.mesh != null) return this.mesh;
 		if (this.sprite){
 			this.mesh = new Mesh(atlas.getImages().get(this.type), new Point3D[]{
-				new Point3D(this.x, this.y, this.z), new Point3D(this.x, 1+this.y, this.z), new Point3D(1+this.x, 1+this.y, this.z),
-				new Point3D(1+this.x, this.y, this.z), new Point3D(this.x, this.y, 1+this.z), new Point3D(this.x, 1+this.y, 1+this.z),
-				new Point3D(1+this.x, 1+this.y, 1+this.z), new Point3D(1+this.x, this.y, 1+this.z)}, new int[][]{
+				new Point3D(this.x, this.y+this.yOffset, this.z), new Point3D(this.x, 1+this.y, this.z), new Point3D(1+this.x, 1+this.y, this.z),
+				new Point3D(1+this.x, this.y+this.yOffset, this.z), new Point3D(this.x, this.y+this.yOffset, 1+this.z), new Point3D(this.x, 1+this.y, 1+this.z),
+				new Point3D(1+this.x, 1+this.y, 1+this.z), new Point3D(1+this.x, this.y+this.yOffset, 1+this.z)}, new int[][]{
 					{0, 1, 6}, {0, 6, 7}, {4, 5, 2}, {4, 2, 3}
 				}, new Point2D[]{
 					new Point2D(0, 1-1), new Point2D(0, 1-0), new Point2D(1, 1-0), new Point2D(1, 1-1)
@@ -94,9 +102,9 @@ public class Block{
 			this.mesh.showAllFaces(true);
 		} else {
 			this.mesh = new Mesh(atlas.getImages().get(this.type), new Point3D[]{
-				new Point3D(this.x, this.y, this.z), new Point3D(this.x, 1+this.y, this.z), new Point3D(1+this.x, 1+this.y, this.z),
-				new Point3D(1+this.x, this.y, this.z), new Point3D(this.x, this.y, 1+this.z), new Point3D(this.x, 1+this.y, 1+this.z),
-				new Point3D(1+this.x, 1+this.y, 1+this.z), new Point3D(1+this.x, this.y, 1+this.z)}, new int[][]{
+				new Point3D(this.x, this.y+this.yOffset, this.z), new Point3D(this.x, 1+this.y, this.z), new Point3D(1+this.x, 1+this.y, this.z),
+				new Point3D(1+this.x, this.y+this.yOffset, this.z), new Point3D(this.x, this.y+this.yOffset, 1+this.z), new Point3D(this.x, 1+this.y, 1+this.z),
+				new Point3D(1+this.x, 1+this.y, 1+this.z), new Point3D(1+this.x, this.y+this.yOffset, 1+this.z)}, new int[][]{
 					{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
 					{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
 					{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
@@ -129,6 +137,10 @@ public class Block{
 	
 	public int getZ(){
 		return this.z;
+	}
+	
+	public String getType(){
+		return this.type;
 	}
 
 	@Override

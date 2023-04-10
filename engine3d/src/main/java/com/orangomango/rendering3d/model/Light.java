@@ -70,10 +70,10 @@ public class Light{
 			double nx = Math.abs(normal.getX());
 			double ny = Math.abs(normal.getY());
 			double nz = Math.abs(normal.getZ());
-			if (nx == 1) factor = 0.4;
-			else if (ny == 1) factor = 1;
-			else if (nz == 1) factor = 0.7;
-			else System.out.println(normal);
+			if (nx != 0) factor = 0.4;
+			else if (ny != 0) factor = 1;
+			else if (nz != 0) factor = 0.7;
+			else System.out.println("Normal: "+normal);
 		} else {
 			factor = normal.dotProduct(point.subtract(getPosition()).normalize());
 			if (factor < -1) factor = 1;
