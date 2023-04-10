@@ -34,7 +34,7 @@ public class Mesh{
 	public boolean wireframe = false;
 	private List<Integer> hiddenTriangles = new ArrayList<>();
 	public Predicate<Camera> skipCondition;
-	private boolean transparent;
+	private boolean transparent, showAll;
 	
 	public static class ProjectedTriangle{
 		public double[] point1, point2, point3;
@@ -105,6 +105,10 @@ public class Mesh{
 	
 	public void setTransparentProcessing(boolean t){
 		this.transparent = t;
+	}
+	
+	public void showAllFaces(boolean v){
+		this.showAll = v;
 	}
 	
 	public boolean isTransparent(){
@@ -362,7 +366,7 @@ public class Mesh{
 				this.cache.put(camera, proj);
 			}
 			
-			if (dot < 0 || this.transparent){
+			if (dot < 0 || this.showAll){
 				// Project 3D -> View space
 				if (proj[i][0] == null){
 					proj[i][0] = point1Evaluated == null ? multiply(cam, p1) : point1Evaluated;
@@ -726,7 +730,6 @@ public class Mesh{
 					col_l = (1-t)*col_sl+t*col_el;
 					
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= col_w){
-						camera.depthBuffer[j][i] = col_w;
 						Color color = Color.color(col_r, col_g, col_b);
 						Color backColor = canvas[j][i];
 						
@@ -752,6 +755,7 @@ public class Mesh{
 							gc.getPixelWriter().setColor(j, i, finalColor);
 						}
 						if (!directUpdate || col_a == 1){
+							camera.depthBuffer[j][i] = col_w;
 							canvas[j][i] = finalColor;
 						}
 					}
@@ -822,7 +826,6 @@ public class Mesh{
 					col_l = (1-t)*col_sl+t*col_el;
 					
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= col_w){
-						camera.depthBuffer[j][i] = col_w;
 						Color color = Color.color(col_r, col_g, col_b);
 						Color backColor = canvas[j][i];
 						
@@ -848,6 +851,7 @@ public class Mesh{
 							gc.getPixelWriter().setColor(j, i, finalColor);
 						}
 						if (!directUpdate || col_a == 1){
+							camera.depthBuffer[j][i] = col_w;
 							canvas[j][i] = finalColor;
 						}
 					}
@@ -985,7 +989,6 @@ public class Mesh{
 					int pix_y = (int)(tex_v/tex_w*height);
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
-						camera.depthBuffer[j][i] = tex_w;
 						Color color = reader.getColor(Math.min(15, pix_x), Math.min(15, pix_y));
 						Color backColor = canvas[j][i];
 						
@@ -1012,6 +1015,7 @@ public class Mesh{
 							gc.getPixelWriter().setColor(j, i, finalColor);
 						}
 						if (!directUpdate || alpha == 1){
+							camera.depthBuffer[j][i] = tex_w;
 							canvas[j][i] = finalColor;
 						}
 					}
@@ -1073,7 +1077,6 @@ public class Mesh{
 					int pix_y = (int)(tex_v/tex_w*height);
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
-						camera.depthBuffer[j][i] = tex_w;
 						Color color = reader.getColor(Math.min(15, pix_x), Math.min(15, pix_y));
 						Color backColor = canvas[j][i];
 						
@@ -1100,6 +1103,7 @@ public class Mesh{
 							gc.getPixelWriter().setColor(j, i, finalColor);
 						}
 						if (!directUpdate || alpha == 1){
+							camera.depthBuffer[j][i] = tex_w;
 							canvas[j][i] = finalColor;
 						}
 					}

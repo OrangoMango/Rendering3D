@@ -9,7 +9,7 @@ import com.orangomango.rendering3d.model.Mesh;
 import com.orangomango.rendering3d.model.MeshGroup;
 
 public class Chunk{	
-	public static final int CHUNK_SIZE = 8;
+	public static final int CHUNK_SIZE = 4;
 	public static final int HEIGHT_LIMIT = 2;
 	
 	private Block[][][] blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
@@ -78,6 +78,8 @@ public class Chunk{
 							}
 						}
 						setBlock(new Block(this, i, h-1-treeHeight, j, "leaves"), i, h-1-treeHeight, j);
+					} else if (random.nextInt(1000) < 8){
+						setBlock(new Block(this, i, h-1, j, "flower_"+(random.nextBoolean() ? "red" : "yellow")), i, h-1, j);
 					}
 				}
 			}

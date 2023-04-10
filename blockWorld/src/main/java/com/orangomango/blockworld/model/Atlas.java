@@ -57,6 +57,10 @@ public class Atlas{
 		return this.json.getJSONObject("blocks").getJSONObject(blockType).getBoolean("transparent");
 	}
 	
+	public boolean isSprite(String blockType){
+		return this.json.getJSONObject("blocks").getJSONObject(blockType).optBoolean("sprite");
+	}
+	
 	public String getBlockType(int id){
 		return this.blockIds.get(id);
 	}

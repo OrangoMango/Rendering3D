@@ -12,7 +12,7 @@ public class ChunkManager{
 	private Player player;
 	private World world;
 	private Engine3D engine;
-	public static final double RENDER_DISTANCE = 3;
+	public static final double RENDER_DISTANCE = 3.5;
 	
 	public ChunkManager(World world, Player player){
 		this.player = player;

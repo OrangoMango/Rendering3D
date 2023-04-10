@@ -24,7 +24,7 @@ public class MainApplication extends Application{
 	private static final int HEIGHT = 180;
 	private static final int CHUNKS = 3;
 
-	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "stone", "wood_log", "leaves", "cobblestone", "sand", "glass"};
+	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "flower_red", "wood_log", "leaves", "cobblestone", "sand", "glass"};
 	private int currentBlock = 0;
 	private boolean loadChunks = true;
 	
@@ -85,6 +85,10 @@ public class MainApplication extends Application{
 				boolean chunkUpdate = false;
 				if (e.getButton() == MouseButton.PRIMARY){
 					world.removeBlockAt(block.getX(), block.getY(), block.getZ());
+					int chunkX = block.getX() / Chunk.CHUNK_SIZE;
+					int chunkY = block.getY() / Chunk.CHUNK_SIZE;
+					int chunkZ = block.getZ() / Chunk.CHUNK_SIZE;
+					chunkManager.saveChunkToFile(world.getChunkAt(chunkX, chunkY, chunkZ));
 					chunkUpdate = true;
 				} else if (e.getButton() == MouseButton.SECONDARY && lastX >= 0 && lastY >= 0 && lastZ >= 0){
 					world.setBlockAt(lastX, lastY, lastZ, inventoryBlocks[this.currentBlock]);
@@ -163,7 +167,7 @@ public class MainApplication extends Application{
 					boolean updated = false;
 					for (int i = -CHUNKS/2; i < -CHUNKS/2+CHUNKS; i++){
 						for (int j = -CHUNKS/2; j < -CHUNKS/2+CHUNKS; j++){
-							for (int k = -1; k < 2; k++){ // y-chunks
+							for (int k = -1; k < 3; k++){ // y-chunks
 								if (chunkX+i < 0 || chunkY+k < 0 || chunkZ+j < 0) continue;
 								if (world.getChunkAt(chunkX+i, chunkY+k, chunkZ+j) == null){
 									if ((new Point3D(chunkX, chunkY, chunkZ)).distance(new Point3D(chunkX+i, chunkY+k, chunkZ+j)) <= ChunkManager.RENDER_DISTANCE){
