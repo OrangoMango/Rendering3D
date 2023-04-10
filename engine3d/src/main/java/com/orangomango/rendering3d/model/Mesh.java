@@ -437,16 +437,12 @@ public class Mesh{
 		this.projectedTriangles.add(projectedTriangle);
 	}
 	
-	public void render(Camera camera, List<Light> lights, GraphicsContext gc, boolean directUpdate){
-		if (this.showLines){
-			gc.setStroke(Color.RED);
-			gc.setLineWidth(1);
-		}
-		render(projectedTriangles, camera, lights, gc, directUpdate);
-	}
-	
 	public static void render(List<ProjectedTriangle> projectedTriangles, Camera camera, List<Light> lights, GraphicsContext gc, boolean directUpdate){
 		for (ProjectedTriangle pt : projectedTriangles){
+			if (pt.showLines){
+				gc.setStroke(Color.RED);
+				gc.setLineWidth(1);
+			}
 			makeRendering(gc, camera, lights, pt, directUpdate);
 		}
 	}
@@ -717,8 +713,8 @@ public class Mesh{
 							for (Light light : lights){
 								Camera cam2 = light.getCamera();
 								double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
-								int index_x = (int)Math.round(shadow[0]);
-								int index_y = (int)Math.round(shadow[1]);
+								int index_x = (int)shadow[0];
+								int index_y = (int)shadow[1];
 								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
 									double depth = cam2.depthBuffer[index_x][index_y];
 									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
@@ -727,10 +723,12 @@ public class Mesh{
 								}
 							}
 						}
+						Color finalColor = col_a < 1 ? color : Light.getLight(color, Math.max(col_l, 0));			
 						if (directUpdate){
-							gc.getPixelWriter().setColor(j, i, color);
-						} else {
-							canvas[j][i] = Light.getLight(color, Math.max(col_l, 0));
+							gc.getPixelWriter().setColor(j, i, finalColor);
+						}
+						if (!directUpdate || col_a == 1)
+							canvas[j][i] = finalColor;
 						}
 					}
 
@@ -811,8 +809,8 @@ public class Mesh{
 							for (Light light : lights){
 								Camera cam2 = light.getCamera();
 								double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
-								int index_x = (int)Math.round(shadow[0]);
-								int index_y = (int)Math.round(shadow[1]);
+								int index_x = (int)shadow[0];
+								int index_y = (int)shadow[1];
 								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
 									double depth = cam2.depthBuffer[index_x][index_y];
 									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
@@ -821,10 +819,12 @@ public class Mesh{
 								}
 							}
 						}
+						Color finalColor = col_a < 1 ? color : Light.getLight(color, Math.max(col_l, 0));			
 						if (directUpdate){
-							gc.getPixelWriter().setColor(j, i, color);
-						} else {
-							canvas[j][i] = Light.getLight(color, Math.max(col_l, 0));
+							gc.getPixelWriter().setColor(j, i, finalColor);
+						}
+						if (!directUpdate || col_a == 1)
+							canvas[j][i] = finalColor;
 						}
 					}
 
@@ -966,7 +966,8 @@ public class Mesh{
 						Color backColor = canvas[j][i];
 						
 						// Transparency
-						if (color.getOpacity() < 1) color = Color.color(Math.min(1, backColor.getRed()+color.getRed()*(1-color.getOpacity())), Math.min(1, backColor.getGreen()+color.getGreen()*(1-color.getOpacity())), Math.min(1, backColor.getBlue()+color.getBlue()*(1-color.getOpacity())));
+						double alpha = color.getOpacity();
+						if (alpha < 1) color = Color.color(Math.min(1, backColor.getRed()+color.getRed()*(1-color.getOpacity())), Math.min(1, backColor.getGreen()+color.getGreen()*(1-color.getOpacity())), Math.min(1, backColor.getBlue()+color.getBlue()*(1-color.getOpacity())));
 						
 						if (SHADOWS){
 							for (Light light : lights){
@@ -982,10 +983,12 @@ public class Mesh{
 								}
 							}
 						}
+						Color finalColor = alpha < 1 ? color : Light.getLight(color, Math.max(tex_l, 0));		
 						if (directUpdate){
-							gc.getPixelWriter().setColor(j, i, color);
-						} else {
-							canvas[j][i] = Light.getLight(color, Math.max(tex_l, 0));
+							gc.getPixelWriter().setColor(j, i, finalColor);
+						}
+						if (!directUpdate || alpha == 1){
+							canvas[j][i] = finalColor;
 						}
 					}
 					
@@ -1051,7 +1054,8 @@ public class Mesh{
 						Color backColor = canvas[j][i];
 						
 						// Transparency
-						if (color.getOpacity() < 1) color = Color.color(Math.min(1, backColor.getRed()+color.getRed()*(1-color.getOpacity())), Math.min(1, backColor.getGreen()+color.getGreen()*(1-color.getOpacity())), Math.min(1, backColor.getBlue()+color.getBlue()*(1-color.getOpacity())));
+						double alpha = color.getOpacity();
+						if (alpha < 1) color = Color.color(Math.min(1, backColor.getRed()+color.getRed()*(1-color.getOpacity())), Math.min(1, backColor.getGreen()+color.getGreen()*(1-color.getOpacity())), Math.min(1, backColor.getBlue()+color.getBlue()*(1-color.getOpacity())));
 
 						if (SHADOWS){
 							for (Light light : lights){
@@ -1067,10 +1071,12 @@ public class Mesh{
 								}
 							}
 						}
+						Color finalColor = alpha < 1 ? color : Light.getLight(color, Math.max(tex_l, 0));		
 						if (directUpdate){
-							gc.getPixelWriter().setColor(j, i, color);
-						} else {
-							canvas[j][i] = Light.getLight(color, Math.max(tex_l, 0));
+							gc.getPixelWriter().setColor(j, i, finalColor);
+						}
+						if (!directUpdate || alpha == 1){
+							canvas[j][i] = finalColor;
 						}
 					}
 					

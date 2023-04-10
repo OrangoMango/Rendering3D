@@ -208,7 +208,7 @@ public class Engine3D{
 					for (Mesh object : mg.getMeshes()){
 						if (stateChanged) object.cache.remove(lightCamera);
 						object.evaluate(lightCamera);
-						object.render(lightCamera, null, null, false);
+						Mesh.render(object.getProjectedTriangles(), lightCamera, null, null, false);
 					}
 				}
 			}
@@ -235,7 +235,7 @@ public class Engine3D{
 				if (object.isTransparent()){
 					transparentMeshes.addAll(object.getProjectedTriangles());
 				} else {
-					object.render(this.camera, sceneLights, gc, false);
+					Mesh.render(object.getProjectedTriangles(), this.camera, sceneLights, gc, false);
 				}
 			}
 		}
