@@ -758,7 +758,7 @@ public class Mesh{
 								}
 							}
 						}
-						Color finalColor = col_a < 1 ? color : Light.getLight(color, Math.max(col_l, 0));			
+						Color finalColor = col_a == 0 ? color : Light.getLight(color, Math.max(col_l, 0));			
 						if (directUpdate){
 							gc.getPixelWriter().setColor(j, i, finalColor);
 						}
@@ -854,7 +854,7 @@ public class Mesh{
 								}
 							}
 						}
-						Color finalColor = col_a < 1 ? color : Light.getLight(color, Math.max(col_l, 0));			
+						Color finalColor = col_a == 0 ? color : Light.getLight(color, Math.max(col_l, 0));			
 						if (directUpdate){
 							gc.getPixelWriter().setColor(j, i, finalColor);
 						}
@@ -997,7 +997,7 @@ public class Mesh{
 					int pix_y = (int)(tex_v/tex_w*height);
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
-						Color color = reader.getColor(Math.min(15, pix_x), Math.min(15, pix_y));
+						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
 						Color backColor = canvas[j][i];
 						
 						// Transparency
@@ -1018,7 +1018,7 @@ public class Mesh{
 								}
 							}
 						}
-						Color finalColor = alpha < 1 ? color : Light.getLight(color, Math.max(tex_l, 0));		
+						Color finalColor = alpha == 0 ? color : Light.getLight(color, Math.max(tex_l, 0));		
 						if (directUpdate){
 							gc.getPixelWriter().setColor(j, i, finalColor);
 						}
@@ -1085,7 +1085,7 @@ public class Mesh{
 					int pix_y = (int)(tex_v/tex_w*height);
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
-						Color color = reader.getColor(Math.min(15, pix_x), Math.min(15, pix_y));
+						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
 						Color backColor = canvas[j][i];
 						
 						// Transparency
@@ -1106,7 +1106,7 @@ public class Mesh{
 								}
 							}
 						}
-						Color finalColor = alpha < 1 ? color : Light.getLight(color, Math.max(tex_l, 0));		
+						Color finalColor = alpha == 0 ? color : Light.getLight(color, Math.max(tex_l, 0));		
 						if (directUpdate){
 							gc.getPixelWriter().setColor(j, i, finalColor);
 						}

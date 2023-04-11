@@ -74,12 +74,12 @@ public class MainApplication extends Application{
 				int lY = (int)(player.getY()+i*stepY);
 				int lZ = (int)(player.getZ()+i*stepZ);
 				block = world.getBlockAt(lX, lY, lZ);
-				if (block == null || i == 0){
+				if (block == null || i == 0 || block.isLiquid()){
 					lastX = lX;
 					lastY = lY;
 					lastZ = lZ;
 				}
-				if (block != null) break;
+				if (block != null && !block.isLiquid()) break;
 			}
 			if (block != null){
 				boolean chunkUpdate = false;

@@ -15,6 +15,7 @@ public class Block{
 	private boolean transparent;
 	private boolean sprite;
 	private double yOffset;
+	private boolean liquid;
 	
 	public Block(Chunk chunk, int x, int y, int z, String type){
 		this.world = chunk.getWorld();
@@ -38,6 +39,7 @@ public class Block{
 		this.id = Chunk.atlas.getBlockId(this.type);
 		this.transparent = Chunk.atlas.isTransparent(this.type);
 		this.sprite = Chunk.atlas.isSprite(this.type);
+		this.liquid = Chunk.atlas.isLiquid(this.type);
 	}
 	
 	public int getId(){
@@ -46,6 +48,10 @@ public class Block{
 	
 	public boolean isTransparent(){
 		return this.transparent;
+	}
+	
+	public boolean isLiquid(){
+		return this.liquid;
 	}
 	
 	public void setYOffset(double value){
@@ -59,32 +65,32 @@ public class Block{
 		if (this.sprite) return;
 		mesh.clearHiddenFaces();
 		Block block = this.world.getBlockAt(this.x+1, this.y, this.z);
-		if (block != null && (!block.isTransparent() || Chunk.atlas.isForceHiding(this.type))){
+		if (block != null && (!block.isTransparent() || (Chunk.atlas.isForceHiding(this.type) && block.getType().equals(this.type)))){
 			mesh.addHiddenFace(2);
 			mesh.addHiddenFace(3);
 		}
 		block = this.world.getBlockAt(this.x, this.y+1, this.z);
-		if (block != null && (!block.isTransparent() || Chunk.atlas.isForceHiding(this.type))){
+		if (block != null && (!block.isTransparent() || (Chunk.atlas.isForceHiding(this.type) && block.getType().equals(this.type))) && block.yOffset == 0){
 			mesh.addHiddenFace(8);
 			mesh.addHiddenFace(9);
 		}
 		block = this.world.getBlockAt(this.x, this.y, this.z+1);
-		if (block != null && (!block.isTransparent() || Chunk.atlas.isForceHiding(this.type))){
+		if (block != null && (!block.isTransparent() || (Chunk.atlas.isForceHiding(this.type) && block.getType().equals(this.type)))){
 			mesh.addHiddenFace(4);
 			mesh.addHiddenFace(5);
 		}
 		block = this.world.getBlockAt(this.x-1, this.y, this.z);
-		if (block != null && (!block.isTransparent() || Chunk.atlas.isForceHiding(this.type))){
+		if (block != null && (!block.isTransparent() || (Chunk.atlas.isForceHiding(this.type) && block.getType().equals(this.type)))){
 			mesh.addHiddenFace(6);
 			mesh.addHiddenFace(7);
 		}
 		block = this.world.getBlockAt(this.x, this.y-1, this.z);
-		if (block != null && (!block.isTransparent() || Chunk.atlas.isForceHiding(this.type))){
+		if (block != null && (!block.isTransparent() || (Chunk.atlas.isForceHiding(this.type) && block.getType().equals(this.type))) && this.yOffset == 0){
 			mesh.addHiddenFace(10);
 			mesh.addHiddenFace(11);
 		}
 		block = this.world.getBlockAt(this.x, this.y, this.z-1);
-		if (block != null && (!block.isTransparent() || Chunk.atlas.isForceHiding(this.type))){
+		if (block != null && (!block.isTransparent() || (Chunk.atlas.isForceHiding(this.type) && block.getType().equals(this.type)))){
 			mesh.addHiddenFace(0);
 			mesh.addHiddenFace(1);
 		}
