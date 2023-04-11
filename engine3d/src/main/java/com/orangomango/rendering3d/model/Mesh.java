@@ -465,12 +465,11 @@ public class Mesh{
 	}
 	
 	private static Color mixColors(Color color1, Color color2){
-		double alpha1 = color1.getOpacity();
-		double alpha2 = color2.getOpacity();
-		double red = color1.getRed()*alpha1+color2.getRed()*alpha2*(1.0-alpha1);
-		double green = color1.getGreen()*alpha1+color2.getGreen()*alpha2*(1.0-alpha1);
-		double blue = color1.getBlue()*alpha1+color2.getBlue()*alpha2*(1.0-alpha1);
-		return Color.color(red, green, blue, 1.0-(1.0-alpha1)*(1.0-alpha2));
+		double alpha = color1.getOpacity()/1.0;
+		double red = color1.getRed()*alpha+color2.getRed()*(1.0-alpha);
+		double green = color1.getGreen()*alpha+color2.getGreen()*(1.0-alpha);
+		double blue = color1.getBlue()*alpha+color2.getBlue()*(1.0-alpha);
+		return Color.color(red, green, blue);
 	}
 	
 	public static void render(List<ProjectedTriangle> projectedTriangles, Camera camera, List<Light> lights, GraphicsContext gc, boolean directUpdate){
@@ -1024,8 +1023,8 @@ public class Mesh{
 						}
 						if (!directUpdate || alpha == 1){
 							camera.depthBuffer[j][i] = tex_w;
-							canvas[j][i] = finalColor;
 						}
+						canvas[j][i] = finalColor;
 					}
 					
 					t += tstep;
@@ -1112,8 +1111,8 @@ public class Mesh{
 						}
 						if (!directUpdate || alpha == 1){
 							camera.depthBuffer[j][i] = tex_w;
-							canvas[j][i] = finalColor;
 						}
+						canvas[j][i] = finalColor;
 					}
 					
 					t += tstep;

@@ -92,6 +92,6 @@ public class Light{
 			green = green * factor;
 			blue = blue * factor;
 		}
-		return Color.color(red, green, blue);
+		return Color.color(red, green, blue, color.getOpacity());
 	}
 }
