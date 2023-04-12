@@ -69,7 +69,7 @@ public class Mesh{
 		}
 		
 		public double getMeanZ(){
-			return (this.point1[2]+this.point2[2]+this.point3[2])/3;
+			return (this.view1[2]+this.view2[2]+this.view3[2])/3;
 		}
 	}
 	

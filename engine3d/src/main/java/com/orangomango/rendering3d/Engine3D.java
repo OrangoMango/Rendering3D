@@ -251,7 +251,7 @@ public class Engine3D{
 			}
 		}
 
-		transparentMeshes.sort((pt1, pt2) -> Double.compare(pt1.getMeanZ(), pt2.getMeanZ()));
+		transparentMeshes.sort((pt1, pt2) -> Double.compare(pt2.getMeanZ(), pt1.getMeanZ()));
 		Mesh.render(transparentMeshes, this.camera, sceneLights, gc, true);
 		
 		if (LIGHT_ROTATION){
