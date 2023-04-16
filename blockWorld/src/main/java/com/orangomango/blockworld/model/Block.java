@@ -106,7 +106,7 @@ public class Block{
 	public Mesh getMesh(){
 		if (this.mesh != null) return this.mesh;
 		if (this.sprite){
-			this.mesh = new Mesh(Chunk.atlas.getImages().get(this.type), new Point3D[]{
+			this.mesh = new Mesh(this.id, Chunk.atlas.getImages().get(this.type), new Point3D[]{
 				new Point3D(this.x, this.y+this.yOffset, this.z), new Point3D(this.x, 1+this.y, this.z), new Point3D(1+this.x, 1+this.y, this.z),
 				new Point3D(1+this.x, this.y+this.yOffset, this.z), new Point3D(this.x, this.y+this.yOffset, 1+this.z), new Point3D(this.x, 1+this.y, 1+this.z),
 				new Point3D(1+this.x, 1+this.y, 1+this.z), new Point3D(1+this.x, this.y+this.yOffset, 1+this.z)}, new int[][]{
@@ -118,7 +118,7 @@ public class Block{
 				}, Chunk.atlas.getBlockFaces().get(this.type), null, null, null);
 			this.mesh.showAllFaces(true);
 		} else {
-			this.mesh = new Mesh(Chunk.atlas.getImages().get(this.type), new Point3D[]{
+			this.mesh = new Mesh(this.id, Chunk.atlas.getImages().get(this.type), new Point3D[]{
 				new Point3D(this.x, this.y+this.yOffset, this.z), new Point3D(this.x, 1+this.y, this.z), new Point3D(1+this.x, 1+this.y, this.z),
 				new Point3D(1+this.x, this.y+this.yOffset, this.z), new Point3D(this.x, this.y+this.yOffset, 1+this.z), new Point3D(this.x, 1+this.y, 1+this.z),
 				new Point3D(1+this.x, 1+this.y, 1+this.z), new Point3D(1+this.x, this.y+this.yOffset, 1+this.z)}, new int[][]{

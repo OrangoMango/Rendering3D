@@ -74,21 +74,21 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(0, speed, 0), false);
 		
 		try {
-			Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05, null);
+			Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05, null, 0);
 			model.setRotation(Math.PI/2, 0, 0);
 			engine.getObjects().add(new MeshGroup(model));
-			//engine.getObjects().add(new MeshGroup(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane2.obj").toURI()), 0, 0.5, 0, 0.5, null)));
+			//engine.getObjects().add(new MeshGroup(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane2.obj").toURI()), 0, 0.5, 0, 0.5, null, 0)));
 			
-			/*Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/truck.obj").toURI()), 0, 0, 0, 0.05, null);
+			/*Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/truck.obj").toURI()), 0, 0, 0, 0.05, null, 0);
 			model.setRotation(Math.PI, 0, 0);
-			engine.getObjects().add(model);*/
+			engine.getObjects().add(new MeshGroup(model);*/
 			
-			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5, null);
+			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5, null, 0);
 			//engine.getObjects().add(new MeshGroup(model));
 			
-			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null);
+			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null, 0);
 			//model.setRotation(0, 0, Math.PI);
-			//engine.getObjects().add(model);
+			//engine.getObjects().add(new MeshGroup(model);
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}
