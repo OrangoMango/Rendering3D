@@ -55,8 +55,7 @@ public class Engine3D{
 	private Camera camera;
 	
 	private static Engine3D instance = null;
-	public static Color[][] canvas;
-	public static int[][] idCanvas;
+	public static Color[][] canvas, alphaCanvas;
 	
 	public Engine3D(Stage stage, int w, int h){
 		if (instance == null){
@@ -82,7 +81,7 @@ public class Engine3D{
 		counter.setDaemon(true);
 		counter.start();
 		canvas = new Color[this.width][this.height];
-		idCanvas = new int[this.width][this.height];
+		alphaCanvas = new Color[this.width][this.height];
 	}
 
 	public void setOnKey(KeyCode code, Runnable r, boolean singleClick){
@@ -151,8 +150,8 @@ public class Engine3D{
 		gc.clearRect(0, 0, width, height);
 		for (int i = 0; i < this.width; i++){
 			for (int j = 0; j < this.height; j++){
-				canvas[i][j] = Color.CYAN;
-				idCanvas[i][j] = -1;
+				this.canvas[i][j] = Color.CYAN;
+				this.alphaCanvas[i][j] = Color.CYAN;
 			}
 		}
 		gc.setFill(Color.CYAN);
@@ -198,7 +197,7 @@ public class Engine3D{
 			} else if (this.keys.getOrDefault(KeyCode.F6, false)){
 				SHADOWS = !SHADOWS;
 				System.out.println("F6");
-				this.keys.getOrDefault(KeyCode.F6, false);
+				this.keys.put(KeyCode.F6, false);
 			}
 		}
 

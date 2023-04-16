@@ -35,7 +35,6 @@ public class Mesh{
 	private List<Integer> hiddenTriangles = new ArrayList<>();
 	public Predicate<Camera> skipCondition;
 	private boolean transparent, showAll;
-	private int id;
 	
 	public static class ProjectedTriangle{
 		public double[] point1, point2, point3;
@@ -46,9 +45,8 @@ public class Mesh{
 		public Point3D n1, n2, n3;
 		public Point3D t1, t2, t3;
 		public double[] view1, view2, view3;
-		public int id;
 		
-		public ProjectedTriangle(int id, double[] p1, double[] p2, double[] p3, Point2D t1, Point2D t2, Point2D t3, Color c1, Color c2, Color c3, Image image, Point3D n1, Point3D n2, Point3D n3, Point3D tr1, Point3D tr2, Point3D tr3, double[] v1, double[] v2, double[] v3){
+		public ProjectedTriangle(double[] p1, double[] p2, double[] p3, Point2D t1, Point2D t2, Point2D t3, Color c1, Color c2, Color c3, Image image, Point3D n1, Point3D n2, Point3D n3, Point3D tr1, Point3D tr2, Point3D tr3, double[] v1, double[] v2, double[] v3){
 			this.point1 = p1;
 			this.point2 = p2;
 			this.point3 = p3;
@@ -68,7 +66,6 @@ public class Mesh{
 			this.view1 = v1;
 			this.view2 = v2;
 			this.view3 = v3;
-			this.id = id;
 		}
 		
 		public double getMeanZ(){
@@ -81,8 +78,7 @@ public class Mesh{
 	
 	public static double SHADOW_EPSILON = 0.001;
 	
-	public Mesh(int id, Image[] images, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, int[] facesImages, Color[] colors, Point3D[][] ns, Color[][] fcs){
-		this.id = id;
+	public Mesh(Image[] images, Point3D[] points, int[][] faces, Point2D[] textureCoords, int[][] vertexFaces, int[] facesImages, Color[] colors, Point3D[][] ns, Color[][] fcs){
 		this.images = images;
 		this.facesImages = facesImages;
 		this.points = points;
@@ -211,21 +207,21 @@ public class Mesh{
 			insideTexture[insideN++] = texCoords[0];
 		} else {
 			outside[outsideN] = t1;
-			outsideTexture[insideN++] = texCoords[0];
+			outsideTexture[outsideN++] = texCoords[0];
 		}
 		if (d2 >= 0){
 			inside[insideN] = t2;
 			insideTexture[insideN++] = texCoords[1];
 		} else {
 			outside[outsideN] = t2;
-			outsideTexture[insideN++] = texCoords[1];
+			outsideTexture[outsideN++] = texCoords[1];
 		}
 		if (d3 >= 0){
 			inside[insideN] = t3;
 			insideTexture[insideN++] = texCoords[2];
 		} else {
 			outside[outsideN] = t3;
-			outsideTexture[insideN++] = texCoords[2];
+			outsideTexture[outsideN++] = texCoords[2];
 		}
 		
 		if (insideN == 3){
@@ -260,19 +256,6 @@ public class Mesh{
 		}
 	}
 	
-	private double[] getEvaluatedView(Point3D aPoint){
-		for (ProjectedTriangle pt : this.projectedTriangles){
-			if (pt.t1 == aPoint){
-				return pt.view1;
-			} else if (pt.t2 == aPoint){
-				return pt.view2;
-			} else if (pt.t3 == aPoint){
-				return pt.view3;
-			}
-		}
-		return null;
-	}
-	
 	public void evaluate(Camera camera){
 		int i = 0;
 		this.projectedTriangles.clear();
@@ -288,11 +271,6 @@ public class Mesh{
 			}
 			
 			double[][] cam = camera.getViewMatrix();
-			
-			// Maybe some points were already evaluated
-			double[] point1Evaluated = getEvaluatedView(points[0]);
-			double[] point2Evaluated = getEvaluatedView(points[1]);
-			double[] point3Evaluated = getEvaluatedView(points[2]);
 			
 			// Apply transforms
 			double[] p1 = new double[]{points[0].getX(), points[0].getY(), points[0].getZ(), 1};
@@ -372,13 +350,13 @@ public class Mesh{
 			if (dot < 0 || this.showAll){
 				// Project 3D -> View space
 				if (proj[i][0] == null){
-					proj[i][0] = point1Evaluated == null ? multiply(cam, p1) : point1Evaluated;
+					proj[i][0] = multiply(cam, p1);
 				}
 				if (proj[i][1] == null){
-					proj[i][1] = point2Evaluated == null ? multiply(cam, p2) : point2Evaluated;
+					proj[i][1] = multiply(cam, p2);
 				}
 				if (proj[i][2] == null){
-					proj[i][2] = point3Evaluated == null ? multiply(cam, p3) : point3Evaluated;
+					proj[i][2] = multiply(cam, p3);
 				}
 				
 				Point2D[] secOut = new Point2D[3];
@@ -430,11 +408,9 @@ public class Mesh{
 		double pz2 = p2[2];
 		double pz3 = p3[2];
 
-		// TODO some triangles are not rendered but they should
 		double bound = 1;
 		if ((isOutside(px1, bound) && isOutside(px2, bound) && isOutside(px3, bound))
-				|| (isOutside(py1, bound) && isOutside(py2, bound) && isOutside(py3, bound))
-				|| (isOutside(pz1, bound) || isOutside(pz2, bound) || isOutside(pz3, bound))){
+				|| (isOutside(py1, bound) && isOutside(py2, bound) && isOutside(py3, bound))){
 			return;
 		}
 
@@ -462,7 +438,7 @@ public class Mesh{
 		Point3D tr2 = this.trianglePoints[i][1];
 		Point3D tr3 = this.trianglePoints[i][2];
 
-		ProjectedTriangle projectedTriangle = new ProjectedTriangle(this.id, new double[]{px1, py1, 1/p1[3]}, new double[]{px2, py2, 1/p2[3]}, new double[]{px3, py3, 1/p3[3]},
+		ProjectedTriangle projectedTriangle = new ProjectedTriangle(new double[]{px1, py1, 1/p1[3]}, new double[]{px2, py2, 1/p2[3]}, new double[]{px3, py3, 1/p3[3]},
 																	t1, t2, t3, c1, c2, c3, image, n1, n2, n3, tr1, tr2, tr3, viewSpace[0], viewSpace[1], viewSpace[2]);
 		projectedTriangle.showLines = this.showLines;
 		this.projectedTriangles.add(projectedTriangle);
@@ -744,13 +720,13 @@ public class Mesh{
 						Color color = Color.color(col_r, col_g, col_b);
 						Color backColor = canvas[j][i];
 						
-						if (col_a < 1 && pt.id == idCanvas[j][i]){
+						if (col_a < 1 && color.equals(alphaCanvas[j][i])){
 							t += tstep;
 							continue;
 						}
 						
 						// Transparency
-						idCanvas[j][i] = pt.id;
+						alphaCanvas[j][i] = color;
 						color = mixColors(color, backColor);
 						
 						if (SHADOWS){
@@ -846,13 +822,13 @@ public class Mesh{
 						Color color = Color.color(col_r, col_g, col_b);
 						Color backColor = canvas[j][i];
 						
-						if (col_a < 1 && pt.id == idCanvas[j][i]){
+						if (col_a < 1 && color.equals(alphaCanvas[j][i])){
 							t += tstep;
 							continue;
 						}
 						
 						// Transparency
-						idCanvas[j][i] = pt.id;
+						alphaCanvas[j][i] = color;
 						color = mixColors(color, backColor);
 
 						if (SHADOWS){
@@ -1016,13 +992,13 @@ public class Mesh{
 						Color backColor = canvas[j][i];
 						double alpha = color.getOpacity();
 						
-						if (alpha < 1 && pt.id == idCanvas[j][i]){
+						if (alpha < 1 && color.equals(alphaCanvas[j][i])){
 							t += tstep;
 							continue;
 						}
 						
 						// Transparency
-						idCanvas[j][i] = pt.id;
+						alphaCanvas[j][i] = color;
 						color = mixColors(color, backColor);
 						
 						if (SHADOWS){
@@ -1110,13 +1086,13 @@ public class Mesh{
 						Color backColor = canvas[j][i];
 						double alpha = color.getOpacity();
 						
-						if (alpha < 1 && pt.id == idCanvas[j][i]){
+						if (alpha < 1 && color.equals(alphaCanvas[j][i])){
 							t += tstep;
 							continue;
 						}
 						
 						// Transparency
-						idCanvas[j][i] = pt.id;
+						alphaCanvas[j][i] = color;
 						color = mixColors(color, backColor);
 						
 						if (SHADOWS){
@@ -1192,7 +1168,7 @@ public class Mesh{
 		}
 	}
 	
-	public static Mesh loadFromFile(File file, double x, double y, double z, double scale, String singleObject, int id){
+	public static Mesh loadFromFile(File file, double x, double y, double z, double scale, String singleObject){
 		Map<String, Color> mtllib = null;
 		Image image = null; //new Image(Mesh.class.getResourceAsStream("/truck_red.jpg"));
 		
@@ -1314,7 +1290,7 @@ public class Mesh{
 				vf[i] = textureFaces.get(i);
 			}
 			
-			return new Mesh(id, null, ps, fs, vc.length == 0 ? null : vc, vf.length == 0 ? null : vf, null, cs.length == 0 ? null : cs, ns.length == 0 ? null : ns, fcs.length == 0 ? null : fcs);
+			return new Mesh(null, ps, fs, vc.length == 0 ? null : vc, vf.length == 0 ? null : vf, null, cs.length == 0 ? null : cs, ns.length == 0 ? null : ns, fcs.length == 0 ? null : fcs);
 			
 		} catch (IOException ex){
 			ex.printStackTrace();

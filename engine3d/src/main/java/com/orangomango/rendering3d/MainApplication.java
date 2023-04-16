@@ -8,7 +8,6 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 
 import java.io.File;
-import java.util.Random;
 
 import com.orangomango.rendering3d.model.Camera;
 import com.orangomango.rendering3d.model.Light;
@@ -35,16 +34,11 @@ public class MainApplication extends Application{
 		//engine.getLights().add(new Light(-5, -1, -5));
 		engine.getLights().add(new Light(-15, 0, 30));
 		
-		/*Random random = new Random();
+		Image image = new Image(MainApplication.class.getResourceAsStream("/coal.png"));
 		for (int i = 0; i < 1; i++){
 			for (int j = 0; j < 1; j++){
 				for (int k = 0; k < 1; k++){
-					engine.getObjects().add(new Mesh(switch(random.nextInt(3)){
-						case 0 -> COAL_IMAGE;
-						case 1 -> DIRT_IMAGE;
-						case 2 -> STONE_IMAGE;
-						default -> null;
-					}, new Point3D[]{
+					engine.getObjects().add(new MeshGroup(new Mesh(new Image[]{image}, new Point3D[]{
 						new Point3D(i, k, j), new Point3D(i, 1+k, j), new Point3D(1+i, 1+k, j),
 						new Point3D(1+i, k, j), new Point3D(i, k, 1+j), new Point3D(i, 1+k, 1+j), 
 						new Point3D(1+i, 1+k, 1+j), new Point3D(1+i, k, 1+j)}, new int[][]{
@@ -59,12 +53,12 @@ public class MainApplication extends Application{
 						{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 						{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 						{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
-					}, null, null, null));
+					}, new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, null, null, null)));
 				}
 			}
-		}*/
+		}
 
-		double speed = 0.2;
+		double speed = 0.05;
 		engine.setOnKey(KeyCode.W, () -> camera.move(speed*Math.cos(camera.getRy()+Math.PI/2), 0, speed*Math.sin(camera.getRy()+Math.PI/2)), false);
 		engine.setOnKey(KeyCode.A, () -> camera.move(-speed*Math.cos(camera.getRy()), 0, -speed*Math.sin(camera.getRy())), false);
 		engine.setOnKey(KeyCode.S, () -> camera.move(-speed*Math.cos(camera.getRy()+Math.PI/2), 0, -speed*Math.sin(camera.getRy()+Math.PI/2)), false);
@@ -74,21 +68,21 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(0, speed, 0), false);
 		
 		try {
-			Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05, null, 0);
-			model.setRotation(Math.PI/2, 0, 0);
-			engine.getObjects().add(new MeshGroup(model));
-			//engine.getObjects().add(new MeshGroup(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane2.obj").toURI()), 0, 0.5, 0, 0.5, null, 0)));
+			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/model.obj").toURI()), 0, 0, 0, 0.05, null);
+			//model.setRotation(Math.PI/2, 0, 0);
+			//engine.getObjects().add(new MeshGroup(model));
+			//engine.getObjects().add(new MeshGroup(Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane2.obj").toURI()), 0, 0.5, 0, 0.5, null)));
 			
-			/*Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/truck.obj").toURI()), 0, 0, 0, 0.05, null, 0);
+			/*Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/truck.obj").toURI()), 0, 0, 0, 0.05, null);
 			model.setRotation(Math.PI, 0, 0);
-			engine.getObjects().add(new MeshGroup(model);*/
+			engine.getObjects().add(model);*/
 			
-			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane3.obj").toURI()), 0, 0.5, 0, 0.5, null, 0);
+			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/plane2.obj").toURI()), 0, 0.5, 0, 0.5, null);
 			//engine.getObjects().add(new MeshGroup(model));
 			
-			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null, 0);
+			//Mesh model = Mesh.loadFromFile(new File(MainApplication.class.getResource("/chess.obj").toURI()), 0, 0, 0, 10, null);
 			//model.setRotation(0, 0, Math.PI);
-			//engine.getObjects().add(new MeshGroup(model);
+			//engine.getObjects().add(model);
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}

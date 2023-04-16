@@ -119,7 +119,7 @@
 		},
 		"glass" : {
 			"id" : 10,
-			"images" : ["/glass.png"],
+			"images" : ["/red_glass.png"],
 			"config" : {
 				"top" : 0,
 				"down" : 0,
