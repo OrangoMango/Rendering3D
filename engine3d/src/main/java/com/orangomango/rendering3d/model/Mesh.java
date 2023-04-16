@@ -999,8 +999,14 @@ public class Mesh{
 						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
 						Color backColor = canvas[j][i];
 						
+						if (color.equals(alphaCanvas[j][i])){
+							t += tstep;
+							continue;
+						}
+						
 						// Transparency
 						double alpha = color.getOpacity();
+						alphaCanvas[j][i] = color;
 						color = mixColors(color, backColor);
 						
 						if (SHADOWS){
@@ -1087,8 +1093,14 @@ public class Mesh{
 						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
 						Color backColor = canvas[j][i];
 						
+						if (color.equals(alphaCanvas[j][i])){
+							t += tstep;
+							continue;
+						}
+						
 						// Transparency
 						double alpha = color.getOpacity();
+						alphaCanvas[j][i] = color;
 						color = mixColors(color, backColor);
 						
 						if (SHADOWS){

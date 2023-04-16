@@ -55,7 +55,7 @@ public class Engine3D{
 	private Camera camera;
 	
 	private static Engine3D instance = null;
-	public static Color[][] canvas;
+	public static Color[][] canvas, alphaCanvas;
 	
 	public Engine3D(Stage stage, int w, int h){
 		if (instance == null){
@@ -81,6 +81,7 @@ public class Engine3D{
 		counter.setDaemon(true);
 		counter.start();
 		canvas = new Color[this.width][this.height];
+		alphaCanvas = new Color[this.width][this.height];
 	}
 
 	public void setOnKey(KeyCode code, Runnable r, boolean singleClick){
@@ -150,6 +151,7 @@ public class Engine3D{
 		for (int i = 0; i < this.width; i++){
 			for (int j = 0; j < this.height; j++){
 				this.canvas[i][j] = Color.CYAN;
+				this.alphaCanvas[i][j] = Color.CYAN;
 			}
 		}
 		gc.setFill(Color.CYAN);
