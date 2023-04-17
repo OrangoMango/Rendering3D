@@ -26,6 +26,7 @@ public class Chunk{
 		this.y = y;
 		this.z = z;
 		PerlinNoise noise = new PerlinNoise(world.getSeed());
+		Random random = world.getRandom();
 		float frequency = 0.1575f;
 		float biomeFreq = 0.05f;
 
@@ -42,7 +43,7 @@ public class Chunk{
 						if (world.superFlat) h = CHUNK_SIZE*HEIGHT_LIMIT+1;
 						int pos = this.y*CHUNK_SIZE+j;
 						if (pos >= h){
-							String biome = b <= 0.4 ? "sand" : (pos == h ? "grass" : "dirt");
+							String biome = b <= 0.4 || (pos > WATER_HEIGHT && random.nextInt(100) < 35) ? "sand" : (pos == h && pos <= WATER_HEIGHT ? "grass" : "dirt");
 							this.blocks[i][j][k] = new Block(this, i, j, k, pos > h+3 ? "stone" : biome);
 						}
 					}
@@ -51,7 +52,6 @@ public class Chunk{
 		}
 
 		// Trees generation
-		Random random = world.getRandom();
 		for (int i = 0; i < CHUNK_SIZE; i++){ // x
 			for (int j = 0; j < CHUNK_SIZE; j++){ // z
 				int h = 0;
