@@ -115,7 +115,7 @@ public class MainApplication extends Application{
 
 		engine.setOnKey(KeyCode.O, engine::toggleMouseMovement, true);
 		engine.setOnKey(KeyCode.I, () -> this.loadChunks = !this.loadChunks, true);
-		engine.setOnKey(KeyCode.R, () -> player.reset(), true);
+		engine.setOnKey(KeyCode.R, player::reset, true);
 		engine.setOnKey(KeyCode.DIGIT1, () -> this.currentBlock = 0, true);
 		engine.setOnKey(KeyCode.DIGIT2, () -> this.currentBlock = 1, true);
 		engine.setOnKey(KeyCode.DIGIT3, () -> this.currentBlock = 2, true);
@@ -125,23 +125,6 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.DIGIT7, () -> this.currentBlock = 6, true);
 		engine.setOnKey(KeyCode.DIGIT8, () -> this.currentBlock = 7, true);
 		engine.setOnKey(KeyCode.DIGIT9, () -> this.currentBlock = 8, true);
-		
-		engine.setOnKey(KeyCode.B, () -> {
-			int chunkX = player.getChunkX();
-			int chunkY = player.getChunkY();
-			int chunkZ = player.getChunkZ();
-			Chunk chunk = world.getChunkAt(chunkX, chunkY, chunkZ);
-			if (chunk != null){
-				chunkManager.saveChunkToFile(chunk);
-				System.out.println(chunk+" saved");
-			}
-		}, true);
-		engine.setOnKey(KeyCode.V, () -> {
-			chunkManager.loadChunkFromFile(0, 2, 0);
-			for (Chunk chunk : world.getChunks().values()){
-				chunk.setupFaces();
-			}
-		}, true);
 
 		final double speed = 0.4;
 		engine.setOnKey(KeyCode.W, () -> player.move(world, speed*Math.cos(player.getRy()+Math.PI/2), 0, speed*Math.sin(player.getRy()+Math.PI/2)), false);

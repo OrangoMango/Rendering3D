@@ -207,15 +207,14 @@ public class Chunk{
 			}
 		}
 		
-		Point3D[] bounds = new Point3D[]{
+		/*Point3D[] bounds = new Point3D[]{
 			new Point3D(this.x, this.y, this.z), new Point3D(this.x, 1+this.y, this.z), new Point3D(1+this.x, 1+this.y, this.z),
 			new Point3D(1+this.x, this.y, this.z), new Point3D(this.x, this.y, 1+this.z), new Point3D(this.x, 1+this.y, 1+this.z),
 			new Point3D(1+this.x, 1+this.y, 1+this.z), new Point3D(1+this.x, this.y, 1+this.z)};
 		for (int i = 0; i < bounds.length; i++){
 			bounds[i] = bounds[i].multiply(CHUNK_SIZE);
 		}
-		
-		/*Mesh chunkBound = new Mesh(null, bounds, new int[][]{
+		Mesh chunkBound = new Mesh(null, bounds, new int[][]{
 				{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
 				{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
 				{4, 5, 1}, {4, 1, 0}, {1, 5, 6},

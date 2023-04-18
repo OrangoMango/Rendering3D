@@ -242,13 +242,11 @@ public class Engine3D{
 			}
 		}
 		
-		if (!SHOW_LINES){
-			for (int i = 0; i < this.width; i++){
-				for (int j = 0; j < this.height; j++){
-					Color color = this.canvas[i][j];
-					if (color != null){
-						gc.getPixelWriter().setColor(i, j, color);
-					}
+		for (int i = 0; i < this.width; i++){
+			for (int j = 0; j < this.height; j++){
+				Color color = this.canvas[i][j];
+				if (color != null){
+					gc.getPixelWriter().setColor(i, j, color);
 				}
 			}
 		}

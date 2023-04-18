@@ -454,10 +454,6 @@ public class Mesh{
 	
 	public static void render(List<ProjectedTriangle> projectedTriangles, Camera camera, List<Light> lights, GraphicsContext gc, boolean directUpdate){
 		for (ProjectedTriangle pt : projectedTriangles){
-			if (pt.showLines){
-				gc.setStroke(Color.RED);
-				gc.setLineWidth(1);
-			}
 			makeRendering(gc, camera, lights, pt, directUpdate);
 		}
 	}
@@ -476,14 +472,117 @@ public class Mesh{
 					proj1[2], proj2[2], proj3[2], camera);
 		} else {
 			if (pt.showLines){
-				gc.strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-				gc.strokeLine(p2.getX(), p2.getY(), p3.getX(), p3.getY());
-				gc.strokeLine(p1.getX(), p1.getY(), p3.getX(), p3.getY());
+				renderWireframe(pt, camera, gc);
 			} else {
 				if (pt.tex1 != null && pt.tex2 != null && pt.tex3 != null){
 					renderTriangle(pt, camera, lights, gc, directUpdate);
 				} else {
 					renderColoredTriangle(pt, camera, lights, gc, directUpdate);
+				}
+			}
+		}
+	}
+	
+	private static void renderWireframe(ProjectedTriangle pt, Camera camera, GraphicsContext gc){
+		int x1 = (int)pt.point1[0];
+		int y1 = (int)pt.point1[1];
+		int x2 = (int)pt.point2[0];
+		int y2 = (int)pt.point2[1];
+		int x3 = (int)pt.point3[0];
+		int y3 = (int)pt.point3[1];
+		Color color = Color.RED;
+		double w1 = pt.point1[2];
+		double w2 = pt.point2[2];
+		double w3 = pt.point3[2];
+		
+		if (y2 < y1){
+			y1 = swap(y2, y2 = y1);
+			x1 = swap(x2, x2 = x1);
+			w1 = swap(w2, w2 = w1);
+		}
+		if (y3 < y1){
+			y1 = swap(y3, y3 = y1);
+			x1 = swap(x3, x3 = x1);
+			w1 = swap(w3, w3 = w1);
+		}
+		if (y3 < y2){
+			y2 = swap(y3, y3 = y2);
+			x2 = swap(x3, x3 = x2);
+			w2 = swap(w3, w3 = w2);
+		}
+		
+		int dx1 = x2-x1;
+		int dy1 = y2-y1;
+		double dw1 = w2-w1;
+		
+		int dx2 = x3-x1;
+		int dy2 = y3-y1;
+		double dw2 = w3-w1;
+		
+		double dax_step = 0, dbx_step = 0, dw1_step = 0, dw2_step = 0;
+		
+		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
+		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
+
+		if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
+		if (dy2 != 0) dw2_step = dw2/Math.abs(dy2);
+		
+		if (dy1 != 0){
+			for (int i = y1; i <= y2; i++){
+				int ax = x1+(int)((i-y1)*dax_step);
+				int bx = x1+(int)((i-y1)*dbx_step);
+				
+				double col_sw = w1+(i-y1)*dw1_step;
+				double col_ew = w1+(i-y1)*dw2_step;
+				
+				if (ax > bx){
+					ax = swap(bx, bx = ax);
+					col_sw = swap(col_ew, col_ew = col_sw);
+				}
+				
+				if (isInScene(ax, i) && camera.depthBuffer[ax][i] <= col_sw){
+					camera.depthBuffer[ax][i] = col_sw;
+					canvas[ax][i] = color;
+				}
+				
+				if (isInScene(bx, i) && camera.depthBuffer[bx][i] <= col_ew){
+					camera.depthBuffer[bx][i] = col_ew;
+					canvas[bx][i] = color;
+				}
+			}
+		}
+		
+		dx1 = x3-x2;
+		dy1 = y3-y2;
+		dw1 = w3-w2;
+		
+		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
+		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
+		
+		dw1_step = 0;
+		if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
+		
+		if (dy1 != 0){
+			for (int i = y2; i <= y3; i++){
+				int ax = x2+(int)((i-y2)*dax_step);
+				int bx = x1+(int)((i-y1)*dbx_step);
+				
+				double col_sw = w2+(i-y2)*dw1_step;
+				double col_ew = w2+(i-y1)*dw2_step;
+				
+				if (ax > bx){
+					ax = swap(bx, bx = ax);
+					col_sw = swap(col_ew, col_ew = col_sw);
+				}
+				
+				if (isInScene(ax, i) && camera.depthBuffer[ax][i] <= col_sw){
+					camera.depthBuffer[ax][i] = col_sw;
+					canvas[ax][i] = color;
+				}
+				
+				if (isInScene(bx, i) && camera.depthBuffer[bx][i] <= col_ew){
+					camera.depthBuffer[bx][i] = col_ew;
+					canvas[bx][i] = color;
 				}
 			}
 		}
