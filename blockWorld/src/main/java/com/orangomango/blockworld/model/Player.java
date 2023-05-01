@@ -22,7 +22,7 @@ public class Player{
 		// TODO Make distanceToPlain private
 		int i = 0;
 		for (Point3D[] ps : this.camera.getViewFrustum()){
-			System.out.println(java.util.Arrays.toString(ps));
+			//System.out.println(java.util.Arrays.toString(ps));
 			//if (i == 0){
 				//System.out.println(com.orangomango.rendering3d.model.Mesh.distanceToPlane(ps[1], ps[0], new Point3D(6, 8, 18), ps[1].multiply(-1)));
 			//}
