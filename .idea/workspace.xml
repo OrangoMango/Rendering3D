@@ -4,18 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9189e4d2-1fa7-4a61-aed5-c4b1033fed67" name="Changes" comment="bugfix">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/blockWorld/src/main/java/com/orangomango/blockworld/MainApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/blockWorld/src/main/java/com/orangomango/blockworld/MainApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/blockWorld/src/main/java/com/orangomango/blockworld/model/Block.java" beforeDir="false" afterPath="$PROJECT_DIR$/blockWorld/src/main/java/com/orangomango/blockworld/model/Block.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/blockWorld/src/main/java/com/orangomango/blockworld/model/Chunk.java" beforeDir="false" afterPath="$PROJECT_DIR$/blockWorld/src/main/java/com/orangomango/blockworld/model/Chunk.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/blockWorld/src/main/java/com/orangomango/blockworld/model/ChunkManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/blockWorld/src/main/java/com/orangomango/blockworld/model/ChunkManager.java" afterDir="false" />
+    <list default="true" id="9189e4d2-1fa7-4a61-aed5-c4b1033fed67" name="Changes" comment="fixed some liquid bugs">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine3d/src/main/java/com/orangomango/rendering3d/MainApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/engine3d/src/main/java/com/orangomango/rendering3d/MainApplication.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine3d/src/main/java/com/orangomango/rendering3d/model/Mesh.java" beforeDir="false" afterPath="$PROJECT_DIR$/engine3d/src/main/java/com/orangomango/rendering3d/model/Mesh.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine3d/src/main/java/com/orangomango/rendering3d/model/MeshGroup.java" beforeDir="false" afterPath="$PROJECT_DIR$/engine3d/src/main/java/com/orangomango/rendering3d/model/MeshGroup.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -329,7 +321,14 @@
       <option name="project" value="LOCAL" />
       <updated>1679331853237</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="fixed some liquid bugs">
+      <created>1684222458873</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1684222458873</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -370,6 +369,7 @@
     <MESSAGE value="Added clip function" />
     <MESSAGE value="clipping bugfix" />
     <MESSAGE value="bugfix" />
-    <option name="LAST_COMMIT_MESSAGE" value="bugfix" />
+    <MESSAGE value="fixed some liquid bugs" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed some liquid bugs" />
   </component>
 </project>
