@@ -38,7 +38,7 @@ public class MainApplication extends Application{
 		engine.getLights().add(light);
 		
 		World world = new World((int)System.currentTimeMillis());
-		world.superFlat = true;
+		//world.superFlat = true;
 		ChunkManager chunkManager = new ChunkManager(world, player);
 		chunkManager.deleteSavedWorld();
 
