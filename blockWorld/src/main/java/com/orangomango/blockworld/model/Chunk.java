@@ -1,7 +1,5 @@
 package com.orangomango.blockworld.model;
 
-import javafx.geometry.Point3D;
-
 import java.util.*;
 
 import com.orangomango.rendering3d.Engine3D;
@@ -96,7 +94,7 @@ public class Chunk{
 				for (int k = 0; k < CHUNK_SIZE; k++){ // y
 					if (this.blocks[i][k][j] == null && k+this.y*CHUNK_SIZE >= WATER_HEIGHT){
 						Block waterBlock = new Block(this, i, k, j, "water");
-						if (waterBlock.getY() == WATER_HEIGHT) waterBlock.setYOffset(0.2);
+						if (waterBlock.getY() == WATER_HEIGHT) waterBlock.setYOffset(Block.LIQUID_OFFSET);
 						setBlock(waterBlock, i, k, j);
 					}
 				}
@@ -120,7 +118,6 @@ public class Chunk{
 						this.blocks[i][j][k] = null;
 					} else {
 						this.blocks[i][j][k] = new Block(this, i, j, k, atlas.getBlockType(id));
-						if (this.blocks[i][j][k].getType().equals("water") && this.blocks[i][j][k].getY() == WATER_HEIGHT) this.blocks[i][j][k].setYOffset(0.2);
 					}
 				}
 			}
@@ -206,29 +203,6 @@ public class Chunk{
 				}
 			}
 		}
-		
-		/*Point3D[] bounds = new Point3D[]{
-			new Point3D(this.x, this.y, this.z), new Point3D(this.x, 1+this.y, this.z), new Point3D(1+this.x, 1+this.y, this.z),
-			new Point3D(1+this.x, this.y, this.z), new Point3D(this.x, this.y, 1+this.z), new Point3D(this.x, 1+this.y, 1+this.z),
-			new Point3D(1+this.x, 1+this.y, 1+this.z), new Point3D(1+this.x, this.y, 1+this.z)};
-		for (int i = 0; i < bounds.length; i++){
-			bounds[i] = bounds[i].multiply(CHUNK_SIZE);
-		}
-		Mesh chunkBound = new Mesh(null, bounds, new int[][]{
-				{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
-				{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
-				{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
-				{1, 6, 2}, {4, 0, 3}, {4, 3, 7}
-		}, null, new int[12][], null, null, null, null); // Everything is null because it's rendered only as a wireframe
-		chunkBound.wireframe = true;
-		chunkBound.setShowLines(true);
-		chunkBound.skipCondition = cam -> {
-			int camX = (int)(cam.getX()/Chunk.CHUNK_SIZE);
-			int camY = (int)(cam.getY()/Chunk.CHUNK_SIZE);
-			int camZ = (int)(cam.getZ()/Chunk.CHUNK_SIZE);
-			return !(camX == this.x && camY == this.y && camZ+1 == this.z);
-		};
-		output.add(chunkBound);*/
 		return output;
 	}
 

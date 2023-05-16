@@ -1,8 +1,5 @@
 package com.orangomango.rendering3d.model;
 
-import javafx.geometry.Point2D;
-import javafx.geometry.Point3D;
-
 import java.util.*;
 
 public class MeshGroup{

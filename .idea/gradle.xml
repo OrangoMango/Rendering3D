@@ -11,6 +11,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/blockWorld" />
             <option value="$PROJECT_DIR$/engine3d" />
+            <option value="$PROJECT_DIR$/perlinTest" />
           </set>
         </option>
       </GradleProjectSettings>

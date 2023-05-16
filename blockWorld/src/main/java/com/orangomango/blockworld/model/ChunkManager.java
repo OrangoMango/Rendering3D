@@ -42,6 +42,15 @@ public class ChunkManager{
 			}
 		}
 	}
+
+	public void deleteSavedWorld(){
+		File dir = new File(System.getProperty("user.home"), ".blockWorld/");
+		if (dir.exists()){
+			for (File file : dir.listFiles()){
+				file.delete();
+			}
+		}
+	}
 	
 	public void unloadChunk(int x, int y, int z){
 		Chunk chunk = this.world.getChunkAt(x, y, z);

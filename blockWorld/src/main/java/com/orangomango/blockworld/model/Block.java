@@ -2,7 +2,6 @@ package com.orangomango.blockworld.model;
 
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
-import javafx.scene.image.Image;
 
 import com.orangomango.rendering3d.model.Mesh;
 
@@ -16,6 +15,8 @@ public class Block{
 	private boolean sprite;
 	private double yOffset;
 	private boolean liquid;
+
+	public static final double LIQUID_OFFSET = 0.2;
 	
 	public Block(Chunk chunk, int x, int y, int z, String type){
 		this.world = chunk.getWorld();
@@ -59,13 +60,13 @@ public class Block{
 	}
 
 	/*
-	 * glass and water can "connect" as it's forced to the hiding process
+	 * glass and water can "connect" as they are forced to the hiding process
 	 */
 	public void setupFaces(){
 		if (this.sprite) return;
 		mesh.clearHiddenFaces();
 		Block block = this.world.getBlockAt(this.x+1, this.y, this.z);
-		if (block != null && (!block.isTransparent() || (Chunk.atlas.isForceHiding(this.type) && block.getType().equals(this.type)))){
+		if (block != null && (!block.isTransparent() || (Chunk.atlas.isForceHiding(this.type) && block.getType().equals(this.type))) && block.yOffset == 0){
 			mesh.addHiddenFace(2);
 			mesh.addHiddenFace(3);
 		}
@@ -75,12 +76,12 @@ public class Block{
 			mesh.addHiddenFace(9);
 		}
 		block = this.world.getBlockAt(this.x, this.y, this.z+1);
-		if (block != null && (!block.isTransparent() || (Chunk.atlas.isForceHiding(this.type) && block.getType().equals(this.type)))){
+		if (block != null && (!block.isTransparent() || (Chunk.atlas.isForceHiding(this.type) && block.getType().equals(this.type))) && block.yOffset == 0){
 			mesh.addHiddenFace(4);
 			mesh.addHiddenFace(5);
 		}
 		block = this.world.getBlockAt(this.x-1, this.y, this.z);
-		if (block != null && (!block.isTransparent() || (Chunk.atlas.isForceHiding(this.type) && block.getType().equals(this.type)))){
+		if (block != null && (!block.isTransparent() || (Chunk.atlas.isForceHiding(this.type) && block.getType().equals(this.type))) && block.yOffset == 0){
 			mesh.addHiddenFace(6);
 			mesh.addHiddenFace(7);
 		}
@@ -90,7 +91,7 @@ public class Block{
 			mesh.addHiddenFace(11);
 		}
 		block = this.world.getBlockAt(this.x, this.y, this.z-1);
-		if (block != null && (!block.isTransparent() || (Chunk.atlas.isForceHiding(this.type) && block.getType().equals(this.type)))){
+		if (block != null && (!block.isTransparent() || (Chunk.atlas.isForceHiding(this.type) && block.getType().equals(this.type))) && block.yOffset == 0){
 			mesh.addHiddenFace(0);
 			mesh.addHiddenFace(1);
 		}
@@ -105,6 +106,14 @@ public class Block{
 	 */
 	public Mesh getMesh(){
 		if (this.mesh != null) return this.mesh;
+
+		Block top = this.world.getBlockAt(this.x, this.y-1, this.z);
+		if ((top == null || !top.isLiquid()) && this.liquid){
+			setYOffset(LIQUID_OFFSET);
+		} else {
+			this.yOffset = 0;
+		}
+
 		if (this.sprite){
 			this.mesh = new Mesh(Chunk.atlas.getImages().get(this.type), new Point3D[]{
 				new Point3D(this.x, this.y+this.yOffset, this.z), new Point3D(this.x, 1+this.y, this.z), new Point3D(1+this.x, 1+this.y, this.z),
@@ -142,6 +151,10 @@ public class Block{
 		}
 		this.mesh.setTransparentProcessing(this.transparent);
 		return this.mesh;
+	}
+
+	public void removeMesh(){
+		this.mesh = null;
 	}
 	
 	public int getX(){

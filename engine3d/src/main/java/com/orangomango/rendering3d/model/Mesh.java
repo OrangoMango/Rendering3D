@@ -17,8 +17,6 @@ public class Mesh{
 	private MeshGroup meshGroup;
 	private Point3D[] points;
 	private List<ProjectedTriangle> projectedTriangles = new ArrayList<>();
-	private Map<Integer, double[][]> extraProjected = new HashMap<>();
-	private Map<Integer, Point2D[]> extraProjectedTex = new HashMap<>();
 	private Color[][] vertexColors;
 	private Color[][] facesColors;
 	private int[][] faces;
@@ -1083,8 +1081,8 @@ public class Mesh{
 					tex_w = (1-t)*tex_sw+t*tex_ew;
 					tex_l = (1-t)*tex_sl+t*tex_el;
 					
-					int pix_x = (int)(tex_u/tex_w*width);
-					int pix_y = (int)(tex_v/tex_w*height);
+					int pix_x = (int)Math.max(0, tex_u/tex_w*width);
+					int pix_y = (int)Math.max(0, (tex_v/tex_w*height));
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
@@ -1177,8 +1175,8 @@ public class Mesh{
 					tex_w = (1-t)*tex_sw+t*tex_ew;
 					tex_l = (1-t)*tex_sl+t*tex_el;
 
-					int pix_x = (int)(tex_u/tex_w*width);
-					int pix_y = (int)(tex_v/tex_w*height);
+					int pix_x = (int)Math.max(0, (tex_u/tex_w*width));
+					int pix_y = (int)Math.max(0, (tex_v/tex_w*height));
 
 					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
 						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));

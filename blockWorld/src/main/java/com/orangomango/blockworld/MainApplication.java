@@ -3,11 +3,8 @@ package com.orangomango.blockworld;
 import javafx.application.Application;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
-import javafx.scene.paint.Color;
 import javafx.geometry.Point3D;
 import javafx.stage.Stage;
-
-import java.util.*;
 
 import com.orangomango.rendering3d.model.*;
 import com.orangomango.rendering3d.Engine3D;
@@ -24,7 +21,7 @@ public class MainApplication extends Application{
 	private static final int HEIGHT = 180;
 	private static final int CHUNKS = 5;
 
-	private static final String[] inventoryBlocks = new String[]{"wood", "coal", "grass", "flower_red", "wood_log", "leaves", "cobblestone", "bricks", "glass"};
+	private static final String[] inventoryBlocks = new String[]{"wood", "water", "grass", "flower_red", "wood_log", "leaves", "cobblestone", "bricks", "glass"};
 	private int currentBlock = 0;
 	private boolean loadChunks = true;
 	
@@ -33,18 +30,18 @@ public class MainApplication extends Application{
 		stage.setTitle("BlockWorld");
 		
 		Engine3D engine = new Engine3D(stage, WIDTH, HEIGHT);
-
 		Player player = new Player(0, 15, 0);
 		
 		engine.setCamera(player.getCamera());
 		Light light = new Light(0, 0, 0); // -5, 3, 5
 		light.setFixed(true);
 		engine.getLights().add(light);
-		//Engine3D.LIGHT_AVAILABLE = false;
 		
 		World world = new World((int)System.currentTimeMillis());
-		//world.superFlat = true;
+		world.superFlat = true;
 		ChunkManager chunkManager = new ChunkManager(world, player);
+		chunkManager.deleteSavedWorld();
+
 		/*final int worldChunks = 8;
 		for (int i = 0; i < worldChunks; i++){
 			for (int j = 0; j < worldChunks; j++){
@@ -58,7 +55,6 @@ public class MainApplication extends Application{
 		}*/
 
 		engine.setOnMousePressed(e -> {
-			//world.removeBlockAt((int)player.getX(), (int)(player.getY()+1), (int)player.getZ());
 			Block block = null;
 
 			double stepX = Math.cos(player.getRx())*Math.cos(player.getRy()+Math.PI/2);
@@ -83,6 +79,7 @@ public class MainApplication extends Application{
 			}
 			if (block != null){
 				boolean chunkUpdate = false;
+				Block down = null; // The underneath liquid block
 				if (e.getButton() == MouseButton.PRIMARY){
 					world.removeBlockAt(block.getX(), block.getY(), block.getZ());
 					int chunkX = block.getX() / Chunk.CHUNK_SIZE;
@@ -90,6 +87,7 @@ public class MainApplication extends Application{
 					int chunkZ = block.getZ() / Chunk.CHUNK_SIZE;
 					chunkManager.saveChunkToFile(world.getChunkAt(chunkX, chunkY, chunkZ));
 					chunkUpdate = true;
+					down = world.getBlockAt(block.getX(), block.getY()+1, block.getZ());
 				} else if (e.getButton() == MouseButton.SECONDARY && lastX >= 0 && lastY >= 0 && lastZ >= 0){
 					world.setBlockAt(lastX, lastY, lastZ, inventoryBlocks[this.currentBlock]);
 					int chunkX = lastX / Chunk.CHUNK_SIZE;
@@ -97,8 +95,13 @@ public class MainApplication extends Application{
 					int chunkZ = lastZ / Chunk.CHUNK_SIZE;
 					chunkManager.saveChunkToFile(world.getChunkAt(chunkX, chunkY, chunkZ));
 					chunkUpdate = true;
+					down = world.getBlockAt(lastX, lastY+1, lastZ);
+
 				}
 				if (chunkUpdate){
+					if (down != null && down.isLiquid()){
+						down.removeMesh();
+					}
 					for (int i = -1; i < 2; i++){
 						for (int j = -1; j < 2; j++){
 							for (int k = -1; k < 2; k++){
