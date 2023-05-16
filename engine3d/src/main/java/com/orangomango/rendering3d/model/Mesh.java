@@ -470,7 +470,7 @@ public class Mesh{
 					proj1[2], proj2[2], proj3[2], camera);
 		} else {
 			if (pt.showLines){
-				renderWireframe(pt, camera, gc);
+				renderWireframe(pt, camera);
 			} else {
 				if (pt.tex1 != null && pt.tex2 != null && pt.tex3 != null){
 					renderTriangle(pt, camera, lights, gc, directUpdate);
@@ -480,8 +480,179 @@ public class Mesh{
 			}
 		}
 	}
-	
-	private static void renderWireframe(ProjectedTriangle pt, Camera camera, GraphicsContext gc){
+
+	private static void rasterizeColoredTriangle(int x1, int x2, int y1, int y2, int ey, double dax_step, double dbx_step,
+												 double dr1_step, double dg1_step, double db1_step, double da1_step, double dl1_step, double dw1_step,
+												 double dr2_step, double dg2_step, double db2_step, double da2_step, double dl2_step, double dw2_step,
+												 double w1, double l1, double w2, double l2, Color c1, Color c2,
+												 Camera camera, List<Light> lights, GraphicsContext gc, boolean directUpdate){
+		double col_r, col_g, col_b, col_a, col_w, col_l;
+
+		for (int i = y1; i <= ey; i++){
+			int ax = x1+(int)((i-y1)*dax_step);
+			int bx = x2+(int)((i-y2)*dbx_step);
+
+			double col_sr = c1.getRed()+(i-y1)*dr1_step;
+			double col_sg = c1.getGreen()+(i-y1)*dg1_step;
+			double col_sb = c1.getBlue()+(i-y1)*db1_step;
+			double col_sa = c1.getOpacity()+(i-y1)*da1_step;
+			double col_sw = w1+(i-y1)*dw1_step;
+			double col_sl = l1+(i-y1)*dl1_step;
+
+			double col_er = c2.getRed()+(i-y2)*dr2_step;
+			double col_eg = c2.getGreen()+(i-y2)*dg2_step;
+			double col_eb = c2.getBlue()+(i-y2)*db2_step;
+			double col_ea = c2.getOpacity()+(i-y2)*da2_step;
+			double col_ew = w2+(i-y2)*dw2_step;
+			double col_el = l2+(i-y2)*dl2_step;
+
+			if (ax > bx){
+				ax = swap(bx, bx = ax);
+				col_sr = swap(col_er, col_er = col_sr);
+				col_sg = swap(col_eg, col_eg = col_sg);
+				col_sb = swap(col_eb, col_eb = col_sb);
+				col_sa = swap(col_ea, col_ea = col_sa);
+				col_sw = swap(col_ew, col_ew = col_sw);
+				col_sl = swap(col_el, col_el = col_sl);
+			}
+
+			double tstep = 1.0/(bx-ax);
+			double t = 0.0;
+
+			for (int j = ax; j <= bx; j++){
+				col_r = (1-t)*col_sr+t*col_er;
+				col_g = (1-t)*col_sg+t*col_eg;
+				col_b = (1-t)*col_sb+t*col_eb;
+				col_a = (1-t)*col_sa+t*col_ea;
+				col_w = (1-t)*col_sw+t*col_ew;
+				col_l = (1-t)*col_sl+t*col_el;
+
+				if (isInScene(j, i) && camera.depthBuffer[j][i] <= col_w){
+					Color color = Color.color(col_r, col_g, col_b);
+					Color backColor = canvas[j][i];
+
+					if (col_a < 1 && color.equals(alphaCanvas[j][i])){
+						t += tstep;
+						continue;
+					}
+
+					// Transparency
+					alphaCanvas[j][i] = color;
+					color = mixColors(color, backColor);
+
+					if (SHADOWS){
+						for (Light light : lights){
+							Camera cam2 = light.getCamera();
+							double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
+							int index_x = (int)shadow[0];
+							int index_y = (int)shadow[1];
+							if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
+								double depth = cam2.depthBuffer[index_x][index_y];
+								if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
+									color = color.darker();
+								}
+							}
+						}
+					}
+					Color finalColor = col_a == 0 ? color : Light.getLight(color, Math.max(col_l, 0));
+					if (directUpdate){
+						gc.getPixelWriter().setColor(j, i, finalColor);
+					}
+					if (!directUpdate || col_a == 1){
+						camera.depthBuffer[j][i] = col_w;
+						canvas[j][i] = finalColor;
+					}
+				}
+
+				t += tstep;
+			}
+		}
+	}
+
+	private static void rasterizeTriangle(int x1, int x2, int y1, int y2, int ey, double dax_step, double dbx_step, double du1_step, double dv1_step, double dw1_step, double dl1_step,
+										  double du2_step, double dv2_step, double dw2_step, double dl2_step,
+										  double u1, double v1, double w1, double l1, double u2, double v2, double w2, double l2,
+										  double width, double height, Camera camera, PixelReader reader, List<Light> lights, GraphicsContext gc, boolean directUpdate){
+		double tex_u, tex_v, tex_w, tex_l;
+
+		for (int i = y1; i <= ey; i++){
+			int ax = x1+(int)((i-y1)*dax_step);
+			int bx = x2+(int)((i-y2)*dbx_step);
+
+			double tex_su = u1+(i-y1)*du1_step;
+			double tex_sv = v1+(i-y1)*dv1_step;
+			double tex_sw = w1+(i-y1)*dw1_step;
+			double tex_sl = l1+(i-y1)*dl1_step;
+
+			double tex_eu = u2+(i-y2)*du2_step;
+			double tex_ev = v2+(i-y2)*dv2_step;
+			double tex_ew = w2+(i-y2)*dw2_step;
+			double tex_el = l2+(i-y2)*dl2_step;
+
+			if (ax > bx){
+				ax = swap(bx, bx = ax);
+				tex_su = swap(tex_eu, tex_eu = tex_su);
+				tex_sv = swap(tex_ev, tex_ev = tex_sv);
+				tex_sw = swap(tex_ew, tex_ew = tex_sw);
+				tex_sl = swap(tex_el, tex_el = tex_sl);
+			}
+
+			double tstep = 1.0/(bx-ax);
+			double t = 0.0;
+
+			for (int j = ax; j <= bx; j++){
+				tex_u = (1-t)*tex_su+t*tex_eu;
+				tex_v = (1-t)*tex_sv+t*tex_ev;
+				tex_w = (1-t)*tex_sw+t*tex_ew;
+				tex_l = (1-t)*tex_sl+t*tex_el;
+
+				int pix_x = (int)Math.max(0, tex_u/tex_w*width);
+				int pix_y = (int)Math.max(0, (tex_v/tex_w*height));
+
+				if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
+					Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
+					Color backColor = canvas[j][i];
+					double alpha = color.getOpacity();
+
+					if (alpha < 1 && color.equals(alphaCanvas[j][i])){
+						t += tstep;
+						continue;
+					}
+
+					// Transparency
+					alphaCanvas[j][i] = color;
+					color = mixColors(color, backColor);
+
+					if (SHADOWS){
+						for (Light light : lights){
+							Camera cam2 = light.getCamera();
+							double[] shadow = convertPoint(new double[]{j, i, tex_w}, camera, cam2);
+							int index_x = (int)shadow[0];
+							int index_y = (int)shadow[1];
+							if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
+								double depth = cam2.depthBuffer[index_x][index_y];
+								if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
+									color = color.darker();
+								}
+							}
+						}
+					}
+					Color finalColor = alpha == 0 ? color : Light.getLight(color, Math.max(tex_l, 0));
+					if (directUpdate){
+						gc.getPixelWriter().setColor(j, i, finalColor);
+					}
+					if (!directUpdate || alpha == 1){
+						camera.depthBuffer[j][i] = tex_w;
+					}
+					canvas[j][i] = finalColor;
+				}
+
+				t += tstep;
+			}
+		}
+	}
+
+	private static void renderWireframe(ProjectedTriangle pt, Camera camera){
 		int x1 = (int)pt.point1[0];
 		int y1 = (int)pt.point1[1];
 		int x2 = (int)pt.point2[0];
@@ -492,7 +663,7 @@ public class Mesh{
 		double w1 = pt.point1[2];
 		double w2 = pt.point2[2];
 		double w3 = pt.point3[2];
-		
+
 		if (y2 < y1){
 			y1 = swap(y2, y2 = y1);
 			x1 = swap(x2, x2 = x1);
@@ -508,76 +679,76 @@ public class Mesh{
 			x2 = swap(x3, x3 = x2);
 			w2 = swap(w3, w3 = w2);
 		}
-		
+
 		int dx1 = x2-x1;
 		int dy1 = y2-y1;
 		double dw1 = w2-w1;
-		
+
 		int dx2 = x3-x1;
 		int dy2 = y3-y1;
 		double dw2 = w3-w1;
-		
+
 		double dax_step = 0, dbx_step = 0, dw1_step = 0, dw2_step = 0;
-		
+
 		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
 		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
 
 		if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
 		if (dy2 != 0) dw2_step = dw2/Math.abs(dy2);
-		
+
 		if (dy1 != 0){
 			for (int i = y1; i <= y2; i++){
 				int ax = x1+(int)((i-y1)*dax_step);
 				int bx = x1+(int)((i-y1)*dbx_step);
-				
+
 				double col_sw = w1+(i-y1)*dw1_step;
 				double col_ew = w1+(i-y1)*dw2_step;
-				
+
 				if (ax > bx){
 					ax = swap(bx, bx = ax);
 					col_sw = swap(col_ew, col_ew = col_sw);
 				}
-				
+
 				if (isInScene(ax, i) && camera.depthBuffer[ax][i] <= col_sw){
 					camera.depthBuffer[ax][i] = col_sw;
 					canvas[ax][i] = color;
 				}
-				
+
 				if (isInScene(bx, i) && camera.depthBuffer[bx][i] <= col_ew){
 					camera.depthBuffer[bx][i] = col_ew;
 					canvas[bx][i] = color;
 				}
 			}
 		}
-		
+
 		dx1 = x3-x2;
 		dy1 = y3-y2;
 		dw1 = w3-w2;
-		
+
 		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
 		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
-		
+
 		dw1_step = 0;
 		if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
-		
+
 		if (dy1 != 0){
 			for (int i = y2; i <= y3; i++){
 				int ax = x2+(int)((i-y2)*dax_step);
 				int bx = x1+(int)((i-y1)*dbx_step);
-				
+
 				double col_sw = w2+(i-y2)*dw1_step;
 				double col_ew = w2+(i-y1)*dw2_step;
-				
+
 				if (ax > bx){
 					ax = swap(bx, bx = ax);
 					col_sw = swap(col_ew, col_ew = col_sw);
 				}
-				
+
 				if (isInScene(ax, i) && camera.depthBuffer[ax][i] <= col_sw){
 					camera.depthBuffer[ax][i] = col_sw;
 					canvas[ax][i] = color;
 				}
-				
+
 				if (isInScene(bx, i) && camera.depthBuffer[bx][i] <= col_ew){
 					camera.depthBuffer[bx][i] = col_ew;
 					canvas[bx][i] = color;
@@ -752,109 +923,31 @@ public class Mesh{
 		double dw2 = w3-w1;
 		double dl2 = l3-l1;
 		
-		double col_r, col_g, col_b, col_a, col_w, col_l;
-		
 		double dax_step = 0, dbx_step = 0, dr1_step = 0, dg1_step = 0, db1_step = 0, da1_step = 0, dr2_step = 0, dg2_step = 0, db2_step = 0, da2_step = 0, dw1_step = 0, dw2_step = 0, dl1_step = 0, dl2_step = 0;
 		
 		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
 		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
 		
-		if (dy1 != 0) dr1_step = dr1/Math.abs(dy1);
-		if (dy1 != 0) dg1_step = dg1/Math.abs(dy1);
-		if (dy1 != 0) db1_step = db1/Math.abs(dy1);
-		if (dy1 != 0) da1_step = da1/Math.abs(dy1);
-		if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
-		if (dy1 != 0) dl1_step = dl1/Math.abs(dy1);
-		
-		if (dy2 != 0) dr2_step = dr2/Math.abs(dy2);
-		if (dy2 != 0) dg2_step = dg2/Math.abs(dy2);
-		if (dy2 != 0) db2_step = db2/Math.abs(dy2);
-		if (dy2 != 0) da2_step = da2/Math.abs(dy2);
-		if (dy2 != 0) dw2_step = dw2/Math.abs(dy2);
-		if (dy2 != 0) dl2_step = dl2/Math.abs(dy2);
-
 		if (dy1 != 0){
-			for (int i = y1; i <= y2; i++){
-				int ax = x1+(int)((i-y1)*dax_step);
-				int bx = x1+(int)((i-y1)*dbx_step);
-				
-				double col_sr = c1.getRed()+(i-y1)*dr1_step;
-				double col_sg = c1.getGreen()+(i-y1)*dg1_step;
-				double col_sb = c1.getBlue()+(i-y1)*db1_step;
-				double col_sa = c1.getOpacity()+(i-y1)*da1_step;
-				double col_sw = w1+(i-y1)*dw1_step;
-				double col_sl = l1+(i-y1)*dl1_step;
-				
-				double col_er = c1.getRed()+(i-y1)*dr2_step;
-				double col_eg = c1.getGreen()+(i-y1)*dg2_step;
-				double col_eb = c1.getBlue()+(i-y1)*db2_step;
-				double col_ea = c1.getOpacity()+(i-y1)*da2_step;
-				double col_ew = w1+(i-y1)*dw2_step;
-				double col_el = l1+(i-y1)*dl2_step;
-				
-				if (ax > bx){
-					ax = swap(bx, bx = ax);
-					col_sr = swap(col_er, col_er = col_sr);
-					col_sg = swap(col_eg, col_eg = col_sg);
-					col_sb = swap(col_eb, col_eb = col_sb);
-					col_sa = swap(col_ea, col_ea = col_sa);
-					col_sw = swap(col_ew, col_ew = col_sw);
-					col_sl = swap(col_el, col_el = col_sl);
-				}
-				
-				double tstep = 1.0/(bx-ax);
-				double t = 0.0;
-				
-				for (int j = ax; j <= bx; j++){
-					col_r = (1-t)*col_sr+t*col_er;
-					col_g = (1-t)*col_sg+t*col_eg;
-					col_b = (1-t)*col_sb+t*col_eb;
-					col_a = (1-t)*col_sa+t*col_ea;
-					col_w = (1-t)*col_sw+t*col_ew;
-					col_l = (1-t)*col_sl+t*col_el;
-					
-					if (isInScene(j, i) && camera.depthBuffer[j][i] <= col_w){
-						Color color = Color.color(col_r, col_g, col_b);
-						Color backColor = canvas[j][i];
-						
-						if (col_a < 1 && color.equals(alphaCanvas[j][i])){
-							t += tstep;
-							continue;
-						}
-						
-						// Transparency
-						alphaCanvas[j][i] = color;
-						color = mixColors(color, backColor);
-						
-						if (SHADOWS){
-							for (Light light : lights){
-								Camera cam2 = light.getCamera();
-								double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
-								int index_x = (int)shadow[0];
-								int index_y = (int)shadow[1];
-								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
-									double depth = cam2.depthBuffer[index_x][index_y];
-									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
-										color = color.darker();
-									}
-								}
-							}
-						}
-						Color finalColor = col_a == 0 ? color : Light.getLight(color, Math.max(col_l, 0));			
-						if (directUpdate){
-							gc.getPixelWriter().setColor(j, i, finalColor);
-						}
-						if (!directUpdate || col_a == 1){
-							camera.depthBuffer[j][i] = col_w;
-							canvas[j][i] = finalColor;
-						}
-					}
-
-					t += tstep;
-				}
-			}
+			dr1_step = dr1/Math.abs(dy1);
+			dg1_step = dg1/Math.abs(dy1);
+			db1_step = db1/Math.abs(dy1);
+			da1_step = da1/Math.abs(dy1);
+			dw1_step = dw1/Math.abs(dy1);
+			dl1_step = dl1/Math.abs(dy1);
 		}
-		
+		if (dy2 != 0){
+			dr2_step = dr2/Math.abs(dy2);
+			dg2_step = dg2/Math.abs(dy2);
+			db2_step = db2/Math.abs(dy2);
+			da2_step = da2/Math.abs(dy2);
+			dw2_step = dw2/Math.abs(dy2);
+			dl2_step = dl2/Math.abs(dy2);
+		}
+		if (dy1 != 0){
+			rasterizeColoredTriangle(x1, x1, y1, y1, y2, dax_step, dbx_step, dr1_step, dg1_step, db1_step, da1_step, dl1_step, dw1_step,
+					dr2_step, dg2_step, db2_step, da2_step, dl2_step, dw2_step, w1, l1, w1, l1, c1, c1, camera, lights, gc, directUpdate);
+		}
 		dx1 = x3-x2;
 		dy1 = y3-y2;
 		dr1 = c3.getRed()-c2.getRed();
@@ -863,101 +956,25 @@ public class Mesh{
 		da1 = c3.getOpacity()-c2.getOpacity();
 		dw1 = w3-w2;
 		dl1 = l3-l2;
-		
+
 		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
 		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
-		
+
 		dr1_step = 0; dg1_step = 0; db1_step = 0; dw1_step = 0; dl1_step = 0;
-		if (dy1 != 0) dr1_step = dr1/Math.abs(dy1);
-		if (dy1 != 0) dg1_step = dg1/Math.abs(dy1);
-		if (dy1 != 0) db1_step = db1/Math.abs(dy1);
-		if (dy1 != 0) da1_step = da1/Math.abs(dy1);
-		if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
-		if (dy1 != 0) dl1_step = dl1/Math.abs(dy1);
-		
 		if (dy1 != 0){
-			for (int i = y2; i <= y3; i++){
-				int ax = x2+(int)((i-y2)*dax_step);
-				int bx = x1+(int)((i-y1)*dbx_step);
-				
-				double col_sr = c2.getRed()+(i-y2)*dr1_step;
-				double col_sg = c2.getGreen()+(i-y2)*dg1_step;
-				double col_sb = c2.getBlue()+(i-y2)*db1_step;
-				double col_sa = c2.getOpacity()+(i-y2)*da1_step;
-				double col_sw = w2+(i-y2)*dw1_step;
-				double col_sl = l2+(i-y2)*dl1_step;
-				
-				double col_er = c1.getRed()+(i-y1)*dr2_step;
-				double col_eg = c1.getGreen()+(i-y1)*dg2_step;
-				double col_eb = c1.getBlue()+(i-y1)*db2_step;
-				double col_ea = c1.getOpacity()+(i-y1)*da2_step;
-				double col_ew = w1+(i-y1)*dw2_step;
-				double col_el = l1+(i-y1)*dl2_step;
-				
-				if (ax > bx){
-					ax = swap(bx, bx = ax);
-					col_sr = swap(col_er, col_er = col_sr);
-					col_sg = swap(col_eg, col_eg = col_sg);
-					col_sb = swap(col_eb, col_eb = col_sb);
-					col_sa = swap(col_ea, col_ea = col_sa);
-					col_sw = swap(col_ew, col_ew = col_sw);
-					col_sl = swap(col_el, col_el = col_sl);
-				}
-				
-				double tstep = 1.0/(bx-ax);
-				double t = 0.0;
-				
-				for (int j = ax; j <= bx; j++){
-					col_r = (1-t)*col_sr+t*col_er;
-					col_g = (1-t)*col_sg+t*col_eg;
-					col_b = (1-t)*col_sb+t*col_eb;
-					col_a = (1-t)*col_sa+t*col_ea;
-					col_w = (1-t)*col_sw+t*col_ew;
-					col_l = (1-t)*col_sl+t*col_el;
-					
-					if (isInScene(j, i) && camera.depthBuffer[j][i] <= col_w){
-						Color color = Color.color(col_r, col_g, col_b);
-						Color backColor = canvas[j][i];
-						
-						if (col_a < 1 && color.equals(alphaCanvas[j][i])){
-							t += tstep;
-							continue;
-						}
-						
-						// Transparency
-						alphaCanvas[j][i] = color;
-						color = mixColors(color, backColor);
-
-						if (SHADOWS){
-							for (Light light : lights){
-								Camera cam2 = light.getCamera();
-								double[] shadow = convertPoint(new double[]{j, i, col_w}, camera, cam2);
-								int index_x = (int)shadow[0];
-								int index_y = (int)shadow[1];
-								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
-									double depth = cam2.depthBuffer[index_x][index_y];
-									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
-										color = color.darker();
-									}
-								}
-							}
-						}
-						Color finalColor = col_a == 0 ? color : Light.getLight(color, Math.max(col_l, 0));			
-						if (directUpdate){
-							gc.getPixelWriter().setColor(j, i, finalColor);
-						}
-						if (!directUpdate || col_a == 1){
-							camera.depthBuffer[j][i] = col_w;
-							canvas[j][i] = finalColor;
-						}
-					}
-
-					t += tstep;
-				}
-			}
+			dr1_step = dr1/Math.abs(dy1);
+			dg1_step = dg1/Math.abs(dy1);
+			db1_step = db1/Math.abs(dy1);
+			da1_step = da1/Math.abs(dy1);
+			dw1_step = dw1/Math.abs(dy1);
+			dl1_step = dl1/Math.abs(dy1);
+		}
+		if (dy1 != 0){
+			rasterizeColoredTriangle(x2, x1, y2, y1, y3, dax_step, dbx_step, dr1_step, dg1_step, db1_step, da1_step, dl1_step, dw1_step,
+					dr2_step, dg2_step, db2_step, da2_step, dl2_step, dw2_step, w2, l2, w1, l1, c2, c1, camera, lights, gc, directUpdate);
 		}
 	}
-	
+
 	private static void renderTriangle(ProjectedTriangle pt, Camera camera, List<Light> lights, GraphicsContext gc, boolean directUpdate){
 		int x1 = (int)pt.point1[0];
 		int y1 = (int)pt.point1[1];
@@ -1032,99 +1049,26 @@ public class Mesh{
 		double dw2 = w3-w1;
 		double dl2 = l3-l1;
 		
-		double tex_u, tex_v, tex_w, tex_l;
-		
 		double dax_step = 0, dbx_step = 0, du1_step = 0, dv1_step = 0, du2_step = 0, dv2_step = 0, dw1_step = 0, dw2_step = 0, dl1_step = 0, dl2_step = 0;
 		
 		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
 		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
 		
-		if (dy1 != 0) du1_step = du1/Math.abs(dy1);
-		if (dy1 != 0) dv1_step = dv1/Math.abs(dy1);
-		if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
-		if (dy1 != 0) dl1_step = dl1/Math.abs(dy1);
-		
-		if (dy2 != 0) du2_step = du2/Math.abs(dy2);
-		if (dy2 != 0) dv2_step = dv2/Math.abs(dy2);
-		if (dy2 != 0) dw2_step = dw2/Math.abs(dy2);
-		if (dy2 != 0) dl2_step = dl2/Math.abs(dy2);
-		
 		if (dy1 != 0){
-			for (int i = y1; i <= y2; i++){
-				int ax = x1+(int)((i-y1)*dax_step);
-				int bx = x1+(int)((i-y1)*dbx_step);
-				
-				double tex_su = u1+(i-y1)*du1_step;
-				double tex_sv = v1+(i-y1)*dv1_step;
-				double tex_sw = w1+(i-y1)*dw1_step;
-				double tex_sl = l1+(i-y1)*dl1_step;
-				
-				double tex_eu = u1+(i-y1)*du2_step;
-				double tex_ev = v1+(i-y1)*dv2_step;
-				double tex_ew = w1+(i-y1)*dw2_step;
-				double tex_el = l1+(i-y1)*dl2_step;
-				
-				if (ax > bx){
-					ax = swap(bx, bx = ax);
-					tex_su = swap(tex_eu, tex_eu = tex_su);
-					tex_sv = swap(tex_ev, tex_ev = tex_sv);
-					tex_sw = swap(tex_ew, tex_ew = tex_sw);
-					tex_sl = swap(tex_el, tex_el = tex_sl);
-				}
-				
-				double tstep = 1.0/(bx-ax);
-				double t = 0.0;
-				
-				for (int j = ax; j <= bx; j++){
-					tex_u = (1-t)*tex_su+t*tex_eu;
-					tex_v = (1-t)*tex_sv+t*tex_ev;
-					tex_w = (1-t)*tex_sw+t*tex_ew;
-					tex_l = (1-t)*tex_sl+t*tex_el;
-					
-					int pix_x = (int)Math.max(0, tex_u/tex_w*width);
-					int pix_y = (int)Math.max(0, (tex_v/tex_w*height));
-
-					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
-						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
-						Color backColor = canvas[j][i];
-						double alpha = color.getOpacity();
-						
-						if (alpha < 1 && color.equals(alphaCanvas[j][i])){
-							t += tstep;
-							continue;
-						}
-						
-						// Transparency
-						alphaCanvas[j][i] = color;
-						color = mixColors(color, backColor);
-						
-						if (SHADOWS){
-							for (Light light : lights){
-								Camera cam2 = light.getCamera();
-								double[] shadow = convertPoint(new double[]{j, i, tex_w}, camera, cam2);
-								int index_x = (int)shadow[0];
-								int index_y = (int)shadow[1];
-								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
-									double depth = cam2.depthBuffer[index_x][index_y];
-									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
-										color = color.darker();
-									}
-								}
-							}
-						}
-						Color finalColor = alpha == 0 ? color : Light.getLight(color, Math.max(tex_l, 0));		
-						if (directUpdate){
-							gc.getPixelWriter().setColor(j, i, finalColor);
-						}
-						if (!directUpdate || alpha == 1){
-							camera.depthBuffer[j][i] = tex_w;
-						}
-						canvas[j][i] = finalColor;
-					}
-					
-					t += tstep;
-				}
-			}
+			du1_step = du1/Math.abs(dy1);
+			dv1_step = dv1/Math.abs(dy1);
+			dw1_step = dw1/Math.abs(dy1);
+			dl1_step = dl1/Math.abs(dy1);
+		}
+		if (dy2 != 0){
+			du2_step = du2/Math.abs(dy2);
+			dv2_step = dv2/Math.abs(dy2);
+			dw2_step = dw2/Math.abs(dy2);
+			dl2_step = dl2/Math.abs(dy2);
+		}
+		if (dy1 != 0){
+			rasterizeTriangle(x1, x1, y1, y1, y2, dax_step, dbx_step, du1_step, dv1_step, dw1_step, dl1_step, du2_step, dv2_step, dw2_step, dl2_step,
+					u1, v1, w1, l1, u1, v1, w1, l1, width, height, camera, reader, lights, gc, directUpdate);
 		}
 		
 		dx1 = x3-x2;
@@ -1138,87 +1082,15 @@ public class Mesh{
 		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
 		
 		du1_step = 0; dv1_step = 0; dw1_step = 0; dl1_step = 0;
-		if (dy1 != 0) du1_step = du1/Math.abs(dy1);
-		if (dy1 != 0) dv1_step = dv1/Math.abs(dy1);
-		if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
-		if (dy1 != 0) dl1_step = dl1/Math.abs(dy1);
-		
 		if (dy1 != 0){
-			for (int i = y2; i <= y3; i++){
-				int ax = x2+(int)((i-y2)*dax_step);
-				int bx = x1+(int)((i-y1)*dbx_step);
-				
-				double tex_su = u2+(i-y2)*du1_step;
-				double tex_sv = v2+(i-y2)*dv1_step;
-				double tex_sw = w2+(i-y2)*dw1_step;
-				double tex_sl = l2+(i-y2)*dl1_step;
-				
-				double tex_eu = u1+(i-y1)*du2_step;
-				double tex_ev = v1+(i-y1)*dv2_step;
-				double tex_ew = w1+(i-y1)*dw2_step;
-				double tex_el = l1+(i-y1)*dl2_step;
-				
-				if (ax > bx){
-					ax = swap(bx, bx = ax);
-					tex_su = swap(tex_eu, tex_eu = tex_su);
-					tex_sv = swap(tex_ev, tex_ev = tex_sv);
-					tex_sw = swap(tex_ew, tex_ew = tex_sw);
-					tex_sl = swap(tex_el, tex_el = tex_sl);
-				}
-				
-				double tstep = 1.0/(bx-ax);
-				double t = 0.0;
-				
-				for (int j = ax; j <= bx; j++){
-					tex_u = (1-t)*tex_su+t*tex_eu;
-					tex_v = (1-t)*tex_sv+t*tex_ev;
-					tex_w = (1-t)*tex_sw+t*tex_ew;
-					tex_l = (1-t)*tex_sl+t*tex_el;
-
-					int pix_x = (int)Math.max(0, (tex_u/tex_w*width));
-					int pix_y = (int)Math.max(0, (tex_v/tex_w*height));
-
-					if (isInScene(j, i) && camera.depthBuffer[j][i] <= tex_w){
-						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
-						Color backColor = canvas[j][i];
-						double alpha = color.getOpacity();
-						
-						if (alpha < 1 && color.equals(alphaCanvas[j][i])){
-							t += tstep;
-							continue;
-						}
-						
-						// Transparency
-						alphaCanvas[j][i] = color;
-						color = mixColors(color, backColor);
-						
-						if (SHADOWS){
-							for (Light light : lights){
-								Camera cam2 = light.getCamera();
-								double[] shadow = convertPoint(new double[]{j, i, tex_w}, camera, cam2);
-								int index_x = (int)shadow[0];
-								int index_y = (int)shadow[1];
-								if (index_x >= 0 && index_y >= 0 && index_x < cam2.depthBuffer.length && index_y < cam2.depthBuffer[0].length){
-									double depth = cam2.depthBuffer[index_x][index_y];
-									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*camera.aspectRatio){
-										color = color.darker();
-									}
-								}
-							}
-						}
-						Color finalColor = alpha == 0 ? color : Light.getLight(color, Math.max(tex_l, 0));		
-						if (directUpdate){
-							gc.getPixelWriter().setColor(j, i, finalColor);
-						}
-						if (!directUpdate || alpha == 1){
-							camera.depthBuffer[j][i] = tex_w;
-						}
-						canvas[j][i] = finalColor;
-					}
-					
-					t += tstep;
-				}
-			}
+			du1_step = du1/Math.abs(dy1);
+			dv1_step = dv1/Math.abs(dy1);
+			dw1_step = dw1/Math.abs(dy1);
+			dl1_step = dl1/Math.abs(dy1);
+		}
+		if (dy1 != 0){
+			rasterizeTriangle(x2, x1, y2, y1, y3, dax_step, dbx_step, du1_step, dv1_step, dw1_step, dl1_step, du2_step, dv2_step, dw2_step, dl2_step,
+					u2, v2, w2, l2, u1, v1, w1, l1, width, height, camera, reader, lights, gc, directUpdate);
 		}
 	}
 	
