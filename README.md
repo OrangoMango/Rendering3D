@@ -1,4 +1,6 @@
 # Rendering3D
+[![Project Map](https://sourcespy.com/shield.svg)](https://sourcespy.com/github/orangomangorendering3d/)
+
 My own implementation of a 3D engine. **There are still some bugs, I'm working on it. :(**
 
 ## How to run
