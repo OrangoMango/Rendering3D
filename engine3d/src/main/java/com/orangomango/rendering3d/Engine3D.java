@@ -131,6 +131,14 @@ public class Engine3D{
 		return Color.color(red, green, blue);
 	}
 
+	public static <T> T swap(T a, T b){
+		return a;
+	}
+
+	public static boolean isInScene(int x, int y, Camera camera){
+		return x >= 0 && y >= 0 && x < camera.getWidth() && y < camera.getHeight();
+	}
+
 	public static double[][] getRotateX(double angle){
 		return new double[][]{
 			{1, 0, 0, 0},

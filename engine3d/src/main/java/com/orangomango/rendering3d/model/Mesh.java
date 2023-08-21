@@ -26,18 +26,18 @@ public class Mesh{
 
 	public Mesh(Point3D[] vertices, int[][] faces, Point3D[][] normals, Image[] images, int[] facesImages, Point2D[] textureVertices, int[][] textureFaces){
 		this.imageMesh = true;
-		setupMesh(vertices, faces, normals);
 		this.images = images;
 		this.facesImages = facesImages;
 		this.textureVertices = textureVertices;
 		this.textureFaces = textureFaces;
+		setupMesh(vertices, faces, normals);
 	}
 
 	public Mesh(Point3D[] vertices, int[][] faces, Point3D[][] normals, Color[] colors, Color[][] facesColors){
 		this.imageMesh = false;
-		setupMesh(vertices, faces, normals);
 		this.colors = colors;
 		this.facesColors = facesColors;
+		setupMesh(vertices, faces, normals);
 	}
 
 	public void update(Camera camera){

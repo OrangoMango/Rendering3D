@@ -22,9 +22,9 @@ public class MeshTriangle{
 		double[] p3 = this.vertex3.getProjection(camera);
 
 		if (this.vertex1.isImageVertex()){
-			this.projected = new ProjectedTriangle(p1, p2, p3, this.vertex1.getImage(), this.vertex1.getTextureCoords(), this.vertex2.getTextureCoords(), this.vertex3.getTextureCoords());	
+			this.projected = new ProjectedTriangle(camera, p1, p2, p3, this.vertex1.getImage(), this.vertex1.getTextureCoords(), this.vertex2.getTextureCoords(), this.vertex3.getTextureCoords());	
 		} else {
-			this.projected = new ProjectedTriangle(p1, p2, p3, this.vertex1.getColor(), this.vertex2.getColor(), this.vertex3.getColor());
+			this.projected = new ProjectedTriangle(camera, p1, p2, p3, this.vertex1.getColor(), this.vertex2.getColor(), this.vertex3.getColor());
 		}
 	}
 

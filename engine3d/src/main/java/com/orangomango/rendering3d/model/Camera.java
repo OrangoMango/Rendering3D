@@ -7,7 +7,7 @@ import com.orangomango.rendering3d.Engine3D;
 public class Camera{
 	private Point3D position;
 	private double rx, ry;
-	private double[][] depthBuffer;
+	public double[][] depthBuffer;
 	private double aspectRatio, fov, zFar, zNear;
 	private double width, height;
 	private boolean stateChanged = true;

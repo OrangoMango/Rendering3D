@@ -51,14 +51,17 @@ public class MeshVertex{
 		double[] p = new double[]{this.position.getX(), this.position.getY(), this.position.getZ(), 1};
 		double[] view = Engine3D.multiply(camera.getViewMatrix(), p);
 		double[] proj = Engine3D.multiply(camera.getProjectionMatrix(), view);
-		double px = proj[0]/(proj[3] == 0 ? 1 : proj[3]);
-		double py = proj[1]/(proj[3] == 0 ? 1 : proj[3]);
+		double px = proj[0]/proj[3];
+		double py = proj[1]/proj[3];
 		double pz = proj[2];
+		System.out.format("-> [%.3f %.3f %.3f %.3f]\n", px, py, pz, proj[3]);
 
 		px += 1;
 		py += 1;
 		px *= 0.5*camera.getWidth();
 		py *= 0.5*camera.getHeight();
+
+		System.out.println(this.position+" "+px+" "+py+" "+pz);
 
 		return new double[]{px, py, 1/proj[3]};
 	}
