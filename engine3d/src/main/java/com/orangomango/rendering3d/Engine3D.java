@@ -4,6 +4,7 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.layout.StackPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
@@ -18,6 +19,7 @@ import java.util.*;
 
 import com.orangomango.rendering3d.model.Camera;
 import com.orangomango.rendering3d.model.Mesh;
+import com.orangomango.rendering3d.model.Light;
 
 public class Engine3D{
 	private int width, height;
@@ -28,12 +30,35 @@ public class Engine3D{
 	private Color[][] canvas;
 	private Camera camera;
 	private List<Mesh> objects = new ArrayList<>();
+	private List<Light> sceneLights = new ArrayList<>();
+	private Map<KeyCode, Runnable> keyEvents = new HashMap<>();
+	private Map<KeyCode, Boolean> keyEventsSingle = new HashMap<>();
+	private int fps, frames;
 
 	public Engine3D(Stage stage, int width, int height){
 		this.width = width;
 		this.height = height;
 		this.stage = stage;
 		this.canvas = new Color[this.width][this.height];
+
+		Thread counter = new Thread(() -> {
+			while (true){
+				try {
+					this.fps = this.frames;
+					this.frames = 0;
+					Thread.sleep(1000);
+				} catch (InterruptedException ex){
+					ex.printStackTrace();
+				}
+			}
+		});
+		counter.setDaemon(true);
+		counter.start();
+	}
+
+	public void setOnKey(KeyCode code, Runnable r, boolean singleClick){
+		this.keyEvents.put(code, r);
+		this.keyEventsSingle.put(code, singleClick);
 	}
 
 	public void setOnMousePressed(EventHandler<MouseEvent> event){
@@ -46,6 +71,10 @@ public class Engine3D{
 
 	public void addObject(Mesh mesh){
 		this.objects.add(mesh);
+	}
+
+	public void addLight(Light light){
+		this.sceneLights.add(light);
 	}
 
 	public Scene getScene(){
@@ -74,6 +103,7 @@ public class Engine3D{
 		AnimationTimer timer = new AnimationTimer(){
 			@Override
 			public void handle(long time){
+				Engine3D.this.frames++;
 				update(gc);
 			}
 		};
@@ -93,11 +123,13 @@ public class Engine3D{
 			}
 		}
 		gc.setFill(Color.CYAN);
-		gc.fillRect(0, 0, width, height);
+		gc.fillRect(0, 0, this.width, this.height);
+
+		this.camera.clearDepthBuffer();
 
 		for (Mesh mesh : this.objects){
-			mesh.update(this.camera);
-			mesh.render(this.canvas);
+			mesh.update(this.camera, this.sceneLights);
+			mesh.render(this.canvas, null);
 		}
 
 		// Render meshes
@@ -121,6 +153,22 @@ public class Engine3D{
 		if (this.keys.getOrDefault(KeyCode.ESCAPE, false)){
 			System.exit(0);
 		}
+
+		for (KeyCode k : this.keyEvents.keySet()){
+			if (this.keys.getOrDefault(k, false)){
+				this.keyEvents.get(k).run();
+				if (this.keyEventsSingle.get(k)) this.keys.put(k, false);
+			}
+		}
+
+		gc.setFill(Color.BLACK);
+		gc.save();
+		gc.setGlobalAlpha(0.6);
+		gc.fillRect(0.035*width, 0.025*height, 0.45*width, 0.2*height);
+		gc.restore();
+		gc.setFill(Color.WHITE);
+		gc.setFont(new Font("sans-serif", 13));
+		gc.fillText(this.camera+"\n"+String.format("FPS:%d", this.fps), 0.05*width, 0.075*height);
 	}
 
 	public static Color mixColors(Color color1, Color color2){

@@ -1,6 +1,9 @@
 package com.orangomango.rendering3d.model;
 
 import javafx.scene.paint.Color;
+import javafx.geometry.Point3D;
+
+import java.util.List;
 
 public class MeshTriangle{
 	private MeshVertex vertex1, vertex2, vertex3;
@@ -16,15 +19,30 @@ public class MeshTriangle{
 	}
 
 	// Called once every frame
-	public void update(Camera camera){
+	public void update(Camera camera, List<Light> lights){
+		this.projected = null; // Reset
+
 		double[] p1 = this.vertex1.getProjection(camera);
 		double[] p2 = this.vertex2.getProjection(camera);
 		double[] p3 = this.vertex3.getProjection(camera);
 
-		if (this.vertex1.isImageVertex()){
-			this.projected = new ProjectedTriangle(camera, p1, p2, p3, this.vertex1.getImage(), this.vertex1.getTextureCoords(), this.vertex2.getTextureCoords(), this.vertex3.getTextureCoords());	
-		} else {
-			this.projected = new ProjectedTriangle(camera, p1, p2, p3, this.vertex1.getColor(), this.vertex2.getColor(), this.vertex3.getColor());
+		Point3D normal = this.vertex1.getNormal();
+		if (normal == null){
+			normal = this.vertex2.getPosition().subtract(this.vertex1.getPosition()).crossProduct(this.vertex3.getPosition().subtract(this.vertex1.getPosition()));
+			normal = normal.normalize();
+			this.vertex1.setNormal(normal);
+			this.vertex2.setNormal(normal);
+			this.vertex3.setNormal(normal);
+		}
+		double dot = normal.dotProduct(this.vertex1.getPosition().subtract(camera.getPosition()));
+
+		if (dot < 0){
+			if (this.vertex1.isImageVertex()){
+				this.projected = new ProjectedTriangle(camera, p1, p2, p3, this.vertex1.getImage(), this.vertex1.getTextureCoords(), this.vertex2.getTextureCoords(), this.vertex3.getTextureCoords());
+			} else {
+				this.projected = new ProjectedTriangle(camera, p1, p2, p3, this.vertex1.getColor(), this.vertex2.getColor(), this.vertex3.getColor());
+			}
+			this.projected.setLightData(lights, this.vertex1, this.vertex2, this.vertex3);
 		}
 	}
 

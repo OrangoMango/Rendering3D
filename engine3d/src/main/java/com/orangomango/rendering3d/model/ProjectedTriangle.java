@@ -1,8 +1,13 @@
 package com.orangomango.rendering3d.model;
 
+import javafx.scene.canvas.GraphicsContext;
 import javafx.geometry.Point2D;
+import javafx.geometry.Point3D;
 import javafx.scene.image.Image;
+import javafx.scene.image.PixelReader;
 import javafx.scene.paint.Color;
+
+import java.util.*;
 
 import static com.orangomango.rendering3d.Engine3D.swap;
 import static com.orangomango.rendering3d.Engine3D.isInScene;
@@ -11,6 +16,10 @@ public class ProjectedTriangle{
 	private double[] v1, v2, v3;
 	private boolean imageTriangle;
 	private Camera camera;
+
+	// Light data
+	private MeshVertex vex1, vex2, vex3;
+	private List<Light> lights = new ArrayList<>();
 
 	// Image triangle
 	private Point2D tex1, tex2, tex3;
@@ -42,11 +51,240 @@ public class ProjectedTriangle{
 		this.col3 = col3;
 	}
 
-	public void render(Color[][] canvas){
-		if (this.imageTriangle){
+	public void setLightData(List<Light> lights, MeshVertex vex1, MeshVertex vex2, MeshVertex vex3){
+		this.lights = lights;
+		this.vex1 = vex1;
+		this.vex2 = vex2;
+		this.vex3 = vex3;
+	}
 
+	public void render(Color[][] canvas, GraphicsContext gc){
+		if (gc == null){
+			if (this.imageTriangle){
+				renderTriangle(canvas);
+			} else {
+				renderColoredTriangle(canvas);
+			}
 		} else {
-			renderColoredTriangle(canvas);
+			gc.setStroke(Color.RED);
+			gc.setLineWidth(3);
+			gc.strokeLine(this.v1[0], this.v1[1], this.v2[0], this.v2[1]);
+			gc.strokeLine(this.v2[0], this.v2[1], this.v3[0], this.v3[1]);
+			gc.strokeLine(this.v3[0], this.v3[1], this.v1[0], this.v1[1]);
+		}
+	}
+
+	private void renderTriangle(Color[][] canvas){
+		int x1 = (int)this.v1[0];
+		int y1 = (int)this.v1[1];
+		double w1 = this.v1[2];
+		int x2 = (int)this.v2[0];
+		int y2 = (int)this.v2[1];
+		double w2 = this.v2[2];
+		int x3 = (int)this.v3[0];
+		int y3 = (int)this.v3[1];
+		double w3 = this.v3[2];
+
+		Image image = this.image;
+		// Texture coordinates are multiplied by w in the constructor
+		Point2D t1 = this.tex1;
+		Point2D t2 = this.tex2;
+		Point2D t3 = this.tex3;
+		double u1 = t1.getX();
+		double v1 = t1.getY();
+		double u2 = t2.getX();
+		double v2 = t2.getY();
+		double u3 = t3.getX();
+		double v3 = t3.getY();
+
+		double l1 = 0, l2 = 0, l3 = 0;
+		for (Light light : this.lights){
+			l1 += light.getLightIntensity(this.vex1.getNormal(), this.vex1.getPosition());
+			l2 += light.getLightIntensity(this.vex2.getNormal(), this.vex2.getPosition());
+			l3 += light.getLightIntensity(this.vex3.getNormal(), this.vex3.getPosition());
+		}
+		l1 = Math.min(1, l1);
+		l2 = Math.min(1, l2);
+		l3 = Math.min(1, l3);
+
+		double width = image.getWidth();
+		double height = image.getHeight();
+		PixelReader reader = image.getPixelReader();
+
+		if (y2 < y1){
+			y1 = swap(y2, y2 = y1);
+			x1 = swap(x2, x2 = x1);
+			u1 = swap(u2, u2 = u1);
+			v1 = swap(v2, v2 = v1);
+			w1 = swap(w2, w2 = w1);
+			l1 = swap(l2, l2 = l1);
+		}
+		if (y3 < y1){
+			y1 = swap(y3, y3 = y1);
+			x1 = swap(x3, x3 = x1);
+			u1 = swap(u3, u3 = u1);
+			v1 = swap(v3, v3 = v1);
+			w1 = swap(w3, w3 = w1);
+			l1 = swap(l3, l3 = l1);
+		}
+		if (y3 < y2){
+			y2 = swap(y3, y3 = y2);
+			x2 = swap(x3, x3 = x2);
+			u2 = swap(u3, u3 = u2);
+			v2 = swap(v3, v3 = v2);
+			w2 = swap(w3, w3 = w2);
+			l2 = swap(l3, l3 = l2);
+		}
+		
+		int dx1 = x2-x1;
+		int dy1 = y2-y1;
+		double du1 = u2-u1;
+		double dv1 = v2-v1;
+		double dw1 = w2-w1;
+		double dl1 = l2-l1;
+		
+		int dx2 = x3-x1;
+		int dy2 = y3-y1;
+		double du2 = u3-u1;
+		double dv2 = v3-v1;
+		double dw2 = w3-w1;
+		double dl2 = l3-l1;
+
+		double tex_u, tex_v, tex_w, tex_l;
+		double dax_step = 0, dbx_step = 0, du1_step = 0, dv1_step = 0, du2_step = 0, dv2_step = 0, dw1_step = 0, dw2_step = 0, dl1_step = 0, dl2_step = 0;
+		
+		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
+		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
+		
+		if (dy1 != 0){
+			du1_step = du1/Math.abs(dy1);
+			dv1_step = dv1/Math.abs(dy1);
+			dw1_step = dw1/Math.abs(dy1);
+			dl1_step = dl1/Math.abs(dy1);
+		}
+		if (dy2 != 0){
+			du2_step = du2/Math.abs(dy2);
+			dv2_step = dv2/Math.abs(dy2);
+			dw2_step = dw2/Math.abs(dy2);
+			dl2_step = dl2/Math.abs(dy2);
+		}
+
+		if (dy1 != 0){
+			for (int i = y1; i <= y2; i++){
+				int ax = x1+(int)((i-y1)*dax_step);
+				int bx = x1+(int)((i-y1)*dbx_step);
+				
+				double tex_su = u1+(i-y1)*du1_step;
+				double tex_sv = v1+(i-y1)*dv1_step;
+				double tex_sw = w1+(i-y1)*dw1_step;
+				double tex_sl = l1+(i-y1)*dl1_step;
+				
+				double tex_eu = u1+(i-y1)*du2_step;
+				double tex_ev = v1+(i-y1)*dv2_step;
+				double tex_ew = w1+(i-y1)*dw2_step;
+				double tex_el = l1+(i-y1)*dl2_step;
+				
+				if (ax > bx){
+					ax = swap(bx, bx = ax);
+					tex_su = swap(tex_eu, tex_eu = tex_su);
+					tex_sv = swap(tex_ev, tex_ev = tex_sv);
+					tex_sw = swap(tex_ew, tex_ew = tex_sw);
+					tex_sl = swap(tex_el, tex_el = tex_sl);
+				}
+				
+				double tstep = 1.0/(bx-ax);
+				double t = 0.0;
+				
+				for (int j = ax; j <= bx; j++){
+					tex_u = (1-t)*tex_su+t*tex_eu;
+					tex_v = (1-t)*tex_sv+t*tex_ev;
+					tex_w = (1-t)*tex_sw+t*tex_ew;
+					tex_l = (1-t)*tex_sl+t*tex_el;
+					
+					int pix_x = (int)Math.max(0, tex_u/tex_w*width);
+					int pix_y = (int)Math.max(0, tex_v/tex_w*height);
+
+					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= tex_w){
+						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
+						
+						// Light
+						color = Light.getLight(color, tex_l);
+
+						this.camera.depthBuffer[j][i] = tex_w;
+						canvas[j][i] = color;
+					}
+					
+					t += tstep;
+				}
+			}
+		}
+
+		dx1 = x3-x2;
+		dy1 = y3-y2;
+		du1 = u3-u2;
+		dv1 = v3-v2;
+		dw1 = w3-w2;
+		dl1 = l3-l2;
+		
+		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
+		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
+		
+		du1_step = 0; dv1_step = 0; dw1_step = 0; dl1_step = 0;
+		if (dy1 != 0){
+			du1_step = du1/Math.abs(dy1);
+			dv1_step = dv1/Math.abs(dy1);
+			dw1_step = dw1/Math.abs(dy1);
+			dl1_step = dl1/Math.abs(dy1);
+		}
+
+		if (dy1 != 0){
+			for (int i = y2; i <= y3; i++){
+				int ax = x2+(int)((i-y2)*dax_step);
+				int bx = x1+(int)((i-y1)*dbx_step);
+				
+				double tex_su = u2+(i-y2)*du1_step;
+				double tex_sv = v2+(i-y2)*dv1_step;
+				double tex_sw = w2+(i-y2)*dw1_step;
+				double tex_sl = l2+(i-y2)*dl1_step;
+				
+				double tex_eu = u1+(i-y1)*du2_step;
+				double tex_ev = v1+(i-y1)*dv2_step;
+				double tex_ew = w1+(i-y1)*dw2_step;
+				double tex_el = l1+(i-y1)*dl2_step;
+				
+				if (ax > bx){
+					ax = swap(bx, bx = ax);
+					tex_su = swap(tex_eu, tex_eu = tex_su);
+					tex_sv = swap(tex_ev, tex_ev = tex_sv);
+					tex_sw = swap(tex_ew, tex_ew = tex_sw);
+					tex_sl = swap(tex_el, tex_el = tex_sl);
+				}
+				
+				double tstep = 1.0/(bx-ax);
+				double t = 0.0;
+				
+				for (int j = ax; j <= bx; j++){
+					tex_u = (1-t)*tex_su+t*tex_eu;
+					tex_v = (1-t)*tex_sv+t*tex_ev;
+					tex_w = (1-t)*tex_sw+t*tex_ew;
+					tex_l = (1-t)*tex_sl+t*tex_el;
+
+					int pix_x = (int)Math.max(0, tex_u/tex_w*width);
+					int pix_y = (int)Math.max(0, tex_v/tex_w*height);
+
+					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= tex_w){
+						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
+						
+						// Light
+						color = Light.getLight(color, tex_l);
+
+						this.camera.depthBuffer[j][i] = tex_w;
+						canvas[j][i] = color;
+					}
+					
+					t += tstep;
+				}
+			}
 		}
 	}
 
@@ -60,12 +298,21 @@ public class ProjectedTriangle{
 		int x3 = (int)this.v3[0];
 		int y3 = (int)this.v3[1];
 		double w3 = this.v3[2];
+
 		Color c1 = this.col1;
 		Color c2 = this.col2;
 		Color c3 = this.col3;
 
 		// Setup the lights
 		double l1 = 0, l2 = 0, l3 = 0;
+		for (Light light : this.lights){
+			l1 += light.getLightIntensity(this.vex1.getNormal(), this.vex1.getPosition());
+			l2 += light.getLightIntensity(this.vex2.getNormal(), this.vex2.getPosition());
+			l3 += light.getLightIntensity(this.vex3.getNormal(), this.vex3.getPosition());
+		}
+		l1 = Math.min(1, l1);
+		l2 = Math.min(1, l2);
+		l3 = Math.min(1, l3);
 
 		if (y2 < y1){
 			y1 = swap(y2, y2 = y1);
@@ -173,10 +420,12 @@ public class ProjectedTriangle{
 					col_l = (1-t)*col_sl+t*col_el;
 					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
 						Color color = Color.color(col_r, col_g, col_b);
+
+						// Light
+						color = Light.getLight(color, col_l);
 						
 						this.camera.depthBuffer[j][i] = col_w;
 						canvas[j][i] = color;
-						System.out.println("Rendering1");
 					}
 
 					t += tstep;
@@ -206,7 +455,7 @@ public class ProjectedTriangle{
 			dw1_step = dw1/Math.abs(dy1);
 			dl1_step = dl1/Math.abs(dy1);
 		}
-			
+
 		if (dy1 != 0){
 			for (int i = y2; i <= y3; i++){
 				int ax = x2+(int)((i-y2)*dax_step);
@@ -249,10 +498,12 @@ public class ProjectedTriangle{
 					
 					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
 						Color color = Color.color(col_r, col_g, col_b);
+
+						// Light
+						color = Light.getLight(color, col_l);
 						
 						this.camera.depthBuffer[j][i] = col_w;
 						canvas[j][i] = color;
-						System.out.println("Rendering2");
 					}
 
 					t += tstep;

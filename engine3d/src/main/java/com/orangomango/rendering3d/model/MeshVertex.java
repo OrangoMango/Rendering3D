@@ -9,7 +9,7 @@ import com.orangomango.rendering3d.Engine3D;
 
 public class MeshVertex{
 	private boolean imageVertex;
-	private Point3D position;
+	private Point3D position, normal;
 
 	// Image vertex
 	private Point2D textureCoords;
@@ -18,16 +18,18 @@ public class MeshVertex{
 	// Color vertex
 	private Color vertexColor;
 
-	public MeshVertex(Point3D position, Point2D tex, Image image){
+	public MeshVertex(Point3D position, Point3D normal, Point2D tex, Image image){
 		this.imageVertex = true;
 		this.position = position;
+		this.normal = normal;
 		this.textureCoords = tex;
 		this.image = image;
 	}
 
-	public MeshVertex(Point3D position, Color color){
+	public MeshVertex(Point3D position, Point3D normal, Color color){
 		this.imageVertex = false;
 		this.position = position;
+		this.normal = normal;
 		this.vertexColor = color;
 	}
 
@@ -39,12 +41,24 @@ public class MeshVertex{
 		return this.image;
 	}
 
+	public Point3D getPosition(){
+		return this.position;
+	}
+
 	public Point2D getTextureCoords(){
 		return this.textureCoords;
 	}
 
 	public Color getColor(){
 		return this.vertexColor;
+	}
+
+	public Point3D getNormal(){
+		return this.normal;
+	}
+
+	public void setNormal(Point3D n){
+		this.normal = n;
 	}
 
 	public double[] getProjection(Camera camera){
@@ -54,14 +68,11 @@ public class MeshVertex{
 		double px = proj[0]/proj[3];
 		double py = proj[1]/proj[3];
 		double pz = proj[2];
-		System.out.format("-> [%.3f %.3f %.3f %.3f]\n", px, py, pz, proj[3]);
-
+		
 		px += 1;
 		py += 1;
 		px *= 0.5*camera.getWidth();
 		py *= 0.5*camera.getHeight();
-
-		System.out.println(this.position+" "+px+" "+py+" "+pz);
 
 		return new double[]{px, py, 1/proj[3]};
 	}

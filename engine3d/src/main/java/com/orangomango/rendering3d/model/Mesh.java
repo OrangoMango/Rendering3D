@@ -1,9 +1,12 @@
 package com.orangomango.rendering3d.model;
 
+import javafx.scene.canvas.GraphicsContext;
 import javafx.geometry.Point3D;
 import javafx.geometry.Point2D;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
+
+import java.util.List;
 
 public class Mesh{
 	// Image mesh
@@ -14,7 +17,7 @@ public class Mesh{
 
 	// Color mesh
 	private Color[] colors;
-	private Color[][] facesColors; // .obj has colors in mtllib file
+	private Color[] facesColors; // .obj has colors in mtllib file
 	private Color[][] vertexColors; // .obj has colors with vertices
 
 	private Point3D[] vertices;
@@ -33,25 +36,25 @@ public class Mesh{
 		setupMesh(vertices, faces, normals);
 	}
 
-	public Mesh(Point3D[] vertices, int[][] faces, Point3D[][] normals, Color[] colors, Color[][] facesColors){
+	public Mesh(Point3D[] vertices, int[][] faces, Point3D[][] normals, Color[] colors, Color[] facesColors){
 		this.imageMesh = false;
 		this.colors = colors;
 		this.facesColors = facesColors;
 		setupMesh(vertices, faces, normals);
 	}
 
-	public void update(Camera camera){
+	public void update(Camera camera, List<Light> lights){
 		for (int i = 0; i < this.triangles.length; i++){
 			MeshTriangle mt = this.triangles[i];
-			mt.update(camera);
+			mt.update(camera, lights);
 		}
 	}
 
-	public void render(Color[][] canvas){
+	public void render(Color[][] canvas, GraphicsContext gc){
 		for (int i = 0; i < this.triangles.length; i++){
 			MeshTriangle mt = this.triangles[i];
 			ProjectedTriangle pt = mt.getProjectedTriangle();
-			pt.render(canvas);
+			if (pt != null) pt.render(canvas, gc);
 		}
 	}
 
@@ -69,7 +72,7 @@ public class Mesh{
 			tr[1] = this.vertices[this.faces[i][1]];
 			tr[2] = this.vertices[this.faces[i][2]];
 			this.trianglePoints[i] = tr;
-			if (!this.imageMesh){
+			if (!this.imageMesh && this.colors != null){
 				Color[] cr = new Color[3];
 				cr[0] = this.colors[this.faces[i][0]];
 				cr[1] = this.colors[this.faces[i][1]];
@@ -84,14 +87,14 @@ public class Mesh{
 			Point3D[] tr = this.trianglePoints[i];
 			// TODO all vertices must have the same image
 			if (this.imageMesh){
-				MeshVertex v1 = new MeshVertex(tr[0], this.textureVertices[this.textureFaces[i][0]], this.images[this.facesImages[i]]);
-				MeshVertex v2 = new MeshVertex(tr[1], this.textureVertices[this.textureFaces[i][1]], this.images[this.facesImages[i]]);
-				MeshVertex v3 = new MeshVertex(tr[2], this.textureVertices[this.textureFaces[i][2]], this.images[this.facesImages[i]]);
+				MeshVertex v1 = new MeshVertex(tr[0], this.normals == null ? null : this.normals[i][0], this.textureVertices[this.textureFaces[i][0]], this.images[this.facesImages[i]]);
+				MeshVertex v2 = new MeshVertex(tr[1], this.normals == null ? null : this.normals[i][1], this.textureVertices[this.textureFaces[i][1]], this.images[this.facesImages[i]]);
+				MeshVertex v3 = new MeshVertex(tr[2], this.normals == null ? null : this.normals[i][2], this.textureVertices[this.textureFaces[i][2]], this.images[this.facesImages[i]]);
 				this.triangles[i] = new MeshTriangle(v1, v2, v3);
 			} else {
-				MeshVertex v1 = new MeshVertex(tr[0], this.facesColors != null ? this.facesColors[i][0] : this.vertexColors[i][0]);
-				MeshVertex v2 = new MeshVertex(tr[0], this.facesColors != null ? this.facesColors[i][1] : this.vertexColors[i][1]);
-				MeshVertex v3 = new MeshVertex(tr[0], this.facesColors != null ? this.facesColors[i][2] : this.vertexColors[i][2]);
+				MeshVertex v1 = new MeshVertex(tr[0], this.normals == null ? null : this.normals[i][0], this.facesColors != null ? this.facesColors[i] : this.vertexColors[i][0]);
+				MeshVertex v2 = new MeshVertex(tr[1], this.normals == null ? null : this.normals[i][1], this.facesColors != null ? this.facesColors[i] : this.vertexColors[i][1]);
+				MeshVertex v3 = new MeshVertex(tr[2], this.normals == null ? null : this.normals[i][2], this.facesColors != null ? this.facesColors[i] : this.vertexColors[i][2]);
 				this.triangles[i] = new MeshTriangle(v1, v2, v3);
 			}
 		}

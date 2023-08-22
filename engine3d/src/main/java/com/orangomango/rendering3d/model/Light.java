@@ -1,9 +1,40 @@
 package com.orangomango.rendering3d.model;
 
+import javafx.geometry.Point3D;
+import javafx.scene.paint.Color;
+
 public class Light{
 	private Camera camera;
 
+	private static final double AMBIENT_LIGHT = 0.08;
+
 	public Light(Camera camera){
 		this.camera = camera;
+	}
+
+	public Camera getCamera(){
+		return this.camera;
+	}
+
+	public double getLightIntensity(Point3D normal, Point3D point){
+		double intensity = 1;
+		double factor = 0;
+		
+		factor = normal.dotProduct(point.subtract(this.camera.getPosition()).normalize());
+		if (factor < -1) factor = 1;
+		else if (factor > 0) factor = 0;
+		else factor = Math.abs(factor);
+		
+		return factor*intensity+AMBIENT_LIGHT;
+	}
+
+	public static Color getLight(Color color, double factor){
+		double red = color.getRed();
+		double green = color.getGreen();
+		double blue = color.getBlue();
+		red = red * factor;
+		green = green * factor;
+		blue = blue * factor;
+		return Color.color(red, green, blue);
 	}
 }

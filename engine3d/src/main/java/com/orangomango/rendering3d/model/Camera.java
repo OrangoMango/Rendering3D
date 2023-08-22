@@ -32,7 +32,7 @@ public class Camera{
 		return this.height;
 	}
 
-	public void setPos(Point3D p){
+	public void setPosition(Point3D p){
 		this.stateChanged = true;
 		this.position = p;
 	}
@@ -54,8 +54,8 @@ public class Camera{
 	}
 
 	public void clearDepthBuffer(){
-		for (int i = 0; i < this.depthBuffer.length; i++){
-			for (int j = 0; j < this.depthBuffer[i].length; j++){
+		for (int i = 0; i < this.width; i++){
+			for (int j = 0; j < this.height; j++){
 				this.depthBuffer[i][j] = 0;
 			}
 		}
@@ -100,5 +100,10 @@ public class Camera{
 			{0, 0, 2/(zFar-zNear), -2*zNear/(zFar-zNear)-1},
 			{0, 0, 1, 0}
 		};
+	}
+
+	@Override
+	public String toString(){
+		return String.format("Cx: %.2f Cy: %.2f Cz: %.2f | Rx: %.2f Ry: %.2f", this.position.getX(), this.position.getY(), this.position.getZ(), this.rx, this.ry);
 	}
 }
