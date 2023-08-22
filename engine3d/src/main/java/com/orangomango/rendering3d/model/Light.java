@@ -35,6 +35,8 @@ public class Light{
 		red = red * factor;
 		green = green * factor;
 		blue = blue * factor;
-		return Color.color(red, green, blue);
+
+		// R G or B could be a little bit over 1 (1.00000000002)
+		return Color.color(Math.min(1, red), Math.min(1, green), Math.min(1, blue));
 	}
 }

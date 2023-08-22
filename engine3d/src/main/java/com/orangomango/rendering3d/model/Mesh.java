@@ -85,7 +85,6 @@ public class Mesh{
 		this.triangles = new MeshTriangle[this.trianglePoints.length];
 		for (int i = 0; i < this.trianglePoints.length; i++){
 			Point3D[] tr = this.trianglePoints[i];
-			// TODO all vertices must have the same image
 			if (this.imageMesh){
 				MeshVertex v1 = new MeshVertex(tr[0], this.normals == null ? null : this.normals[i][0], this.textureVertices[this.textureFaces[i][0]], this.images[this.facesImages[i]]);
 				MeshVertex v2 = new MeshVertex(tr[1], this.normals == null ? null : this.normals[i][1], this.textureVertices[this.textureFaces[i][1]], this.images[this.facesImages[i]]);

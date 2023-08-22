@@ -8,9 +8,12 @@ import javafx.geometry.Point3D;
 import javafx.geometry.Point2D;
 import javafx.scene.input.KeyCode;
 
+import java.io.File;
+
 import com.orangomango.rendering3d.model.Mesh;
 import com.orangomango.rendering3d.model.Camera;
 import com.orangomango.rendering3d.model.Light;
+import com.orangomango.rendering3d.meshloader.MeshLoader;
 
 /*
  * @author OrangoMango (https://orangomango.github.io)
@@ -36,7 +39,7 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.SPACE, () -> camera.move(new Point3D(0, -speed, 0)), false);
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(new Point3D(0, speed, 0)), false);
 
-		Mesh object = new Mesh(new Point3D[]{
+		/*Mesh object = new Mesh(new Point3D[]{
 			new Point3D(0, 0, 0), new Point3D(0, 1, 0), new Point3D(1, 1, 0), new Point3D(1, 0, 0),
 			new Point3D(0, 0, 1), new Point3D(0, 1, 1), new Point3D(1, 1, 1), new Point3D(1, 0, 1)
 		}, new int[][]{
@@ -49,9 +52,9 @@ public class MainApplication extends Application{
 			Color.color(Math.random(), Math.random(), Math.random()), Color.color(Math.random(), Math.random(), Math.random()), Color.color(Math.random(), Math.random(), Math.random()),
 			Color.color(Math.random(), Math.random(), Math.random()), Color.color(Math.random(), Math.random(), Math.random()), Color.color(Math.random(), Math.random(), Math.random()),
 			Color.color(Math.random(), Math.random(), Math.random()), Color.color(Math.random(), Math.random(), Math.random()), Color.color(Math.random(), Math.random(), Math.random())
-		});
+		});*/
 
-		Mesh object2 = new Mesh(new Point3D[]{
+		/*Mesh object2 = new Mesh(new Point3D[]{
 			new Point3D(1.2, 0, 0), new Point3D(1.2, 1, 0), new Point3D(2.2, 1, 0), new Point3D(2.2, 0, 0),
 			new Point3D(1.2, 0, 1), new Point3D(1.2, 1, 1), new Point3D(2.2, 1, 1), new Point3D(2.2, 0, 1)
 		}, new int[][]{
@@ -67,7 +70,16 @@ public class MainApplication extends Application{
 			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
 			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
-		});
+		});*/
+
+		MeshLoader loader = null;
+		try {
+			loader = new MeshLoader(new File(getClass().getResource("/truck.obj").toURI()));
+			loader.setScale(0.05);
+		} catch (Exception ex){
+			ex.printStackTrace();
+		}
+		Mesh loadedObject = loader.load();
 
 		Light light = new Light(new Camera(new Point3D(-3, 0, -2), WIDTH, HEIGHT, Math.PI/4, 100, 0.3));
 		Thread rotateLight = new Thread(() -> {
@@ -85,8 +97,9 @@ public class MainApplication extends Application{
 		rotateLight.setDaemon(true);
 		rotateLight.start();
 
-		engine.addObject(object);
-		engine.addObject(object2);
+		//engine.addObject(object);
+		//engine.addObject(object2);
+		engine.addObject(loadedObject);
 		engine.addLight(light);
 
 		stage.setResizable(false);
