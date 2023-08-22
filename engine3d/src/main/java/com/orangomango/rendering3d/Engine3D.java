@@ -161,13 +161,14 @@ public class Engine3D{
 			}
 		}
 
+		// Info box
 		gc.setFill(Color.BLACK);
 		gc.save();
 		gc.setGlobalAlpha(0.6);
-		gc.fillRect(0.035*width, 0.025*height, 0.45*width, 0.2*height);
+		gc.fillRect(0.035*width, 0.025*height, 0.56*width, 0.13*height);
 		gc.restore();
 		gc.setFill(Color.WHITE);
-		gc.setFont(new Font("sans-serif", 13));
+		gc.setFont(new Font("sans-serif", 7));
 		gc.fillText(this.camera+"\n"+String.format("FPS:%d", this.fps), 0.05*width, 0.075*height);
 	}
 

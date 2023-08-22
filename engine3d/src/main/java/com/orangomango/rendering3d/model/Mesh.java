@@ -8,6 +8,8 @@ import javafx.scene.paint.Color;
 
 import java.util.List;
 
+import com.orangomango.rendering3d.Engine3D;
+
 public class Mesh{
 	// Image mesh
 	private Image[] images;
@@ -41,6 +43,39 @@ public class Mesh{
 		this.colors = colors;
 		this.facesColors = facesColors;
 		setupMesh(vertices, faces, normals);
+	}
+
+	public void setRotation(double rx, double ry, double rz){
+		for (int i = 0; i < this.vertices.length; i++){
+			Point3D vertex = this.vertices[i];
+			double[] rv = Engine3D.multiply(Engine3D.getRotateX(rx), new double[]{vertex.getX(), vertex.getY(), vertex.getZ()});
+			rv = Engine3D.multiply(Engine3D.getRotateY(ry), rv);
+			rv = Engine3D.multiply(Engine3D.getRotateZ(rz), rv);
+			this.vertices[i] = new Point3D(rv[0], rv[1], rv[2]);
+		}
+
+		if (this.normals != null){
+			for (int i = 0; i < this.normals.length; i++){
+				Point3D n1 = this.normals[i][0];
+				Point3D n2 = this.normals[i][1];
+				Point3D n3 = this.normals[i][2];
+				
+				double[] rn1 = Engine3D.multiply(Engine3D.getRotateX(rx), new double[]{n1.getX(), n1.getY(), n1.getZ()});
+				double[] rn2 = Engine3D.multiply(Engine3D.getRotateX(rx), new double[]{n2.getX(), n2.getY(), n2.getZ()});
+				double[] rn3 = Engine3D.multiply(Engine3D.getRotateX(rx), new double[]{n3.getX(), n3.getY(), n3.getZ()});
+				rn1 = Engine3D.multiply(Engine3D.getRotateY(ry), rn1);
+				rn2 = Engine3D.multiply(Engine3D.getRotateY(ry), rn2);
+				rn3 = Engine3D.multiply(Engine3D.getRotateY(ry), rn3);
+				rn1 = Engine3D.multiply(Engine3D.getRotateZ(rz), rn1);
+				rn2 = Engine3D.multiply(Engine3D.getRotateZ(rz), rn2);
+				rn3 = Engine3D.multiply(Engine3D.getRotateZ(rz), rn3);
+				this.normals[i][0] = new Point3D(rn1[0], rn1[1], rn1[2]);
+				this.normals[i][1] = new Point3D(rn2[0], rn2[1], rn2[2]);
+				this.normals[i][2] = new Point3D(rn3[0], rn3[1], rn3[2]);
+			}
+		}
+
+		setupMesh(this.vertices, this.faces, this.normals);
 	}
 
 	public void update(Camera camera, List<Light> lights){

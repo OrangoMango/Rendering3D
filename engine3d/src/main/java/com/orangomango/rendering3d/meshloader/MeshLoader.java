@@ -27,7 +27,7 @@ public class MeshLoader{
 		this.scale = scale;
 	}
 
-	public Mesh load(){
+	public Mesh load(boolean meshImage){
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(this.file));
 
@@ -69,7 +69,7 @@ public class MeshLoader{
 				} else if (line.startsWith("vt ")){
 					double vtx = Double.parseDouble(line.split(" ")[1]);
 					double vty = Double.parseDouble(line.split(" ")[2]);
-					vertexCoords.add(new Point2D(1-vtx, 1-vty));
+					vertexCoords.add(new Point2D(vtx, 1-vty));
 				} else if (line.startsWith("f ")){
 					String[] pieces = line.split(" ");
 					int[] farray = new int[pieces.length-1];
@@ -133,7 +133,7 @@ public class MeshLoader{
 			Color[] vc = vertexColors.size() == 0 ? null : vertexColors.toArray(new Color[vertexColors.size()]);
 			Color[] fcc = facesColors.size() == 0 ? null : facesColors.toArray(new Color[facesColors.size()]);
 
-			if (images != null){
+			if (meshImage){
 				Mesh mesh = new Mesh(vt, fc, fcn, images, fci, vexCoords, fcv);
 				return mesh;
 			} else {

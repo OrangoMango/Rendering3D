@@ -32,9 +32,9 @@ public class Light{
 		double red = color.getRed();
 		double green = color.getGreen();
 		double blue = color.getBlue();
-		red = red * factor;
-		green = green * factor;
-		blue = blue * factor;
+		//red = red * factor;
+		//green = green * factor;
+		//blue = blue * factor;
 
 		// R G or B could be a little bit over 1 (1.00000000002)
 		return Color.color(Math.min(1, red), Math.min(1, green), Math.min(1, blue));
