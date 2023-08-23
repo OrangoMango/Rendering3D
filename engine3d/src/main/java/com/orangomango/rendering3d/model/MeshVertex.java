@@ -10,6 +10,7 @@ import com.orangomango.rendering3d.Engine3D;
 public class MeshVertex{
 	private boolean imageVertex;
 	private Point3D position, normal;
+	private double[] view;
 
 	// Image vertex
 	private Point2D textureCoords;
@@ -61,10 +62,18 @@ public class MeshVertex{
 		this.normal = n;
 	}
 
-	public double[] getProjection(Camera camera){
+	public Point3D getViewPosition(Camera camera){
 		double[] p = new double[]{this.position.getX(), this.position.getY(), this.position.getZ(), 1};
-		double[] view = Engine3D.multiply(camera.getViewMatrix(), p);
-		double[] proj = Engine3D.multiply(camera.getProjectionMatrix(), view);
+		this.view = Engine3D.multiply(camera.getViewMatrix(), p);
+		return new Point3D(this.view[0], this.view[1], this.view[2]);
+	}
+
+	public void setInView(){
+		this.view = new double[]{this.position.getX(), this.position.getY(), this.position.getZ(), 1};
+	}
+
+	public double[] getProjection(Camera camera){
+		double[] proj = Engine3D.multiply(camera.getProjectionMatrix(), this.view);
 		double px = proj[0]/proj[3];
 		double py = proj[1]/proj[3];
 		double pz = proj[2];

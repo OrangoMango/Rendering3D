@@ -67,7 +67,7 @@ public class ProjectedTriangle{
 			}
 		} else {
 			gc.setStroke(Color.RED);
-			gc.setLineWidth(3);
+			gc.setLineWidth(1.5);
 			gc.strokeLine(this.v1[0], this.v1[1], this.v2[0], this.v2[1]);
 			gc.strokeLine(this.v2[0], this.v2[1], this.v3[0], this.v3[1]);
 			gc.strokeLine(this.v3[0], this.v3[1], this.v1[0], this.v1[1]);

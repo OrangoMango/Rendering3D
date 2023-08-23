@@ -14,6 +14,7 @@ import javafx.animation.*;
 import javafx.util.Duration;
 import javafx.scene.Cursor;
 import javafx.geometry.Point2D;
+import javafx.geometry.Point3D;
 
 import java.util.*;
 
@@ -34,6 +35,11 @@ public class Engine3D{
 	private Map<KeyCode, Runnable> keyEvents = new HashMap<>();
 	private Map<KeyCode, Boolean> keyEventsSingle = new HashMap<>();
 	private int fps, frames;
+
+	// FLAGS
+	public static boolean SHOW_LINES = false;
+	public static boolean LIGHT_AVAILABLE = true;
+	public static boolean FOLLOW_LIGHT = false;
 
 	public Engine3D(Stage stage, int width, int height){
 		this.width = width;
@@ -129,25 +135,33 @@ public class Engine3D{
 
 		for (Mesh mesh : this.objects){
 			mesh.update(this.camera, this.sceneLights);
-			mesh.render(this.canvas, null);
+			mesh.render(this.canvas, SHOW_LINES ? gc : null);
 		}
 
 		// Render meshes
-		for (int i = 0; i < this.width; i++){
-			for (int j = 0; j < this.height; j++){
-				Color color = this.canvas[i][j];
-				if (color != null){
-					gc.getPixelWriter().setColor(i, j, color);
+		if (!SHOW_LINES){
+			for (int i = 0; i < this.width; i++){
+				for (int j = 0; j < this.height; j++){
+					Color color = this.canvas[i][j];
+					if (color != null){
+						gc.getPixelWriter().setColor(i, j, color);
+					}
 				}
 			}
 		}
 
-		// Turn camera according to the mouse
+		// Turn the camera according to the mouse
 		double sensibility = 0.4;
 		Point2D mouse = this.robot.getMousePosition();
 		Point2D center = new Point2D(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
 		this.camera.setRx(this.camera.getRx()+Math.toRadians((int)(center.getY()-mouse.getY())*sensibility));
 		this.camera.setRy(this.camera.getRy()+Math.toRadians((int)(center.getX()-mouse.getX())*sensibility));
+
+		if (FOLLOW_LIGHT && this.sceneLights.size() >= 1){
+			this.camera.setPosition(this.sceneLights.get(0).getCamera().getPosition());
+			this.camera.setRx(this.sceneLights.get(0).getCamera().getRx());
+			this.camera.setRy(this.sceneLights.get(0).getCamera().getRy());
+		}
 
 		// Exit application when the escape key is pressed
 		if (this.keys.getOrDefault(KeyCode.ESCAPE, false)){
@@ -158,6 +172,28 @@ public class Engine3D{
 			if (this.keys.getOrDefault(k, false)){
 				this.keyEvents.get(k).run();
 				if (this.keyEventsSingle.get(k)) this.keys.put(k, false);
+			}
+		}
+
+		if (this.keys.getOrDefault(KeyCode.F1, false)){
+			SHOW_LINES = !SHOW_LINES;
+			System.out.println("F1");
+			this.keys.put(KeyCode.F1, false);
+		} else if (this.keys.getOrDefault(KeyCode.F2, false)){
+			FOLLOW_LIGHT = !FOLLOW_LIGHT;
+			System.out.println("F2");
+			this.keys.put(KeyCode.F2, false);
+		} else if (this.keys.getOrDefault(KeyCode.F3, false)){
+			LIGHT_AVAILABLE = !LIGHT_AVAILABLE;
+			System.out.println("F3");
+			this.keys.put(KeyCode.F3, false);
+		} else if (this.keys.getOrDefault(KeyCode.F4, false)){
+			if (this.sceneLights.size() >= 1){
+				this.sceneLights.get(0).getCamera().setPosition(this.camera.getPosition());
+				this.sceneLights.get(0).getCamera().setRx(this.camera.getRx());
+				this.sceneLights.get(0).getCamera().setRy(this.camera.getRy());
+				System.out.println("F5");
+				this.keys.put(KeyCode.F5, false);
 			}
 		}
 
@@ -186,6 +222,11 @@ public class Engine3D{
 
 	public static boolean isInScene(int x, int y, Camera camera){
 		return x >= 0 && y >= 0 && x < camera.getWidth() && y < camera.getHeight();
+	}
+
+	public static double distanceToPlane(Point3D normal, Point3D planePoint, Point3D point, Point3D direction){
+		if (normal.dotProduct(direction) == 0) throw new IllegalStateException("Debug: dp is 0");
+		return (normal.dotProduct(planePoint)-normal.dotProduct(point))/normal.dotProduct(direction);
 	}
 
 	public static double[][] getRotateX(double angle){

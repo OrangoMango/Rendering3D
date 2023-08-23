@@ -21,6 +21,7 @@ import com.orangomango.rendering3d.meshloader.MeshLoader;
 public class MainApplication extends Application{
 	private static final int WIDTH = 320;
 	private static final int HEIGHT = 180;
+	private static boolean ROTATE_LIGHT = false;
 	
 	@Override
 	public void start(Stage stage){
@@ -38,6 +39,8 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.R, () -> camera.reset(), true);
 		engine.setOnKey(KeyCode.SPACE, () -> camera.move(new Point3D(0, -speed, 0)), false);
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(new Point3D(0, speed, 0)), false);
+
+		engine.setOnKey(KeyCode.F5, () -> ROTATE_LIGHT = !ROTATE_LIGHT, true);
 
 		Mesh object = new Mesh(new Point3D[]{
 			new Point3D(0, 0, 0), new Point3D(0, 1, 0), new Point3D(1, 1, 0), new Point3D(1, 0, 0),
@@ -87,9 +90,11 @@ public class MainApplication extends Application{
 		Thread rotateLight = new Thread(() -> {
 			while (true){
 				try {
-					double[] rotationV = Engine3D.multiply(Engine3D.getRotateY(0.06), new double[]{light.getCamera().getPosition().getX(), light.getCamera().getPosition().getY(), light.getCamera().getPosition().getZ()});
-					light.getCamera().setPosition(new Point3D(rotationV[0], rotationV[1], rotationV[2]));
-					light.getCamera().lookAtCenter();
+					if (ROTATE_LIGHT){
+						double[] rotationV = Engine3D.multiply(Engine3D.getRotateY(0.06), new double[]{light.getCamera().getPosition().getX(), light.getCamera().getPosition().getY(), light.getCamera().getPosition().getZ()});
+						light.getCamera().setPosition(new Point3D(rotationV[0], rotationV[1], rotationV[2]));
+						light.getCamera().lookAtCenter();
+					}
 					Thread.sleep(50);
 				} catch (InterruptedException ex){
 					ex.printStackTrace();
@@ -113,8 +118,8 @@ public class MainApplication extends Application{
 		System.out.println("F1 -> SHOW_LINES");
 		System.out.println("F2 -> FOLLOW_LIGHT");
 		System.out.println("F3 -> LIGHT_AVAILABLE");
-		System.out.println("F4 -> ROTATE_LIGHT");
-		System.out.println("F5 -> PLACE_LIGHT_AT_CAMERA");
+		System.out.println("F4 -> PLACE_LIGHT_AT_CAMERA");
+		System.out.println("F5 -> ROTATE_LIGHT");
 		System.out.println("F6 -> SHADOWS");
 		launch(args);
 	}

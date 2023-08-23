@@ -88,8 +88,8 @@ public class Mesh{
 	public void render(Color[][] canvas, GraphicsContext gc){
 		for (int i = 0; i < this.triangles.length; i++){
 			MeshTriangle mt = this.triangles[i];
-			ProjectedTriangle pt = mt.getProjectedTriangle();
-			if (pt != null) pt.render(canvas, gc);
+			List<ProjectedTriangle> pts = mt.getProjectedTriangles();
+			for (ProjectedTriangle pt : pts) pt.render(canvas, gc);
 		}
 	}
 

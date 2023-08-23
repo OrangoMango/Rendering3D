@@ -32,6 +32,14 @@ public class Camera{
 		return this.height;
 	}
 
+	public double getZnear(){
+		return this.zNear;
+	}
+
+	public double getZfar(){
+		return this.zFar;
+	}
+
 	public void setPosition(Point3D p){
 		this.stateChanged = true;
 		this.position = p;
