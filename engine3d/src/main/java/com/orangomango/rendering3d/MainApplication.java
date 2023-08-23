@@ -40,10 +40,7 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.SPACE, () -> camera.move(new Point3D(0, -speed, 0)), false);
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(new Point3D(0, speed, 0)), false);
 
-		engine.setOnKey(KeyCode.F5, () -> ROTATE_LIGHT = !ROTATE_LIGHT, true);
-		engine.setOnKey(KeyCode.LEFT, () -> com.orangomango.rendering3d.model.ProjectedTriangle.SHADOW_EPSILON -= 0.0005, true);
-		engine.setOnKey(KeyCode.RIGHT, () -> com.orangomango.rendering3d.model.ProjectedTriangle.SHADOW_EPSILON += 0.0005, true);
-		engine.setOnKey(KeyCode.DOWN, () -> System.out.println(com.orangomango.rendering3d.model.ProjectedTriangle.SHADOW_EPSILON), true);
+		engine.setOnKey(KeyCode.F6, () -> ROTATE_LIGHT = !ROTATE_LIGHT, true);
 
 		Mesh object = new Mesh(new Point3D[]{
 			new Point3D(0, 0, 0), new Point3D(0, 1, 0), new Point3D(1, 1, 0), new Point3D(1, 0, 0),
@@ -124,6 +121,7 @@ public class MainApplication extends Application{
 		engine.addObject(object2);
 		engine.addObject(loadedObject);
 		engine.addObject(shadowObject);
+
 		engine.addLight(light);
 
 		stage.setResizable(false);
@@ -136,8 +134,8 @@ public class MainApplication extends Application{
 		System.out.println("F2 -> FOLLOW_LIGHT");
 		System.out.println("F3 -> LIGHT_AVAILABLE");
 		System.out.println("F4 -> PLACE_LIGHT_AT_CAMERA");
-		System.out.println("F5 -> ROTATE_LIGHT");
-		System.out.println("F6 -> SHADOWS");
+		System.out.println("F5 -> SHADOWS");
+		System.out.println("F6 -> ROTATE_LIGHT");
 		launch(args);
 	}
 }

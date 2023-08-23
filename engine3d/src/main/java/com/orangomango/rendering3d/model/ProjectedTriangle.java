@@ -12,6 +12,7 @@ import java.util.*;
 import static com.orangomango.rendering3d.Engine3D.swap;
 import static com.orangomango.rendering3d.Engine3D.isInScene;
 import static com.orangomango.rendering3d.Engine3D.convertPoint;
+import static com.orangomango.rendering3d.Engine3D.SHADOWS;
 
 public class ProjectedTriangle{
 	private double[] v1, v2, v3;
@@ -332,15 +333,17 @@ public class ProjectedTriangle{
 						color = Light.getLight(color, tex_l);
 
 						// Shadows
-						for (Light light : this.lights){
-							Camera cam2 = light.getCamera();
-							double[] shadow = convertPoint(new double[]{j, i, tex_w}, this.camera, cam2);
-							int index_x = (int)shadow[0];
-							int index_y = (int)shadow[1];
-							if (index_x >= 0 && index_y >= 0 && index_x < cam2.getWidth() && index_y < cam2.getHeight()){
-								double depth = cam2.depthBuffer[index_x][index_y];
-								if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*this.camera.getAspectRatio()){
-									color = color.darker();
+						if (SHADOWS){
+							for (Light light : this.lights){
+								Camera cam2 = light.getCamera();
+								double[] shadow = convertPoint(new double[]{j, i, tex_w}, this.camera, cam2);
+								int index_x = (int)shadow[0];
+								int index_y = (int)shadow[1];
+								if (index_x >= 0 && index_y >= 0 && index_x < cam2.getWidth() && index_y < cam2.getHeight()){
+									double depth = cam2.depthBuffer[index_x][index_y];
+									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*this.camera.getAspectRatio()){
+										color = color.darker();
+									}
 								}
 							}
 						}
@@ -414,15 +417,17 @@ public class ProjectedTriangle{
 						color = Light.getLight(color, tex_l);
 
 						// Shadows
-						for (Light light : this.lights){
-							Camera cam2 = light.getCamera();
-							double[] shadow = convertPoint(new double[]{j, i, tex_w}, this.camera, cam2);
-							int index_x = (int)shadow[0];
-							int index_y = (int)shadow[1];
-							if (index_x >= 0 && index_y >= 0 && index_x < cam2.getWidth() && index_y < cam2.getHeight()){
-								double depth = cam2.depthBuffer[index_x][index_y];
-								if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*this.camera.getAspectRatio()){
-									color = color.darker();
+						if (SHADOWS){
+							for (Light light : this.lights){
+								Camera cam2 = light.getCamera();
+								double[] shadow = convertPoint(new double[]{j, i, tex_w}, this.camera, cam2);
+								int index_x = (int)shadow[0];
+								int index_y = (int)shadow[1];
+								if (index_x >= 0 && index_y >= 0 && index_x < cam2.getWidth() && index_y < cam2.getHeight()){
+									double depth = cam2.depthBuffer[index_x][index_y];
+									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*this.camera.getAspectRatio()){
+										color = color.darker();
+									}
 								}
 							}
 						}
@@ -574,15 +579,17 @@ public class ProjectedTriangle{
 						color = Light.getLight(color, col_l);
 
 						// Shadows
-						for (Light light : this.lights){
-							Camera cam2 = light.getCamera();
-							double[] shadow = convertPoint(new double[]{j, i, col_w}, this.camera, cam2);
-							int index_x = (int)shadow[0];
-							int index_y = (int)shadow[1];
-							if (index_x >= 0 && index_y >= 0 && index_x < cam2.getWidth() && index_y < cam2.getHeight()){
-								double depth = cam2.depthBuffer[index_x][index_y];
-								if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*this.camera.getAspectRatio()){
-									color = color.darker();
+						if (SHADOWS){
+							for (Light light : this.lights){
+								Camera cam2 = light.getCamera();
+								double[] shadow = convertPoint(new double[]{j, i, col_w}, this.camera, cam2);
+								int index_x = (int)shadow[0];
+								int index_y = (int)shadow[1];
+								if (index_x >= 0 && index_y >= 0 && index_x < cam2.getWidth() && index_y < cam2.getHeight()){
+									double depth = cam2.depthBuffer[index_x][index_y];
+									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*this.camera.getAspectRatio()){
+										color = color.darker();
+									}
 								}
 							}
 						}
@@ -666,15 +673,17 @@ public class ProjectedTriangle{
 						color = Light.getLight(color, col_l);
 
 						// Shadows
-						for (Light light : this.lights){
-							Camera cam2 = light.getCamera();
-							double[] shadow = convertPoint(new double[]{j, i, col_w}, this.camera, cam2);
-							int index_x = (int)shadow[0];
-							int index_y = (int)shadow[1];
-							if (index_x >= 0 && index_y >= 0 && index_x < cam2.getWidth() && index_y < cam2.getHeight()){
-								double depth = cam2.depthBuffer[index_x][index_y];
-								if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*this.camera.getAspectRatio()){
-									color = color.darker();
+						if (SHADOWS){
+							for (Light light : this.lights){
+								Camera cam2 = light.getCamera();
+								double[] shadow = convertPoint(new double[]{j, i, col_w}, this.camera, cam2);
+								int index_x = (int)shadow[0];
+								int index_y = (int)shadow[1];
+								if (index_x >= 0 && index_y >= 0 && index_x < cam2.getWidth() && index_y < cam2.getHeight()){
+									double depth = cam2.depthBuffer[index_x][index_y];
+									if (Math.abs(shadow[2]-depth) > SHADOW_EPSILON*this.camera.getAspectRatio()){
+										color = color.darker();
+									}
 								}
 							}
 						}

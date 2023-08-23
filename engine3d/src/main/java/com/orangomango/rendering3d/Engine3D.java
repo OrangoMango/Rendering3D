@@ -40,6 +40,7 @@ public class Engine3D{
 	public static boolean SHOW_LINES = false;
 	public static boolean LIGHT_AVAILABLE = true;
 	public static boolean FOLLOW_LIGHT = false;
+	public static boolean SHADOWS = false;
 
 	public Engine3D(Stage stage, int width, int height){
 		this.width = width;
@@ -133,12 +134,14 @@ public class Engine3D{
 
 		this.camera.clearDepthBuffer();
 
-		for (Light light : this.sceneLights){
-			Camera lightCamera = light.getCamera();
-			lightCamera.clearDepthBuffer();
-			for (Mesh mesh : this.objects){
-				mesh.update(lightCamera, null);
-				mesh.render(null, null); // Update the light's depthbuffer
+		if (SHADOWS){
+			for (Light light : this.sceneLights){
+				Camera lightCamera = light.getCamera();
+				lightCamera.clearDepthBuffer();
+				for (Mesh mesh : this.objects){
+					mesh.update(lightCamera, null);
+					mesh.render(null, null); // Update the light's depthbuffer
+				}
 			}
 		}
 
@@ -201,9 +204,13 @@ public class Engine3D{
 				this.sceneLights.get(0).getCamera().setPosition(this.camera.getPosition());
 				this.sceneLights.get(0).getCamera().setRx(this.camera.getRx());
 				this.sceneLights.get(0).getCamera().setRy(this.camera.getRy());
-				System.out.println("F5");
-				this.keys.put(KeyCode.F5, false);
+				System.out.println("F4");
+				this.keys.put(KeyCode.F4, false);
 			}
+		} else if (this.keys.getOrDefault(KeyCode.F5, false)){
+			SHADOWS = !SHADOWS;
+			System.out.println("F5");
+			this.keys.put(KeyCode.F5, false);
 		}
 
 		// Info box
