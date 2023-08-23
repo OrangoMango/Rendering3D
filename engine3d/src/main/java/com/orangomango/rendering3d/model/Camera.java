@@ -40,6 +40,14 @@ public class Camera{
 		return this.zFar;
 	}
 
+	public double getAspectRatio(){
+		return this.aspectRatio;
+	}
+
+	public double getFov(){
+		return this.fov;
+	}
+
 	public void setPosition(Point3D p){
 		this.stateChanged = true;
 		this.position = p;

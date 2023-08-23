@@ -133,6 +133,15 @@ public class Engine3D{
 
 		this.camera.clearDepthBuffer();
 
+		for (Light light : this.sceneLights){
+			Camera lightCamera = light.getCamera();
+			lightCamera.clearDepthBuffer();
+			for (Mesh mesh : this.objects){
+				mesh.update(lightCamera, null);
+				mesh.render(null, null); // Update the light's depthbuffer
+			}
+		}
+
 		for (Mesh mesh : this.objects){
 			mesh.update(this.camera, this.sceneLights);
 			mesh.render(this.canvas, SHOW_LINES ? gc : null);
@@ -227,6 +236,48 @@ public class Engine3D{
 	public static double distanceToPlane(Point3D normal, Point3D planePoint, Point3D point, Point3D direction){
 		if (normal.dotProduct(direction) == 0) throw new IllegalStateException("Debug: dp is 0");
 		return (normal.dotProduct(planePoint)-normal.dotProduct(point))/normal.dotProduct(direction);
+	}
+
+	private static double[] revertPoint(double[] point, Camera cam1){
+		double w = 1/point[2];
+		double x = (point[0]*2/cam1.getWidth()-1)*(w == 0 ? 1 : w);
+		double y = (point[1]*2/cam1.getHeight()-1)*(w == 0 ? 1 : w);
+		
+		x *= Math.tan(cam1.getFov()/2)/cam1.getAspectRatio();
+		y *= Math.tan(cam1.getFov()/2);
+		
+		double[] rotation = multiply(getRotateX(cam1.getRx()), new double[]{x, y, w, 1});
+		x = rotation[0];
+		y = rotation[1];
+		w = rotation[2];
+		
+		rotation = multiply(getRotateY(cam1.getRy()), new double[]{x, y, w, 1});
+		x = rotation[0];
+		y = rotation[1];
+		w = rotation[2];
+
+		double[] translation = multiply(getTranslation(cam1.getPosition().getX(), cam1.getPosition().getY(), cam1.getPosition().getZ()), new double[]{x, y, w, 1});
+		x = translation[0];
+		y = translation[1];
+		w = translation[2];
+		
+		return new double[]{x, y, w};
+	}
+	
+	public static double[] convertPoint(double[] point, Camera cam1, Camera cam2){
+		double[] reverted = revertPoint(point, cam1);
+		double x = reverted[0];
+		double y = reverted[1];
+		double w = reverted[2];
+		
+		double[] out = multiply(multiply(cam2.getViewMatrix(), cam2.getProjectionMatrix()), new double[]{x, y, w, 1});
+		out[0] /= out[3] == 0 ? 1 : out[3];
+		out[1] /= out[3] == 0 ? 1 : out[3];
+		
+		out[0] = (out[0]+1)*0.5*cam2.getWidth();
+		out[1] = (out[1]+1)*0.5*cam2.getHeight();
+		
+		return new double[]{out[0], out[1], 1/out[3]};
 	}
 
 	public static double[][] getRotateX(double angle){

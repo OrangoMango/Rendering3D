@@ -41,6 +41,9 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(new Point3D(0, speed, 0)), false);
 
 		engine.setOnKey(KeyCode.F5, () -> ROTATE_LIGHT = !ROTATE_LIGHT, true);
+		engine.setOnKey(KeyCode.LEFT, () -> com.orangomango.rendering3d.model.ProjectedTriangle.SHADOW_EPSILON -= 0.0005, true);
+		engine.setOnKey(KeyCode.RIGHT, () -> com.orangomango.rendering3d.model.ProjectedTriangle.SHADOW_EPSILON += 0.0005, true);
+		engine.setOnKey(KeyCode.DOWN, () -> System.out.println(com.orangomango.rendering3d.model.ProjectedTriangle.SHADOW_EPSILON), true);
 
 		Mesh object = new Mesh(new Point3D[]{
 			new Point3D(0, 0, 0), new Point3D(0, 1, 0), new Point3D(1, 1, 0), new Point3D(1, 0, 0),
@@ -86,7 +89,20 @@ public class MainApplication extends Application{
 		Mesh loadedObject = loader.load(false);
 		loadedObject.setRotation(Math.PI/2, 0, 0);
 
-		Light light = new Light(new Camera(new Point3D(-3, 0, -2), WIDTH, HEIGHT, Math.PI/4, 100, 0.3));
+		loader = null;
+		try {
+			loader = new MeshLoader(new File(getClass().getResource("/shadows.obj").toURI()));
+			loader.setPosition(new Point3D(0, 0, 4));
+			loader.setScale(0.5);
+		} catch (Exception ex){
+			ex.printStackTrace();
+		}
+		Mesh shadowObject = loader.load(false);
+		shadowObject.setRotation(0, 0, Math.PI);
+
+		Light light = new Light(new Camera(new Point3D(7.5, -3.9, 12), WIDTH, HEIGHT, Math.PI/4, 100, 0.3));
+		light.getCamera().setRx(-0.4);
+		light.getCamera().setRy(2.2);
 		Thread rotateLight = new Thread(() -> {
 			while (true){
 				try {
@@ -107,6 +123,7 @@ public class MainApplication extends Application{
 		engine.addObject(object);
 		engine.addObject(object2);
 		engine.addObject(loadedObject);
+		engine.addObject(shadowObject);
 		engine.addLight(light);
 
 		stage.setResizable(false);

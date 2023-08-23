@@ -74,8 +74,8 @@ public class MeshVertex{
 
 	public double[] getProjection(Camera camera){
 		double[] proj = Engine3D.multiply(camera.getProjectionMatrix(), this.view);
-		double px = proj[0]/proj[3];
-		double py = proj[1]/proj[3];
+		double px = proj[0]/(proj[3] == 0 ? 1 : proj[3]);
+		double py = proj[1]/(proj[3] == 0 ? 1 : proj[3]);
 		double pz = proj[2];
 		
 		px += 1;
