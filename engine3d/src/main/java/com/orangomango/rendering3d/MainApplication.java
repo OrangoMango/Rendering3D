@@ -16,7 +16,10 @@ import com.orangomango.rendering3d.model.Light;
 import com.orangomango.rendering3d.meshloader.MeshLoader;
 
 /*
- * @author OrangoMango (https://orangomango.github.io)
+ * Engine3D in Java/JavaFX
+ * Refactored code, v1.0
+ * Features: Camera, .obj files, shadows, image/color mesh, clipping and lights
+ * @author Paul Kocian aka OrangoMango (https://orangomango.github.io)
  */
 public class MainApplication extends Application{
 	private static final int WIDTH = 320;
