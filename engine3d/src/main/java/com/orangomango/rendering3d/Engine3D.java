@@ -17,9 +17,11 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 import com.orangomango.rendering3d.model.Camera;
 import com.orangomango.rendering3d.model.Mesh;
+import com.orangomango.rendering3d.model.MeshVertex;
 import com.orangomango.rendering3d.model.Light;
 
 public class Engine3D{
@@ -35,6 +37,8 @@ public class Engine3D{
 	private Map<KeyCode, Runnable> keyEvents = new HashMap<>();
 	private Map<KeyCode, Boolean> keyEventsSingle = new HashMap<>();
 	private int fps, frames;
+	private Consumer<GraphicsContext> onUpdate;
+	private boolean mouseMovement = true;
 
 	// FLAGS
 	public static boolean SHOW_LINES = false;
@@ -68,6 +72,14 @@ public class Engine3D{
 		this.keyEventsSingle.put(code, singleClick);
 	}
 
+	public void setOnUpdate(Consumer<GraphicsContext> onUpdate){
+		this.onUpdate = onUpdate;
+	}
+
+	public void toggleMouseMovement(){
+		this.mouseMovement = !this.mouseMovement;
+	}
+
 	public void setOnMousePressed(EventHandler<MouseEvent> event){
 		this.onMousePressed = event;
 	}
@@ -76,8 +88,8 @@ public class Engine3D{
 		this.camera = camera;
 	}
 
-	public void addObject(Mesh mesh){
-		this.objects.add(mesh);
+	public List<Mesh> getObjects(){
+		return this.objects;
 	}
 
 	public void addLight(Light light){
@@ -102,7 +114,7 @@ public class Engine3D{
 		// and a delta will be calculated for the camera movement
 		this.robot = new Robot();
 		Timeline mouse = new Timeline(new KeyFrame(Duration.millis(1000.0/15*2), e -> {
-			if (this.stage.isFocused()) this.robot.mouseMove(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
+			if (this.stage.isFocused() && this.mouseMovement) this.robot.mouseMove(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
 		}));
 		mouse.setCycleCount(Animation.INDEFINITE);
 		mouse.play();
@@ -133,8 +145,9 @@ public class Engine3D{
 		gc.fillRect(0, 0, this.width, this.height);
 
 		this.camera.clearDepthBuffer();
-
+		
 		if (SHADOWS){
+			MeshVertex.VERTICES.clear();
 			for (Light light : this.sceneLights){
 				Camera lightCamera = light.getCamera();
 				lightCamera.clearDepthBuffer();
@@ -145,6 +158,7 @@ public class Engine3D{
 			}
 		}
 
+		MeshVertex.VERTICES.clear();
 		for (Mesh mesh : this.objects){
 			mesh.update(this.camera, this.sceneLights);
 			mesh.render(this.canvas, SHOW_LINES ? gc : null);
@@ -211,6 +225,13 @@ public class Engine3D{
 			SHADOWS = !SHADOWS;
 			System.out.println("F5");
 			this.keys.put(KeyCode.F5, false);
+		}
+
+		// External update function
+		if (this.onUpdate != null){
+			gc.save();
+			this.onUpdate.accept(gc);
+			gc.restore();
 		}
 
 		// Info box

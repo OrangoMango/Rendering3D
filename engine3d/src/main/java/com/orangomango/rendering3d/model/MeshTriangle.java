@@ -11,6 +11,7 @@ import com.orangomango.rendering3d.Engine3D;
 public class MeshTriangle{
 	private MeshVertex vertex1, vertex2, vertex3;
 	private List<ProjectedTriangle> projected = new ArrayList<>();
+	private boolean showAllFaces;
 
 	public MeshTriangle(MeshVertex vertex1, MeshVertex vertex2, MeshVertex vertex3){
 		this.vertex1 = vertex1;
@@ -19,6 +20,10 @@ public class MeshTriangle{
 		if (!(this.vertex1.isImageVertex() && this.vertex2.isImageVertex() && this.vertex3.isImageVertex()) && !(!this.vertex1.isImageVertex() && !this.vertex2.isImageVertex() && !this.vertex3.isImageVertex())){
 			throw new IllegalStateException("All vertices must be either imageVertices or colorVertices");
 		}
+	}
+
+	public void setShowAllFaces(boolean value){
+		this.showAllFaces = value;
 	}
 
 	private List<MeshTriangle> clip(Camera camera, Point3D planeN, Point3D planeA){
@@ -136,37 +141,47 @@ public class MeshTriangle{
 	public void update(Camera camera, List<Light> lights){
 		this.projected.clear(); // Reset
 
-		List<MeshTriangle> triangles = clip(camera, new Point3D(0, 0, 1), new Point3D(0, 0, camera.getZnear()));
-		for (MeshTriangle triangle : triangles){
-			double[] p1 = triangle.vertex1.getProjection(camera);
-			double[] p2 = triangle.vertex2.getProjection(camera);
-			double[] p3 = triangle.vertex3.getProjection(camera);
+		// Check the normal of the triangle before clipping and calculate the dot product
+		double firstDot = getDotProduct(this, camera);
 
-			if (!Engine3D.isInScene((int)p1[0], (int)p1[1], camera) && !Engine3D.isInScene((int)p2[0], (int)p2[1], camera) && !Engine3D.isInScene((int)p3[0], (int)p3[1], camera)){
-				continue;
-			}
+		if (firstDot < 0 || this.showAllFaces){
+			List<MeshTriangle> triangles = clip(camera, new Point3D(0, 0, 1), new Point3D(0, 0, camera.getZnear()));
+			for (MeshTriangle triangle : triangles){
+				double dot = getDotProduct(triangle, camera);
 
-			Point3D normal = triangle.vertex1.getNormal();
-			if (normal == null){
-				normal = triangle.vertex2.getPosition().subtract(triangle.vertex1.getPosition()).crossProduct(triangle.vertex3.getPosition().subtract(triangle.vertex1.getPosition()));
-				normal = normal.normalize();
-				triangle.vertex1.setNormal(normal);
-				triangle.vertex2.setNormal(normal);
-				triangle.vertex3.setNormal(normal);
-			}
-			double dot = normal.dotProduct(triangle.vertex1.getPosition().subtract(camera.getPosition()));
+				if (dot < 0 || this.showAllFaces){
+					double[] p1 = triangle.vertex1.getProjection(camera);
+					double[] p2 = triangle.vertex2.getProjection(camera);
+					double[] p3 = triangle.vertex3.getProjection(camera);
 
-			if (dot < 0){
-				ProjectedTriangle projectedTriangle;
-				if (triangle.vertex1.isImageVertex()){
-					projectedTriangle = new ProjectedTriangle(camera, p1, p2, p3, triangle.vertex1.getImage(), triangle.vertex1.getTextureCoords(), triangle.vertex2.getTextureCoords(), triangle.vertex3.getTextureCoords());
-				} else {
-					projectedTriangle = new ProjectedTriangle(camera, p1, p2, p3, triangle.vertex1.getColor(), triangle.vertex2.getColor(), triangle.vertex3.getColor());
+					if (!Engine3D.isInScene((int)p1[0], (int)p1[1], camera) && !Engine3D.isInScene((int)p2[0], (int)p2[1], camera) && !Engine3D.isInScene((int)p3[0], (int)p3[1], camera)){
+						continue;
+					}
+
+					ProjectedTriangle projectedTriangle;
+					if (triangle.vertex1.isImageVertex()){
+						projectedTriangle = new ProjectedTriangle(camera, p1, p2, p3, triangle.vertex1.getImage(), triangle.vertex1.getTextureCoords(), triangle.vertex2.getTextureCoords(), triangle.vertex3.getTextureCoords());
+					} else {
+						projectedTriangle = new ProjectedTriangle(camera, p1, p2, p3, triangle.vertex1.getColor(), triangle.vertex2.getColor(), triangle.vertex3.getColor());
+					}
+					projectedTriangle.setLightData(lights, triangle.vertex1, triangle.vertex2, triangle.vertex3);
+					this.projected.add(projectedTriangle);
 				}
-				projectedTriangle.setLightData(lights, triangle.vertex1, triangle.vertex2, triangle.vertex3);
-				this.projected.add(projectedTriangle);
 			}
 		}
+	}
+
+	private static double getDotProduct(MeshTriangle triangle, Camera camera){
+		Point3D normal = triangle.vertex1.getNormal();
+		if (normal == null){
+			normal = triangle.vertex2.getPosition().subtract(triangle.vertex1.getPosition()).crossProduct(triangle.vertex3.getPosition().subtract(triangle.vertex1.getPosition()));
+			normal = normal.normalize();
+			triangle.vertex1.setNormal(normal);
+			triangle.vertex2.setNormal(normal);
+			triangle.vertex3.setNormal(normal);
+		}
+		double dot = normal.dotProduct(triangle.vertex1.getPosition().subtract(camera.getPosition()));
+		return dot;
 	}
 
 	public List<ProjectedTriangle> getProjectedTriangles(){

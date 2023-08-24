@@ -6,7 +6,8 @@ import javafx.geometry.Point2D;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
-import java.util.List;
+import java.util.*;
+import java.util.function.Predicate;
 
 import com.orangomango.rendering3d.Engine3D;
 
@@ -28,6 +29,9 @@ public class Mesh{
 	private boolean imageMesh;
 	private Point3D[][] trianglePoints;
 	private MeshTriangle[] triangles;
+	private List<Integer> hiddenFaces = new ArrayList<>();
+	private boolean showAllFaces;
+	private Predicate<Camera> skipCondition;
 
 	public Mesh(Point3D[] vertices, int[][] faces, Point3D[][] normals, Image[] images, int[] facesImages, Point2D[] textureVertices, int[][] textureFaces){
 		this.imageMesh = true;
@@ -43,6 +47,24 @@ public class Mesh{
 		this.colors = colors;
 		this.facesColors = facesColors;
 		setupMesh(vertices, faces, normals);
+	}
+
+	public void addHiddenFace(int n){
+		if (!this.hiddenFaces.contains(n)){
+			this.hiddenFaces.add(n);
+		}
+	}
+
+	public void clearHiddenFaces(){
+		this.hiddenFaces.clear();
+	}
+
+	public void setShowAllFaces(boolean value){
+		this.showAllFaces = value;
+	}
+
+	public void setSkipCondition(Predicate<Camera> condition){
+		this.skipCondition = condition;
 	}
 
 	public void setRotation(double rx, double ry, double rz){
@@ -79,8 +101,14 @@ public class Mesh{
 	}
 
 	public void update(Camera camera, List<Light> lights){
+		if (this.skipCondition != null && this.skipCondition.test(camera)){
+			return;
+		}
+
 		for (int i = 0; i < this.triangles.length; i++){
+			if (this.hiddenFaces.contains(i)) continue; // This triangle is hidden
 			MeshTriangle mt = this.triangles[i];
+			mt.setShowAllFaces(this.showAllFaces);
 			mt.update(camera, lights);
 		}
 	}

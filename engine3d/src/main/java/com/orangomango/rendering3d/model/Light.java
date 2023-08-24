@@ -7,11 +7,16 @@ import com.orangomango.rendering3d.Engine3D;
 
 public class Light{
 	private Camera camera;
+	private boolean fixed;
 
 	private static final double AMBIENT_LIGHT = 0.08;
 
 	public Light(Camera camera){
 		this.camera = camera;
+	}
+
+	public Light(){
+		this.fixed = true;
 	}
 
 	public Camera getCamera(){
@@ -23,10 +28,20 @@ public class Light{
 			double intensity = 1;
 			double factor = 0;
 			
-			factor = normal.dotProduct(point.subtract(this.camera.getPosition()).normalize());
-			if (factor < -1) factor = 1;
-			else if (factor > 0) factor = 0;
-			else factor = Math.abs(factor);
+			if (this.fixed){
+				double nx = Math.abs(normal.getX());
+				double ny = Math.abs(normal.getY());
+				double nz = Math.abs(normal.getZ());
+				if (nx != 0) factor = 0.4;
+				else if (ny != 0) factor = 1;
+				else if (nz != 0) factor = 0.7;
+				else System.out.println("Normal: "+normal);
+			} else {
+				factor = normal.dotProduct(point.subtract(this.camera.getPosition()).normalize());
+				if (factor < -1) factor = 1;
+				else if (factor > 0) factor = 0;
+				else factor = Math.abs(factor);
+			}
 			
 			return factor*intensity+AMBIENT_LIGHT;
 		} else {
