@@ -46,8 +46,6 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.SPACE, () -> camera.move(new Point3D(0, -speed, 0)), false);
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(new Point3D(0, speed, 0)), false);
 
-		engine.setOnKey(KeyCode.F6, () -> ROTATE_LIGHT = !ROTATE_LIGHT, true);
-
 		//buildScene1(engine);
 		//buildScene2(engine);
 		buildScene3(engine);
@@ -228,6 +226,8 @@ public class MainApplication extends Application{
 		});
 		rotateLight.setDaemon(true);
 		rotateLight.start();
+
+		engine.setOnKey(KeyCode.F6, () -> ROTATE_LIGHT = !ROTATE_LIGHT, true);
 
 		engine.getObjects().add(object);
 		engine.getObjects().add(object2);

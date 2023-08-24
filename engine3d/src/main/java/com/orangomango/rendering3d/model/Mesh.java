@@ -113,12 +113,20 @@ public class Mesh{
 		}
 	}
 
-	public void render(Color[][] canvas, GraphicsContext gc){
+	public List<ProjectedTriangle> render(Color[][] canvas, GraphicsContext gc){
+		List<ProjectedTriangle> transparentTriangles = new ArrayList<>();
 		for (int i = 0; i < this.triangles.length; i++){
 			MeshTriangle mt = this.triangles[i];
 			List<ProjectedTriangle> pts = mt.getProjectedTriangles();
-			for (ProjectedTriangle pt : pts) pt.render(canvas, gc);
+			for (ProjectedTriangle pt : pts){
+				if (pt.isTransparent()){
+					transparentTriangles.add(pt);
+				} else {
+					pt.render(canvas, gc);
+				}
+			}
 		}
+		return transparentTriangles;
 	}
 
 	private void setupMesh(Point3D[] vertices, int[][] faces, Point3D[][] normals){

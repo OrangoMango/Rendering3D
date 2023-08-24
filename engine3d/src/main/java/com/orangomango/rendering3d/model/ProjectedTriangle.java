@@ -13,11 +13,13 @@ import static com.orangomango.rendering3d.Engine3D.swap;
 import static com.orangomango.rendering3d.Engine3D.isInScene;
 import static com.orangomango.rendering3d.Engine3D.convertPoint;
 import static com.orangomango.rendering3d.Engine3D.SHADOWS;
+import static com.orangomango.rendering3d.Engine3D.mixColors;
 
 public class ProjectedTriangle{
 	private double[] v1, v2, v3;
 	private boolean imageTriangle;
 	private Camera camera;
+	private boolean transparent;
 
 	// Light data
 	private MeshVertex vex1, vex2, vex3;
@@ -53,6 +55,18 @@ public class ProjectedTriangle{
 		this.col1 = col1;
 		this.col2 = col2;
 		this.col3 = col3;
+	}
+
+	public void setTransparent(boolean value){
+		this.transparent = value;
+	}
+
+	public boolean isTransparent(){
+		return this.transparent;
+	}
+
+	public double getMeanZ(){
+		return (this.v1[2]+this.v2[2]+this.v3[2])/3;
 	}
 
 	public void setLightData(List<Light> lights, MeshVertex vex1, MeshVertex vex2, MeshVertex vex3){
@@ -328,6 +342,10 @@ public class ProjectedTriangle{
 
 					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= tex_w){
 						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
+						Color backColor = canvas[j][i];
+
+						// Transparency
+						color = mixColors(color, backColor);
 						
 						// Light
 						color = Light.getLight(color, tex_l);
@@ -412,6 +430,10 @@ public class ProjectedTriangle{
 
 					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= tex_w){
 						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
+						Color backColor = canvas[j][i];
+
+						// Transparency
+						color = mixColors(color, backColor);
 						
 						// Light
 						color = Light.getLight(color, tex_l);
@@ -573,7 +595,11 @@ public class ProjectedTriangle{
 					col_w = (1-t)*col_sw+t*col_ew;
 					col_l = (1-t)*col_sl+t*col_el;
 					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
-						Color color = Color.color(col_r, col_g, col_b);
+						Color color = Color.color(col_r, col_g, col_b, col_a);
+						Color backColor = canvas[j][i];
+
+						// Transparency
+						color = mixColors(color, backColor);
 
 						// Light
 						color = Light.getLight(color, col_l);
@@ -667,7 +693,11 @@ public class ProjectedTriangle{
 					col_l = (1-t)*col_sl+t*col_el;
 					
 					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
-						Color color = Color.color(col_r, col_g, col_b);
+						Color color = Color.color(col_r, col_g, col_b, col_a);
+						Color backColor = canvas[j][i];
+
+						// Transparency
+						color = mixColors(color, backColor);
 
 						// Light
 						color = Light.getLight(color, col_l);

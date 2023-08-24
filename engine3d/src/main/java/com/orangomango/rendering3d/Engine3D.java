@@ -19,10 +19,7 @@ import javafx.geometry.Point3D;
 import java.util.*;
 import java.util.function.Consumer;
 
-import com.orangomango.rendering3d.model.Camera;
-import com.orangomango.rendering3d.model.Mesh;
-import com.orangomango.rendering3d.model.MeshVertex;
-import com.orangomango.rendering3d.model.Light;
+import com.orangomango.rendering3d.model.*;
 
 public class Engine3D{
 	private int width, height;
@@ -159,9 +156,16 @@ public class Engine3D{
 		}
 
 		MeshVertex.VERTICES.clear();
+		List<ProjectedTriangle> transparentTriangles = new ArrayList<>();
 		for (Mesh mesh : this.objects){
 			mesh.update(this.camera, this.sceneLights);
-			mesh.render(this.canvas, SHOW_LINES ? gc : null);
+			transparentTriangles.addAll(mesh.render(this.canvas, SHOW_LINES ? gc : null));
+		}
+
+		// Render the transparent triangles
+		transparentTriangles.sort((pt1, pt2) -> -Double.compare(pt1.getMeanZ(), pt2.getMeanZ()));
+		for (ProjectedTriangle pt : transparentTriangles){
+			pt.render(canvas, SHOW_LINES ? gc : null);
 		}
 
 		// Render meshes
