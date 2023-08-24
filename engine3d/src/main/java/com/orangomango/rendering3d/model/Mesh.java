@@ -67,6 +67,10 @@ public class Mesh{
 		this.skipCondition = condition;
 	}
 
+	public MeshTriangle[] getTriangles(){
+		return this.triangles;
+	}
+
 	public void setRotation(double rx, double ry, double rz){
 		for (int i = 0; i < this.vertices.length; i++){
 			Point3D vertex = this.vertices[i];

@@ -345,6 +345,11 @@ public class ProjectedTriangle{
 						Color backColor = canvas[j][i];
 
 						// Transparency
+						if (backColor.getOpacity() < 1 && color.getOpacity() < 1 && Math.abs(this.camera.depthBuffer[j][i]-tex_w) != 0){
+							//if (Math.abs(this.camera.depthBuffer[j][i]-tex_w) != 0) System.out.println(Math.abs(this.camera.depthBuffer[j][i]-tex_w));
+							//t += tstep;
+							//continue;
+						}
 						color = mixColors(color, backColor);
 						
 						// Light
@@ -433,6 +438,11 @@ public class ProjectedTriangle{
 						Color backColor = canvas[j][i];
 
 						// Transparency
+						if (backColor.getOpacity() < 1 && color.getOpacity() < 1 && Math.abs(this.camera.depthBuffer[j][i]-tex_w) != 0){
+							//if (Math.abs(this.camera.depthBuffer[j][i]-tex_w) > 0.0005) System.out.println(Math.abs(this.camera.depthBuffer[j][i]-tex_w));
+							//t += tstep;
+							//continue;
+						}
 						color = mixColors(color, backColor);
 						
 						// Light
@@ -532,7 +542,7 @@ public class ProjectedTriangle{
 		double dw2 = w3-w1;
 		double dl2 = l3-l1;
 
-		double col_r, col_g, col_b, col_a, col_w, col_l;
+		double col_r, col_g, col_b, col_o, col_w, col_l;
 		double dax_step = 0, dbx_step = 0, dr1_step = 0, dg1_step = 0, db1_step = 0, da1_step = 0, dr2_step = 0, dg2_step = 0, db2_step = 0, da2_step = 0, dw1_step = 0, dw2_step = 0, dl1_step = 0, dl2_step = 0;
 		
 		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
@@ -563,14 +573,14 @@ public class ProjectedTriangle{
 				double col_sr = c1.getRed()+(i-y1)*dr1_step;
 				double col_sg = c1.getGreen()+(i-y1)*dg1_step;
 				double col_sb = c1.getBlue()+(i-y1)*db1_step;
-				double col_sa = c1.getOpacity()+(i-y1)*da1_step;
+				double col_so = c1.getOpacity()+(i-y1)*da1_step;
 				double col_sw = w1+(i-y1)*dw1_step;
 				double col_sl = l1+(i-y1)*dl1_step;
 				
 				double col_er = c1.getRed()+(i-y1)*dr2_step;
 				double col_eg = c1.getGreen()+(i-y1)*dg2_step;
 				double col_eb = c1.getBlue()+(i-y1)*db2_step;
-				double col_ea = c1.getOpacity()+(i-y1)*da2_step;
+				double col_eo = c1.getOpacity()+(i-y1)*da2_step;
 				double col_ew = w1+(i-y1)*dw2_step;
 				double col_el = l1+(i-y1)*dl2_step;
 				
@@ -579,7 +589,7 @@ public class ProjectedTriangle{
 					col_sr = swap(col_er, col_er = col_sr);
 					col_sg = swap(col_eg, col_eg = col_sg);
 					col_sb = swap(col_eb, col_eb = col_sb);
-					col_sa = swap(col_ea, col_ea = col_sa);
+					col_so = swap(col_eo, col_eo = col_so);
 					col_sw = swap(col_ew, col_ew = col_sw);
 					col_sl = swap(col_el, col_el = col_sl);
 				}
@@ -591,14 +601,19 @@ public class ProjectedTriangle{
 					col_r = (1-t)*col_sr+t*col_er;
 					col_g = (1-t)*col_sg+t*col_eg;
 					col_b = (1-t)*col_sb+t*col_eb;
-					col_a = (1-t)*col_sa+t*col_ea;
+					col_o = (1-t)*col_so+t*col_eo;
 					col_w = (1-t)*col_sw+t*col_ew;
 					col_l = (1-t)*col_sl+t*col_el;
 					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
-						Color color = Color.color(col_r, col_g, col_b, col_a);
+						Color color = Color.color(col_r, col_g, col_b, col_o);
 						Color backColor = canvas[j][i];
 
 						// Transparency
+						if (backColor.getOpacity() < 1 && color.getOpacity() < 1){
+							//System.out.println(Math.abs(this.camera.depthBuffer[j][i]-col_w));
+							//t += tstep;
+							//continue;
+						}
 						color = mixColors(color, backColor);
 
 						// Light
@@ -660,14 +675,14 @@ public class ProjectedTriangle{
 				double col_sr = c2.getRed()+(i-y2)*dr1_step;
 				double col_sg = c2.getGreen()+(i-y2)*dg1_step;
 				double col_sb = c2.getBlue()+(i-y2)*db1_step;
-				double col_sa = c2.getOpacity()+(i-y2)*da1_step;
+				double col_so = c2.getOpacity()+(i-y2)*da1_step;
 				double col_sw = w2+(i-y2)*dw1_step;
 				double col_sl = l2+(i-y2)*dl1_step;
 				
 				double col_er = c1.getRed()+(i-y1)*dr2_step;
 				double col_eg = c1.getGreen()+(i-y1)*dg2_step;
 				double col_eb = c1.getBlue()+(i-y1)*db2_step;
-				double col_ea = c1.getOpacity()+(i-y1)*da2_step;
+				double col_eo = c1.getOpacity()+(i-y1)*da2_step;
 				double col_ew = w1+(i-y1)*dw2_step;
 				double col_el = l1+(i-y1)*dl2_step;
 				
@@ -676,7 +691,7 @@ public class ProjectedTriangle{
 					col_sr = swap(col_er, col_er = col_sr);
 					col_sg = swap(col_eg, col_eg = col_sg);
 					col_sb = swap(col_eb, col_eb = col_sb);
-					col_sa = swap(col_ea, col_ea = col_sa);
+					col_so = swap(col_eo, col_eo = col_so);
 					col_sw = swap(col_ew, col_ew = col_sw);
 					col_sl = swap(col_el, col_el = col_sl);
 				}
@@ -688,15 +703,20 @@ public class ProjectedTriangle{
 					col_r = (1-t)*col_sr+t*col_er;
 					col_g = (1-t)*col_sg+t*col_eg;
 					col_b = (1-t)*col_sb+t*col_eb;
-					col_a = (1-t)*col_sa+t*col_ea;
+					col_o = (1-t)*col_so+t*col_eo;
 					col_w = (1-t)*col_sw+t*col_ew;
 					col_l = (1-t)*col_sl+t*col_el;
 					
 					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
-						Color color = Color.color(col_r, col_g, col_b, col_a);
+						Color color = Color.color(col_r, col_g, col_b, col_o);
 						Color backColor = canvas[j][i];
 
 						// Transparency
+						if (backColor.getOpacity() < 1 && color.getOpacity() < 1){
+							//System.out.println(Math.abs(this.camera.depthBuffer[j][i]-col_w));
+							//t += tstep;
+							//continue;
+						}
 						color = mixColors(color, backColor);
 
 						// Light

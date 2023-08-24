@@ -48,7 +48,8 @@ public class MainApplication extends Application{
 
 		//buildScene1(engine);
 		//buildScene2(engine);
-		buildScene3(engine);
+		//buildScene3(engine);
+		buildScene4(engine);
 
 		stage.setResizable(false);
 		stage.setScene(engine.getScene());
@@ -70,6 +71,103 @@ public class MainApplication extends Application{
 
 		engine.getObjects().add(loadedObject);
 		engine.addLight(light);
+
+		engine.setOnUpdate(gc -> {
+			gc.setFill(Color.BLACK);
+			gc.setTextAlign(TextAlignment.RIGHT);
+			gc.fillText("Vertices: "+VERTICES.size(), WIDTH*0.95, HEIGHT*0.1);
+		});
+	}
+
+	private void buildScene4(Engine3D engine){
+		for (int i = 0; i < 4; i++){
+			Mesh wood = new Mesh(new Point3D[]{
+				new Point3D(i, 0, 0), new Point3D(i, 1, 0), new Point3D(i+1, 1, 0), new Point3D(i+1, 0, 0),
+				new Point3D(i, 0, 1), new Point3D(i, 1, 1), new Point3D(i+1, 1, 1), new Point3D(i+1, 0, 1)
+			}, new int[][]{
+				{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
+				{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
+				{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
+				{1, 6, 2}, {4, 0, 3}, {4, 3, 7}
+			}, null, new Image[]{new Image(getClass().getResourceAsStream("/wood.png"))},
+			new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, new Point2D[]{
+				new Point2D(0, 0), new Point2D(0, 1), new Point2D(1, 1), new Point2D(1, 0)
+			}, new int[][]{
+				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
+			});
+			setupHiddenFaces(wood, i, 0, 0, 4, 1, 1);
+			engine.getObjects().add(wood);
+
+			Mesh glass = new Mesh(new Point3D[]{
+				new Point3D(i, -1, 0), new Point3D(i, 0, 0), new Point3D(i+1, 0, 0), new Point3D(i+1, -1, 0),
+				new Point3D(i, -1, 1), new Point3D(i, 0, 1), new Point3D(i+1, 0, 1), new Point3D(i+1, -1, 1)
+			}, new int[][]{
+				{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
+				{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
+				{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
+				{1, 6, 2}, {4, 0, 3}, {4, 3, 7}
+			}, null, new Image[]{new Image(getClass().getResourceAsStream(i % 2 == 0 ? "/glass.png" : "/glass_red.png"))},
+			new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, new Point2D[]{
+				new Point2D(0, 0), new Point2D(0, 1), new Point2D(1, 1), new Point2D(1, 0)
+			}, new int[][]{
+				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
+			});
+			for (int j = 0; j < 12; j++) glass.getTriangles()[j].setImageTransparent(true);
+			setupHiddenFaces(glass, i, 0, 0, 4, 1, 1);
+			engine.getObjects().add(glass);
+
+			for (int j = 0; j < 3; j++){
+				Mesh block = new Mesh(new Point3D[]{
+					new Point3D(i, -j, 2), new Point3D(i, -j+1, 2), new Point3D(i+1, -j+1, 2), new Point3D(i+1, -j, 2),
+					new Point3D(i, -j, 3), new Point3D(i, -j+1, 3), new Point3D(i+1, -j+1, 3), new Point3D(i+1, -j, 3)
+				}, new int[][]{
+					{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
+					{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
+					{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
+					{1, 6, 2}, {4, 0, 3}, {4, 3, 7}
+				}, null, new Image[]{new Image(getClass().getResourceAsStream("/stone.png"))},
+				new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, new Point2D[]{
+					new Point2D(0, 0), new Point2D(0, 1), new Point2D(1, 1), new Point2D(1, 0)
+				}, new int[][]{
+					{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+					{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+					{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+					{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
+				});
+				setupHiddenFaces(block, i, 2-j, 0, 4, 3, 1);
+				engine.getObjects().add(block);
+			}
+		}
+
+		Mesh extra = new Mesh(new Point3D[]{
+			new Point3D(1, -1, 1), new Point3D(1, 0, 1), new Point3D(2, 0, 1), new Point3D(2, -1, 1),
+			new Point3D(1, -1, 2), new Point3D(1, 0, 2), new Point3D(2, 0, 2), new Point3D(2, -1, 2)
+		}, new int[][]{
+			{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
+			{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
+			{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
+			{1, 6, 2}, {4, 0, 3}, {4, 3, 7}
+		}, null, new Image[]{new Image(getClass().getResourceAsStream("/glass_red.png"))},
+		new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, new Point2D[]{
+			new Point2D(0, 0), new Point2D(0, 1), new Point2D(1, 1), new Point2D(1, 0)
+		}, new int[][]{
+			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
+			{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
+		});
+		extra.addHiddenFace(0);
+		extra.addHiddenFace(1);
+		for (int j = 0; j < 12; j++) extra.getTriangles()[j].setImageTransparent(true);
+		engine.getObjects().add(extra);
+
+		engine.addLight(new Light());
 
 		engine.setOnUpdate(gc -> {
 			gc.setFill(Color.BLACK);
@@ -110,30 +208,7 @@ public class MainApplication extends Application{
 						{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
 					});
 
-					if (i > 0){ // Left
-						block.addHiddenFace(6);
-						block.addHiddenFace(7);
-					}
-					if (i < width-1){ // Right
-						block.addHiddenFace(2);
-						block.addHiddenFace(3);
-					}
-					if (j > 0){ // Top
-						block.addHiddenFace(10);
-						block.addHiddenFace(11);
-					}
-					if (j < height-1){ // Bottom
-						block.addHiddenFace(8);
-						block.addHiddenFace(9);
-					}
-					if (k > 0){ // Front
-						block.addHiddenFace(0);
-						block.addHiddenFace(1);
-					}
-					if (k < depth-1){ // Back
-						block.addHiddenFace(4);
-						block.addHiddenFace(5);
-					}
+					setupHiddenFaces(block, i, j, k, width, height, depth);
 
 					//block.setShowAllFaces(true);
 					engine.getObjects().add(block);
@@ -235,6 +310,33 @@ public class MainApplication extends Application{
 		engine.getObjects().add(shadowObject);
 
 		engine.addLight(light);
+	}
+
+	private static void setupHiddenFaces(Mesh block, int x, int y, int z, int width, int height, int depth){
+		if (x > 0){ // Left
+			block.addHiddenFace(6);
+			block.addHiddenFace(7);
+		}
+		if (x < width-1){ // Right
+			block.addHiddenFace(2);
+			block.addHiddenFace(3);
+		}
+		if (y > 0){ // Top
+			block.addHiddenFace(10);
+			block.addHiddenFace(11);
+		}
+		if (y < height-1){ // Bottom
+			block.addHiddenFace(8);
+			block.addHiddenFace(9);
+		}
+		if (z > 0){ // Front
+			block.addHiddenFace(0);
+			block.addHiddenFace(1);
+		}
+		if (z < depth-1){ // Back
+			block.addHiddenFace(4);
+			block.addHiddenFace(5);
+		}
 	}
 	
 	public static void main(String[] args){		

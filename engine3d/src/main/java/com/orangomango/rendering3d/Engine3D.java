@@ -174,7 +174,7 @@ public class Engine3D{
 				for (int j = 0; j < this.height; j++){
 					Color color = this.canvas[i][j];
 					if (color != null){
-						gc.getPixelWriter().setColor(i, j, color);
+						gc.getPixelWriter().setColor(i, j, Color.color(color.getRed(), color.getGreen(), color.getBlue()));
 					}
 				}
 			}
@@ -250,11 +250,11 @@ public class Engine3D{
 	}
 
 	public static Color mixColors(Color color1, Color color2){
-		double alpha = color1.getOpacity();
-		double red = color1.getRed()*alpha+color2.getRed()*(1.0-alpha);
-		double green = color1.getGreen()*alpha+color2.getGreen()*(1.0-alpha);
-		double blue = color1.getBlue()*alpha+color2.getBlue()*(1.0-alpha);
-		return Color.color(red, green, blue);
+		double opacity = color1.getOpacity();
+		double red = color1.getRed()*opacity+color2.getRed()*(1.0-opacity);
+		double green = color1.getGreen()*opacity+color2.getGreen()*(1.0-opacity);
+		double blue = color1.getBlue()*opacity+color2.getBlue()*(1.0-opacity);
+		return Color.color(red, green, blue, (opacity+color2.getOpacity())/2);
 	}
 
 	public static <T> T swap(T a, T b){
