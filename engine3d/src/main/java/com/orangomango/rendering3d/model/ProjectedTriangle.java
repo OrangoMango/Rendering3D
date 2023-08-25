@@ -347,7 +347,6 @@ public class ProjectedTriangle{
 
 						// Transparency
 						if (backColor.getOpacity() < 1 && color.getOpacity() < 1 && Math.abs(this.camera.depthBuffer[j][i]-tex_w) < W_EPSILON){
-							//if (this.camera.depthBuffer[j][i]-tex_w != 0) System.out.println(Math.abs(this.camera.depthBuffer[j][i]-tex_w));
 							t += tstep;
 							continue;
 						}
@@ -440,7 +439,6 @@ public class ProjectedTriangle{
 
 						// Transparency
 						if (backColor.getOpacity() < 1 && color.getOpacity() < 1 && Math.abs(this.camera.depthBuffer[j][i]-tex_w) < W_EPSILON){
-							//if (this.camera.depthBuffer[j][i]-tex_w != 0) System.out.println(Math.abs(this.camera.depthBuffer[j][i]-tex_w));
 							t += tstep;
 							continue;
 						}
@@ -610,10 +608,9 @@ public class ProjectedTriangle{
 						Color backColor = canvas[j][i];
 
 						// Transparency
-						if (backColor.getOpacity() < 1 && color.getOpacity() < 1){
-							//System.out.println(Math.abs(this.camera.depthBuffer[j][i]-col_w));
-							//t += tstep;
-							//continue;
+						if (backColor.getOpacity() < 1 && color.getOpacity() < 1 && Math.abs(this.camera.depthBuffer[j][i]-col_w) < W_EPSILON){
+							t += tstep;
+							continue;
 						}
 						color = mixColors(color, backColor);
 
@@ -713,10 +710,9 @@ public class ProjectedTriangle{
 						Color backColor = canvas[j][i];
 
 						// Transparency
-						if (backColor.getOpacity() < 1 && color.getOpacity() < 1){
-							//System.out.println(Math.abs(this.camera.depthBuffer[j][i]-col_w));
-							//t += tstep;
-							//continue;
+						if (backColor.getOpacity() < 1 && color.getOpacity() < 1 && Math.abs(this.camera.depthBuffer[j][i]-col_w) < W_EPSILON){
+							t += tstep;
+							continue;
 						}
 						color = mixColors(color, backColor);
 

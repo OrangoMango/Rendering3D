@@ -89,8 +89,8 @@ public class Engine3D{
 		return this.objects;
 	}
 
-	public void addLight(Light light){
-		this.sceneLights.add(light);
+	public List<Light> getLights(){
+		return this.sceneLights;
 	}
 
 	public Scene getScene(){

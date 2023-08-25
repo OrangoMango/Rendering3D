@@ -18,7 +18,7 @@ import com.orangomango.rendering3d.model.Camera;
 import com.orangomango.rendering3d.model.Light;
 import com.orangomango.rendering3d.meshloader.MeshLoader;
 
-/*
+/**
  * Engine3D in Java/JavaFX
  * Refactored code, v1.0
  * Features: Camera, .obj files, shadows, image/color mesh, clipping and lights
@@ -46,10 +46,27 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.SPACE, () -> camera.move(new Point3D(0, -speed, 0)), false);
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(new Point3D(0, speed, 0)), false);
 
-		//buildScene1(engine);
-		//buildScene2(engine);
-		//buildScene3(engine);
 		buildScene4(engine);
+		engine.setOnKey(KeyCode.DIGIT1, () -> {
+			engine.getObjects().clear();
+			engine.getLights().clear();
+			buildScene1(engine);
+		}, true);
+		engine.setOnKey(KeyCode.DIGIT2, () -> {
+			engine.getObjects().clear();
+			engine.getLights().clear();
+			buildScene2(engine);
+		}, true);
+		engine.setOnKey(KeyCode.DIGIT3, () -> {
+			engine.getObjects().clear();
+			engine.getLights().clear();
+			buildScene3(engine);
+		}, true);
+		engine.setOnKey(KeyCode.DIGIT4, () -> {
+			engine.getObjects().clear();
+			engine.getLights().clear();
+			buildScene4(engine);
+		}, true);
 
 		stage.setResizable(false);
 		stage.setScene(engine.getScene());
@@ -70,7 +87,7 @@ public class MainApplication extends Application{
 		Light light = new Light(new Camera(new Point3D(-6, -6, -3), WIDTH, HEIGHT, Math.PI/4, 100, 0.3));
 
 		engine.getObjects().add(loadedObject);
-		engine.addLight(light);
+		engine.getLights().add(light);
 
 		engine.setOnUpdate(gc -> {
 			gc.setFill(Color.BLACK);
@@ -167,7 +184,7 @@ public class MainApplication extends Application{
 		for (int j = 0; j < 12; j++) extra.getTriangles()[j].setImageTransparent(true);
 		engine.getObjects().add(extra);
 
-		engine.addLight(new Light());
+		engine.getLights().add(new Light());
 
 		engine.setOnKey(KeyCode.O, engine::toggleMouseMovement, true);
 		engine.setOnUpdate(gc -> {
@@ -218,7 +235,7 @@ public class MainApplication extends Application{
 		}
 
 		Light light = new Light();
-		engine.addLight(light);
+		engine.getLights().add(light);
 
 		engine.setOnUpdate(gc -> {
 			gc.setFill(Color.BLACK);
@@ -310,7 +327,7 @@ public class MainApplication extends Application{
 		engine.getObjects().add(loadedObject);
 		engine.getObjects().add(shadowObject);
 
-		engine.addLight(light);
+		engine.getLights().add(light);
 	}
 
 	private static void setupHiddenFaces(Mesh block, int x, int y, int z, int width, int height, int depth){
