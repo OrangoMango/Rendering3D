@@ -109,7 +109,7 @@ public class MainApplication extends Application{
 				{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
 				{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
 				{1, 6, 2}, {4, 0, 3}, {4, 3, 7}
-			}, null, new Image[]{new Image(getClass().getResourceAsStream(i % 2 == 0 ? "/glass.png" : "/glass_red.png"))},
+			}, null, new Image[]{new Image(getClass().getResourceAsStream(i % 2 == 0 && i > 0 ? "/glass.png" : "/glass_red.png"))},
 			new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, new Point2D[]{
 				new Point2D(0, 0), new Point2D(0, 1), new Point2D(1, 1), new Point2D(1, 0)
 			}, new int[][]{
@@ -169,6 +169,7 @@ public class MainApplication extends Application{
 
 		engine.addLight(new Light());
 
+		engine.setOnKey(KeyCode.O, engine::toggleMouseMovement, true);
 		engine.setOnUpdate(gc -> {
 			gc.setFill(Color.BLACK);
 			gc.setTextAlign(TextAlignment.RIGHT);

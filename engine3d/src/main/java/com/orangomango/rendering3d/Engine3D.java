@@ -163,7 +163,7 @@ public class Engine3D{
 		}
 
 		// Render the transparent triangles
-		transparentTriangles.sort((pt1, pt2) -> -Double.compare(pt1.getMeanZ(), pt2.getMeanZ()));
+		transparentTriangles.sort((pt1, pt2) -> Double.compare(pt1.getMeanZ(), pt2.getMeanZ()));
 		for (ProjectedTriangle pt : transparentTriangles){
 			pt.render(canvas, SHOW_LINES ? gc : null);
 		}
@@ -181,11 +181,13 @@ public class Engine3D{
 		}
 
 		// Turn the camera according to the mouse
-		double sensibility = 0.4;
-		Point2D mouse = this.robot.getMousePosition();
-		Point2D center = new Point2D(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
-		this.camera.setRx(this.camera.getRx()+Math.toRadians((int)(center.getY()-mouse.getY())*sensibility));
-		this.camera.setRy(this.camera.getRy()+Math.toRadians((int)(center.getX()-mouse.getX())*sensibility));
+		if (this.mouseMovement){
+			double sensibility = 0.4;
+			Point2D mouse = this.robot.getMousePosition();
+			Point2D center = new Point2D(this.stage.getX()+this.width/2.0, this.stage.getY()+this.height/2.0);
+			this.camera.setRx(this.camera.getRx()+Math.toRadians((int)(center.getY()-mouse.getY())*sensibility));
+			this.camera.setRy(this.camera.getRy()+Math.toRadians((int)(center.getX()-mouse.getX())*sensibility));
+		}
 
 		if (FOLLOW_LIGHT && this.sceneLights.size() >= 1){
 			this.camera.setPosition(this.sceneLights.get(0).getCamera().getPosition());
