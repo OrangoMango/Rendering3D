@@ -36,6 +36,7 @@ public class Engine3D{
 	private int fps, frames;
 	private Consumer<GraphicsContext> onUpdate;
 	private boolean mouseMovement = true;
+	private List<Mesh> toAdd = new ArrayList<>(), toRemove = new ArrayList<>();
 
 	// FLAGS
 	public static boolean SHOW_LINES = false;
@@ -85,8 +86,16 @@ public class Engine3D{
 		this.camera = camera;
 	}
 
-	public List<Mesh> getObjects(){
-		return this.objects;
+	public void addObject(Mesh object){
+		this.toAdd.add(object);
+	}
+
+	public void removeObject(Mesh object){
+		this.toRemove.add(object);
+	}
+
+	public void clearObjects(){
+		this.toRemove.addAll(this.objects);
 	}
 
 	public List<Light> getLights(){
@@ -239,6 +248,18 @@ public class Engine3D{
 			this.onUpdate.accept(gc);
 			gc.restore();
 		}
+
+		// Add and Remove objects
+		final int toAddN = this.toAdd.size();
+		final int toRemoveN = this.toRemove.size();
+		for (int i = 0; i < toAddN; i++){
+			this.objects.add(this.toAdd.get(i));
+		}
+		for (int i = 0; i < toRemoveN; i++){
+			this.objects.remove(this.toRemove.get(i));
+		}
+		this.toAdd.clear();
+		this.toRemove.clear();
 
 		// Info box
 		gc.setFill(Color.BLACK);

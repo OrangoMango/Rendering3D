@@ -145,7 +145,7 @@ public class MeshTriangle{
 	public void update(Camera camera, List<Light> lights){
 		this.projected.clear(); // Reset
 
-		// Check the normal of the triangle before clipping and calculate the dot product
+		// Get the normal of the triangle before clipping and calculate the dot product
 		double firstDot = getDotProduct(this, camera);
 
 		if (firstDot < 0 || this.showAllFaces){

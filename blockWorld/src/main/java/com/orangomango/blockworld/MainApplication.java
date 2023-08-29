@@ -7,6 +7,7 @@ import javafx.scene.input.KeyCode;
 import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.rendering3d.model.Light;
 import com.orangomango.blockworld.model.Player;
+import com.orangomango.blockworld.model.World;
 
 /**
  * Minecraft-clone using a 3D engine made from scratch in Java/JavaFX
@@ -15,8 +16,8 @@ import com.orangomango.blockworld.model.Player;
  * @version 1.0
  */
 public class MainApplication extends Application{
-	public static final int WIDTH = 320;
-	public static final int HEIGHT = 180;
+	private static final int WIDTH = 320;
+	private static final int HEIGHT = 180;
 	private static final int CHUNKS = 5;
 	
 	@Override
@@ -24,11 +25,13 @@ public class MainApplication extends Application{
 		stage.setTitle("BlockWorld");
 		
 		Engine3D engine = new Engine3D(stage, WIDTH, HEIGHT);
-		Player player = new Player(0, 15, 0);
+		Player player = new Player(0, 15, 0, WIDTH, HEIGHT);
 		engine.setCamera(player.getCamera());
 
 		Light light = new Light();
-		engine.addLight(light);
+		engine.getLights().add(light);
+
+		World world = new World((int)System.currentTimeMillis(), false);
 
 		// Ray-casting
 		// ...
@@ -41,6 +44,12 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.D, () -> player.move(speed*Math.cos(player.getRy()), 0, speed*Math.sin(player.getRy())), false);
 		engine.setOnKey(KeyCode.SPACE, () -> player.move(0, -speed, 0), false);
 		engine.setOnKey(KeyCode.SHIFT, () -> player.move(0, speed, 0), false);
+
+		engine.setOnKey(KeyCode.O, engine::toggleMouseMovement, true);
+
+		engine.setOnUpdate(gc -> {
+
+		});
 		
 		stage.setResizable(false);
 		stage.setScene(engine.getScene());

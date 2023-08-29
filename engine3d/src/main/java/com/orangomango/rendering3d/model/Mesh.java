@@ -67,6 +67,12 @@ public class Mesh{
 		this.skipCondition = condition;
 	}
 
+	public void setTransparentProcessing(boolean value){
+		for (int i = 0; i < this.triangles.length; i++){
+			this.triangles[i].setImageTransparent(value);
+		}
+	}
+
 	public MeshTriangle[] getTriangles(){
 		return this.triangles;
 	}

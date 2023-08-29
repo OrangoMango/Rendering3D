@@ -48,22 +48,22 @@ public class MainApplication extends Application{
 
 		buildScene4(engine);
 		engine.setOnKey(KeyCode.DIGIT1, () -> {
-			engine.getObjects().clear();
+			engine.clearObjects();
 			engine.getLights().clear();
 			buildScene1(engine);
 		}, true);
 		engine.setOnKey(KeyCode.DIGIT2, () -> {
-			engine.getObjects().clear();
+			engine.clearObjects();
 			engine.getLights().clear();
 			buildScene2(engine);
 		}, true);
 		engine.setOnKey(KeyCode.DIGIT3, () -> {
-			engine.getObjects().clear();
+			engine.clearObjects();
 			engine.getLights().clear();
 			buildScene3(engine);
 		}, true);
 		engine.setOnKey(KeyCode.DIGIT4, () -> {
-			engine.getObjects().clear();
+			engine.clearObjects();
 			engine.getLights().clear();
 			buildScene4(engine);
 		}, true);
@@ -86,7 +86,7 @@ public class MainApplication extends Application{
 
 		Light light = new Light(new Camera(new Point3D(-6, -6, -3), WIDTH, HEIGHT, Math.PI/4, 100, 0.3));
 
-		engine.getObjects().add(loadedObject);
+		engine.addObject(loadedObject);
 		engine.getLights().add(light);
 
 		engine.setOnUpdate(gc -> {
@@ -116,7 +116,7 @@ public class MainApplication extends Application{
 				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
 			});
 			setupHiddenFaces(wood, i, 0, 0, 4, 1, 1);
-			engine.getObjects().add(wood);
+			engine.addObject(wood);
 
 			Mesh glass = new Mesh(new Point3D[]{
 				new Point3D(i, -1, 0), new Point3D(i, 0, 0), new Point3D(i+1, 0, 0), new Point3D(i+1, -1, 0),
@@ -137,7 +137,7 @@ public class MainApplication extends Application{
 			});
 			for (int j = 0; j < 12; j++) glass.getTriangles()[j].setImageTransparent(true);
 			setupHiddenFaces(glass, i, 0, 0, 4, 1, 1);
-			engine.getObjects().add(glass);
+			engine.addObject(glass);
 
 			for (int j = 0; j < 3; j++){
 				Mesh block = new Mesh(new Point3D[]{
@@ -158,7 +158,7 @@ public class MainApplication extends Application{
 					{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
 				});
 				setupHiddenFaces(block, i, 2-j, 0, 4, 3, 1);
-				engine.getObjects().add(block);
+				engine.addObject(block);
 			}
 		}
 
@@ -182,7 +182,7 @@ public class MainApplication extends Application{
 		extra.addHiddenFace(0);
 		extra.addHiddenFace(1);
 		for (int j = 0; j < 12; j++) extra.getTriangles()[j].setImageTransparent(true);
-		engine.getObjects().add(extra);
+		engine.addObject(extra);
 
 		engine.getLights().add(new Light());
 
@@ -229,7 +229,7 @@ public class MainApplication extends Application{
 					setupHiddenFaces(block, i, j, k, width, height, depth);
 
 					//block.setShowAllFaces(true);
-					engine.getObjects().add(block);
+					engine.addObject(block);
 				}
 			}
 		}
@@ -322,10 +322,10 @@ public class MainApplication extends Application{
 
 		engine.setOnKey(KeyCode.F6, () -> ROTATE_LIGHT = !ROTATE_LIGHT, true);
 
-		engine.getObjects().add(object);
-		engine.getObjects().add(object2);
-		engine.getObjects().add(loadedObject);
-		engine.getObjects().add(shadowObject);
+		engine.addObject(object);
+		engine.addObject(object2);
+		engine.addObject(loadedObject);
+		engine.addObject(shadowObject);
 
 		engine.getLights().add(light);
 	}

@@ -8,8 +8,8 @@ import com.orangomango.rendering3d.model.Camera;
 public class Player{
 	private Camera camera;
 
-	public Player(double x, double y, double z){
-		this.camera = new Camera(new Point3D(x, y, z), MainApplication.WIDTH, MainApplication.HEIGHT, Math.PI/2, 75, 0.1);
+	public Player(double x, double y, double z, int w, int h){
+		this.camera = new Camera(new Point3D(x, y, z), w, h, Math.PI/2, 75, 0.1);
 	}
 
 	public Camera getCamera(){
