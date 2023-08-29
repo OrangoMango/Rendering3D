@@ -277,7 +277,7 @@ public class Engine3D{
 		double red = color1.getRed()*opacity+color2.getRed()*(1.0-opacity);
 		double green = color1.getGreen()*opacity+color2.getGreen()*(1.0-opacity);
 		double blue = color1.getBlue()*opacity+color2.getBlue()*(1.0-opacity);
-		return Color.color(red, green, blue, (opacity+color2.getOpacity())/2);
+		return Color.color(red, green, blue, opacity);
 	}
 
 	public static <T> T swap(T a, T b){

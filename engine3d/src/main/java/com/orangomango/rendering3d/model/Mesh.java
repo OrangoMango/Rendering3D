@@ -111,15 +111,14 @@ public class Mesh{
 	}
 
 	public void update(Camera camera, List<Light> lights){
-		if (this.skipCondition != null && this.skipCondition.test(camera)){
-			return;
-		}
-
 		for (int i = 0; i < this.triangles.length; i++){
-			if (this.hiddenFaces.contains(i)) continue; // This triangle is hidden
 			MeshTriangle mt = this.triangles[i];
-			mt.setShowAllFaces(this.showAllFaces);
-			mt.update(camera, lights);
+			if ((this.skipCondition != null && this.skipCondition.test(camera)) || this.hiddenFaces.contains(i)){
+				mt.getProjectedTriangles().clear(); // Reset
+			} else {
+				mt.setShowAllFaces(this.showAllFaces);
+				mt.update(camera, lights);
+			}
 		}
 	}
 

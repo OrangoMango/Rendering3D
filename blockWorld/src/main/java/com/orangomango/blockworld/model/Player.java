@@ -20,6 +20,18 @@ public class Player{
 		return this.camera.getPosition();
 	}
 
+	public double getX(){
+		return this.camera.getPosition().getX();
+	}
+
+	public double getY(){
+		return this.camera.getPosition().getY();
+	}
+
+	public double getZ(){
+		return this.camera.getPosition().getZ();
+	}
+
 	public double getRx(){
 		return this.camera.getRx();
 	}

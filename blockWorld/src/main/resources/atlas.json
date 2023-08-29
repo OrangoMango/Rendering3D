@@ -198,7 +198,6 @@
 				"back" : 0
 			},
 			"transparent" : true,
-			"forceHiding" : true,
 			"liquid" : true
 		},
 	}

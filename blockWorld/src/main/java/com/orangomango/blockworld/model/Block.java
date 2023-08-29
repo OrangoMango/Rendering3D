@@ -1,6 +1,7 @@
 package com.orangomango.blockworld.model;
 
 import javafx.geometry.Point3D;
+import javafx.geometry.Point2D;
 
 import com.orangomango.rendering3d.model.Mesh;
 
@@ -15,7 +16,7 @@ public class Block{
 	private double yOffset;
 	private boolean liquid;
 
-	private static final double LIQUID_OFFSET = 0.2;
+	public static final double LIQUID_OFFSET = 0.2;
 
 	public Block(Chunk chunk, int x, int y, int z, String type){
 		this.world = chunk.getWorld();
@@ -37,32 +38,32 @@ public class Block{
 		if (this.sprite) return;
 		mesh.clearHiddenFaces();
 		Block block = this.world.getBlockAt(this.x+1, this.y, this.z);
-		if (block != null && !block.isTransparent() && block.yOffset == this.yOffset){
+		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type))) && block.yOffset >= this.yOffset){
 			mesh.addHiddenFace(2);
 			mesh.addHiddenFace(3);
 		}
 		block = this.world.getBlockAt(this.x, this.y+1, this.z);
-		if (block != null && !block.isTransparent() && block.yOffset == this.yOffset){
+		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type)))){
 			mesh.addHiddenFace(8);
 			mesh.addHiddenFace(9);
 		}
 		block = this.world.getBlockAt(this.x, this.y, this.z+1);
-		if (block != null && !block.isTransparent() && block.yOffset == this.yOffset){
+		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type))) && block.yOffset >= this.yOffset){
 			mesh.addHiddenFace(4);
 			mesh.addHiddenFace(5);
 		}
 		block = this.world.getBlockAt(this.x-1, this.y, this.z);
-		if (block != null && !block.isTransparent() && block.yOffset == this.yOffset){
+		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type))) && block.yOffset >= this.yOffset){
 			mesh.addHiddenFace(6);
 			mesh.addHiddenFace(7);
 		}
 		block = this.world.getBlockAt(this.x, this.y-1, this.z);
-		if (block != null && !block.isTransparent() && block.yOffset == this.yOffset){
+		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type)))){
 			mesh.addHiddenFace(10);
 			mesh.addHiddenFace(11);
 		}
 		block = this.world.getBlockAt(this.x, this.y, this.z-1);
-		if (block != null && !block.isTransparent() && block.yOffset == this.yOffset){
+		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type))) && block.yOffset >= this.yOffset){
 			mesh.addHiddenFace(0);
 			mesh.addHiddenFace(1);
 		}
@@ -78,7 +79,7 @@ public class Block{
 
 		Block top = this.world.getBlockAt(this.x, this.y-1, this.z);
 		if ((top == null || !top.isLiquid()) && this.liquid){
-			setYOffset(LIQUID_OFFSET);
+			this.yOffset = LIQUID_OFFSET;
 		} else {
 			this.yOffset = 0;
 		}
@@ -119,6 +120,39 @@ public class Block{
 			});
 		}
 		this.mesh.setTransparentProcessing(this.transparent);
+		this.mesh.setShowAllFaces(this.transparent);
 		return this.mesh;
+	}
+
+	public void removeMesh(){
+		this.mesh = null;
+	}
+
+	public boolean isTransparent(){
+		return this.transparent;
+	}
+
+	public boolean isLiquid(){
+		return this.liquid;
+	}
+
+	public int getX(){
+		return this.x;
+	}
+	
+	public int getY(){
+		return this.y;
+	}
+	
+	public int getZ(){
+		return this.z;
+	}
+
+	public String getType(){
+		return this.type;
+	}
+
+	public void setYOffset(double value){
+		this.yOffset = value;
 	}
 }
