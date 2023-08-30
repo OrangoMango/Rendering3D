@@ -24,7 +24,7 @@ import com.orangomango.blockworld.model.*;
 public class MainApplication extends Application{
 	private static final int WIDTH = 320;
 	private static final int HEIGHT = 180;
-	private static final int CHUNKS = 5;
+	private static final int CHUNKS = 1;
 
 	private static Image POINTER = new Image(MainApplication.class.getResourceAsStream("/pointer.png"));
 	private static final String[] inventoryBlocks = new String[]{"wood", "water", "grass", "flower_red", "wood_log", "leaves", "cobblestone", "bricks", "glass"};

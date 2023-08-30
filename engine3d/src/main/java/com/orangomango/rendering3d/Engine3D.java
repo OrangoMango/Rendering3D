@@ -172,7 +172,7 @@ public class Engine3D{
 		}
 
 		// Render the transparent triangles
-		transparentTriangles.sort((pt1, pt2) -> Double.compare(pt1.getMeanZ(), pt2.getMeanZ()));
+		transparentTriangles.sort((pt1, pt2) -> Double.compare(pt1.getMeanDepth(), pt2.getMeanDepth()));
 		for (ProjectedTriangle pt : transparentTriangles){
 			pt.render(canvas, SHOW_LINES ? gc : null);
 		}
@@ -272,6 +272,7 @@ public class Engine3D{
 		gc.fillText(this.camera+"\n"+String.format("FPS:%d", this.fps), 0.05*width, 0.075*height);
 	}
 
+	// TODO opacity needs to be calculated properly
 	public static Color mixColors(Color color1, Color color2){
 		double opacity = color1.getOpacity();
 		double red = color1.getRed()*opacity+color2.getRed()*(1.0-opacity);

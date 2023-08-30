@@ -33,7 +33,7 @@ public class ProjectedTriangle{
 	private Color col1, col2, col3;
 
 	private static final double SHADOW_EPSILON = 0.006; // Shadows
-	private static final double W_EPSILON = 0.008; // Transparent meshes
+	private static final double W_EPSILON = 0.001; // Transparent meshes (-1 to disable)
 
 	public ProjectedTriangle(Camera camera, double[] v1, double[] v2, double[] v3, Image image, Point2D tex1, Point2D tex2, Point2D tex3){
 		this.imageTriangle = true;
@@ -66,7 +66,7 @@ public class ProjectedTriangle{
 		return this.transparent;
 	}
 
-	public double getMeanZ(){
+	public double getMeanDepth(){
 		return (this.v1[2]+this.v2[2]+this.v3[2])/3;
 	}
 

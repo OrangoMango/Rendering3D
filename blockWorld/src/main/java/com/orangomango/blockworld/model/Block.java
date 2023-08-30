@@ -38,7 +38,7 @@ public class Block{
 		if (this.sprite) return;
 		mesh.clearHiddenFaces();
 		Block block = this.world.getBlockAt(this.x+1, this.y, this.z);
-		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type))) && block.yOffset >= this.yOffset){
+		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
 			mesh.addHiddenFace(2);
 			mesh.addHiddenFace(3);
 		}
@@ -48,22 +48,22 @@ public class Block{
 			mesh.addHiddenFace(9);
 		}
 		block = this.world.getBlockAt(this.x, this.y, this.z+1);
-		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type))) && block.yOffset >= this.yOffset){
+		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
 			mesh.addHiddenFace(4);
 			mesh.addHiddenFace(5);
 		}
 		block = this.world.getBlockAt(this.x-1, this.y, this.z);
-		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type))) && block.yOffset >= this.yOffset){
+		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
 			mesh.addHiddenFace(6);
 			mesh.addHiddenFace(7);
 		}
 		block = this.world.getBlockAt(this.x, this.y-1, this.z);
-		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type)))){
+		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type))) && (!this.liquid || block.isLiquid())){
 			mesh.addHiddenFace(10);
 			mesh.addHiddenFace(11);
 		}
 		block = this.world.getBlockAt(this.x, this.y, this.z-1);
-		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type))) && block.yOffset >= this.yOffset){
+		if (block != null && (!block.isTransparent() || (this.transparent && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
 			mesh.addHiddenFace(0);
 			mesh.addHiddenFace(1);
 		}

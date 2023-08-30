@@ -128,7 +128,7 @@ public class Chunk{
 				for (int k = 0; k < CHUNK_SIZE; k++){ // y
 					if (this.blocks[i][k][j] == null && k+getY()*CHUNK_SIZE >= WATER_HEIGHT){
 						Block waterBlock = new Block(this, i, k, j, "water");
-						if (waterBlock.getY() == WATER_HEIGHT) waterBlock.setYOffset(Block.LIQUID_OFFSET);
+						waterBlock.setYOffset(Block.LIQUID_OFFSET);
 						setBlock(waterBlock, i, k, j);
 					}
 				}
