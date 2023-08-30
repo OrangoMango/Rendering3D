@@ -2,6 +2,8 @@ package com.orangomango.rendering3d.model;
 
 import javafx.geometry.Point3D;
 
+import java.util.function.Consumer;
+
 import com.orangomango.rendering3d.Engine3D;
 
 public class Camera{
@@ -12,6 +14,8 @@ public class Camera{
 	private double width, height;
 	private boolean stateChanged = true;
 	private double[][] savedMatrix = null;
+	private Consumer<Point3D> onPositionChanged;
+	private Point3D lastPosition;
 
 	public Camera(Point3D pos, int w, int h, double fov, double zFar, double zNear){
 		this.position = pos;
@@ -22,6 +26,20 @@ public class Camera{
 		this.fov = fov;
 		this.zNear = zNear;
 		this.zFar = zFar;
+		this.lastPosition = this.position;
+	}
+
+	public void setOnPositionChanged(Consumer<Point3D> c){
+		this.onPositionChanged = c;
+	}
+
+	private void triggerPositionChange(){
+		if (!this.position.equals(this.lastPosition)){
+			this.lastPosition = this.position;
+			if (this.onPositionChanged != null){
+				this.onPositionChanged.accept(this.position);
+			}
+		}
 	}
 
 	public double getWidth(){
@@ -51,6 +69,7 @@ public class Camera{
 	public void setPosition(Point3D p){
 		this.stateChanged = true;
 		this.position = p;
+		triggerPositionChange();
 	}
 
 	public Point3D getPosition(){
@@ -60,6 +79,7 @@ public class Camera{
 	public void move(Point3D m){
 		this.stateChanged = true;
 		this.position = this.position.add(m);
+		triggerPositionChange();
 	}
 
 	public void reset(){
@@ -67,6 +87,7 @@ public class Camera{
 		this.position = new Point3D(0, 0, 0);
 		this.rx = 0;
 		this.ry = 0;
+		triggerPositionChange();
 	}
 
 	public void clearDepthBuffer(){

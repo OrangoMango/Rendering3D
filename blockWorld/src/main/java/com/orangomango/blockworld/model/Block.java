@@ -152,6 +152,10 @@ public class Block{
 		return this.type;
 	}
 
+	public int getId(){
+		return this.id;
+	}
+
 	public void setYOffset(double value){
 		this.yOffset = value;
 	}

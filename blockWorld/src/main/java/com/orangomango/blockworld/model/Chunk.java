@@ -8,7 +8,7 @@ import static com.orangomango.blockworld.MainApplication.ENGINE;
 public class Chunk{
 	public static final int CHUNK_SIZE = 8;
 	private static final int HEIGHT_LIMIT = 2;
-	private static final int WATER_HEIGHT = HEIGHT_LIMIT*CHUNK_SIZE+7;
+	private static final int WATER_HEIGHT = HEIGHT_LIMIT*CHUNK_SIZE+9;
 
 	private World world;
 	private ChunkPosition position;
@@ -138,6 +138,26 @@ public class Chunk{
 		buildPendingBlocks();
 	}
 
+	public Chunk(World world, ChunkPosition position, int[][][] input){
+		this.world = world;
+		this.position = position;
+		
+		for (int i = 0; i < CHUNK_SIZE; i++){ // x
+			for (int j = 0; j < CHUNK_SIZE; j++){ // y
+				for (int k = 0; k < CHUNK_SIZE; k++){ // z
+					int id = input[i][j][k];
+					if (id == 0){
+						this.blocks[i][j][k] = null;
+					} else {
+						this.blocks[i][j][k] = new Block(this, i, j, k, Atlas.MAIN_ATLAS.getBlockType(id));
+					}
+				}
+			}
+		}
+		
+		buildPendingBlocks();
+	}
+
 	private void buildPendingBlocks(){
 		// Build pending blocks generated from other chunks
 		Iterator<Block> iterator = pendingBlocks.iterator();
@@ -230,5 +250,10 @@ public class Chunk{
 
 	public int getZ(){
 		return this.position.getZ();
+	}
+
+	@Override
+	public String toString(){
+		return String.format("%d_%d_%d", getX(), getY(), getZ());
 	}
 }

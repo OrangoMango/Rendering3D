@@ -11,7 +11,6 @@ import javafx.scene.text.Font;
 
 import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.rendering3d.model.Light;
-import com.orangomango.rendering3d.model.Mesh;
 import static com.orangomango.rendering3d.model.MeshVertex.VERTICES;
 import com.orangomango.blockworld.model.*;
 
@@ -24,7 +23,7 @@ import com.orangomango.blockworld.model.*;
 public class MainApplication extends Application{
 	private static final int WIDTH = 320;
 	private static final int HEIGHT = 180;
-	private static final int CHUNKS = 1;
+	private static final int CHUNKS = 5;
 
 	private static Image POINTER = new Image(MainApplication.class.getResourceAsStream("/pointer.png"));
 	private static final String[] inventoryBlocks = new String[]{"wood", "water", "grass", "flower_red", "wood_log", "leaves", "cobblestone", "bricks", "glass"};
@@ -46,17 +45,13 @@ public class MainApplication extends Application{
 
 		World world = new World((int)System.currentTimeMillis(), false);
 
-		for (int i = 0; i < CHUNKS; i++){
-			for (int j = 0; j < CHUNKS; j++){
-				for (int k = 0; k < 3; k++){
-					Chunk chunk = world.addChunk(i, k+1, j);
-					for (Mesh mesh : chunk.getMesh()){
-						ENGINE.addObject(mesh);
-					}
-				}
-			}
-		}
-		world.setupFaces();
+		ChunkManager manager = new ChunkManager(world, CHUNKS);
+		manager.deleteSavedWorld();
+
+		// Chunk managing
+		player.setOnChunkPositionChanged(chunkPos -> {
+			manager.manage(chunkPos);
+		});
 
 		// Ray-casting
 		ENGINE.setOnMousePressed(e -> {
@@ -90,7 +85,6 @@ public class MainApplication extends Application{
 					int chunkX = block.getX() / Chunk.CHUNK_SIZE;
 					int chunkY = block.getY() / Chunk.CHUNK_SIZE;
 					int chunkZ = block.getZ() / Chunk.CHUNK_SIZE;
-					//chunkManager.saveChunkToFile(world.getChunkAt(chunkX, chunkY, chunkZ));
 					chunkUpdate = true;
 					down = world.getBlockAt(block.getX(), block.getY()+1, block.getZ());
 				} else if (e.getButton() == MouseButton.SECONDARY && lastX >= 0 && lastY >= 0 && lastZ >= 0){
@@ -98,7 +92,6 @@ public class MainApplication extends Application{
 					int chunkX = lastX / Chunk.CHUNK_SIZE;
 					int chunkY = lastY / Chunk.CHUNK_SIZE;
 					int chunkZ = lastZ / Chunk.CHUNK_SIZE;
-					//chunkManager.saveChunkToFile(world.getChunkAt(chunkX, chunkY, chunkZ));
 					chunkUpdate = true;
 					down = world.getBlockAt(lastX, lastY+1, lastZ);
 				}
@@ -143,6 +136,8 @@ public class MainApplication extends Application{
 		ENGINE.setOnKey(KeyCode.DIGIT9, () -> this.currentBlock = 8, true);
 
 		ENGINE.setOnKey(KeyCode.O, ENGINE::toggleMouseMovement, true);
+		ENGINE.setOnKey(KeyCode.P, manager::saveWorld, true);
+		ENGINE.setOnKey(KeyCode.R, player.getCamera()::reset, true);
 
 		ENGINE.setOnUpdate(gc -> {
 			gc.setFill(Color.BLACK);

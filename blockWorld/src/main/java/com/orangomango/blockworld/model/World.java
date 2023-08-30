@@ -15,11 +15,20 @@ public class World{
 		this.random = new Random(seed);
 	}
 
+	public void addChunk(Chunk chunk, Chunk.ChunkPosition pos){
+		this.chunks.put(pos, chunk);
+	}
+
 	public Chunk addChunk(int x, int y, int z){
 		Chunk.ChunkPosition pos = new Chunk.ChunkPosition(x, y, z);
 		Chunk chunk = new Chunk(this, pos);
-		this.chunks.put(pos, chunk);
+		addChunk(chunk, pos);
 		return chunk;
+	}
+
+	public void removeChunk(int x, int y, int z){
+		Chunk.ChunkPosition pos = new Chunk.ChunkPosition(x, y, z);
+		this.chunks.remove(pos);
 	}
 
 	public Block getBlockAt(int x, int y, int z){
@@ -57,8 +66,12 @@ public class World{
 		}
 	}
 
+	public Collection<Chunk> getChunks(){
+		return this.chunks.values();
+	}
+
 	public void setupFaces(){
-		for (Chunk chunk : this.chunks.values()){
+		for (Chunk chunk : getChunks()){
 			chunk.setupFaces();
 		}
 	}
