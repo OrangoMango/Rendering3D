@@ -22,11 +22,12 @@ public class MeshVertex{
 	// Color vertex
 	private Color vertexColor;
 
-	public static HashMap<MeshVertex, ProjectedVertex> VERTICES = new HashMap<>(100);
+	public static HashMap<MeshVertex, ProjectedVertex> VERTICES = new HashMap<>(300);
 
-	private static class ProjectedVertex{
+	// ============================ DEBUG ============================ private -> public
+	public static class ProjectedVertex{
 		private double[] view;
-		private double[] projection;
+		public double[] projection;
 
 		public ProjectedVertex(double[] view, double[] proj){
 			this.view = view;
@@ -94,23 +95,43 @@ public class MeshVertex{
 		ProjectedVertex projectedVertex = VERTICES.getOrDefault(this, null);
 		if (projectedVertex == null || projectedVertex.view == null){
 			double[] p = new double[]{this.position.getX(), this.position.getY(), this.position.getZ(), 1};
-			this.view = Engine3D.multiply(camera.getViewMatrix(), p);
+			double[] view = Engine3D.multiply(camera.getViewMatrix(), p);
 
 			if (projectedVertex == null){
-				projectedVertex = new ProjectedVertex(this.view, null);
+				projectedVertex = new ProjectedVertex(view, null);
 				VERTICES.put(this, projectedVertex);
 			} else {
-				projectedVertex.view = this.view;
+				projectedVertex.view = view;
 			}
 
-			return new Point3D(this.view[0], this.view[1], this.view[2]);
+			this.view = view;
+
+			return new Point3D(view[0], view[1], view[2]);
 		} else {
 			return new Point3D(projectedVertex.view[0], projectedVertex.view[1], projectedVertex.view[2]);
 		}
 	}
 
+	/**
+	 * Set this vertex as already projected into view space.
+	 * After calling this method, {@link MeshVertex#position} can't be used anymore (it contains the view position and not the absolute position).
+	 * As there is only 1 camera in the scene, at this view position ({@link MeshVertex#position}) there is only 1 vertex associated.
+	 * @see MeshVertex#hashCode()
+	 */
 	public void setInView(){
-		this.view = new double[]{this.position.getX(), this.position.getY(), this.position.getZ(), 1};
+		double[] view = new double[]{this.position.getX(), this.position.getY(), this.position.getZ(), 1};
+		ProjectedVertex projectedVertex = VERTICES.getOrDefault(this, null);
+		if (projectedVertex == null || projectedVertex.view == null){
+			if (projectedVertex == null){
+				projectedVertex = new ProjectedVertex(view, null);
+				VERTICES.put(this, projectedVertex);
+			} else {
+				projectedVertex.view = view;
+			}
+		} else {
+			projectedVertex.view = view;
+		}
+		this.view = view;
 	}
 
 	public double[] getProjection(Camera camera){

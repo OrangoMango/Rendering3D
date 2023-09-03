@@ -23,7 +23,7 @@ import com.orangomango.blockworld.model.*;
 public class MainApplication extends Application{
 	private static final int WIDTH = 320;
 	private static final int HEIGHT = 180;
-	private static final int CHUNKS = 5;
+	private static final int CHUNKS = 3;
 
 	private static Image POINTER = new Image(MainApplication.class.getResourceAsStream("/pointer.png"));
 	private static final String[] inventoryBlocks = new String[]{"wood", "water", "grass", "flower_red", "wood_log", "leaves", "cobblestone", "bricks", "glass"};
@@ -50,7 +50,7 @@ public class MainApplication extends Application{
 
 		// Chunk managing
 		player.setOnChunkPositionChanged(chunkPos -> {
-			manager.manage(chunkPos);
+			new Thread(() -> manager.manage(chunkPos)).start();
 		});
 
 		// Ray-casting
@@ -135,6 +135,7 @@ public class MainApplication extends Application{
 		ENGINE.setOnKey(KeyCode.DIGIT8, () -> this.currentBlock = 7, true);
 		ENGINE.setOnKey(KeyCode.DIGIT9, () -> this.currentBlock = 8, true);
 
+		// Settings
 		ENGINE.setOnKey(KeyCode.O, ENGINE::toggleMouseMovement, true);
 		ENGINE.setOnKey(KeyCode.P, manager::saveWorld, true);
 		ENGINE.setOnKey(KeyCode.R, player.getCamera()::reset, true);

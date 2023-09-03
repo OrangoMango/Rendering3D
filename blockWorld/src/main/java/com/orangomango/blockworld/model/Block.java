@@ -27,6 +27,15 @@ public class Block{
 		setupSettings();
 	}
 
+	public Block(World world, int gx, int gy, int gz, String type){
+		this.world = world;
+		this.x = gx;
+		this.y = gy;
+		this.z = gz;
+		this.type = type;
+		setupSettings();
+	}
+
 	private void setupSettings(){
 		this.id = Atlas.MAIN_ATLAS.getBlockId(this.type);
 		this.transparent = Atlas.MAIN_ATLAS.isTransparent(this.type);

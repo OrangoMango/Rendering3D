@@ -1,9 +1,7 @@
 package com.orangomango.rendering3d.model;
 
 import javafx.geometry.Point3D;
-
 import java.util.function.Consumer;
-
 import com.orangomango.rendering3d.Engine3D;
 
 public class Camera{
@@ -14,6 +12,8 @@ public class Camera{
 	private double width, height;
 	private boolean stateChanged = true;
 	private double[][] savedMatrix = null;
+	private Point3D[][] frustum, viewFrustum;
+	private double[][] projectionMatrix = null;
 	private Consumer<Point3D> onPositionChanged;
 	private Point3D lastPosition;
 
@@ -34,12 +34,20 @@ public class Camera{
 	}
 
 	private void triggerPositionChange(){
+		this.stateChanged = true;
+		this.frustum = null;
 		if (!this.position.equals(this.lastPosition)){
 			this.lastPosition = this.position;
 			if (this.onPositionChanged != null){
 				this.onPositionChanged.accept(this.position);
 			}
 		}
+	}
+
+	private void rebuildCamera(){
+		this.frustum = null;
+		this.viewFrustum = null;
+		this.projectionMatrix = null;
 	}
 
 	public double getWidth(){
@@ -50,8 +58,18 @@ public class Camera{
 		return this.height;
 	}
 
+	public void setZnear(double zn){
+		this.zNear = zn;
+		rebuildCamera();
+	}
+
 	public double getZnear(){
 		return this.zNear;
+	}
+
+	public void setZfar(double zf){
+		this.zFar = zf;
+		rebuildCamera();
 	}
 
 	public double getZfar(){
@@ -62,12 +80,16 @@ public class Camera{
 		return this.aspectRatio;
 	}
 
+	public void setFov(double fov){
+		this.fov = fov;
+		rebuildCamera();
+	}
+
 	public double getFov(){
 		return this.fov;
 	}
 
 	public void setPosition(Point3D p){
-		this.stateChanged = true;
 		this.position = p;
 		triggerPositionChange();
 	}
@@ -77,14 +99,12 @@ public class Camera{
 	}
 
 	public void move(Point3D m){
-		this.stateChanged = true;
 		this.position = this.position.add(m);
 		triggerPositionChange();
 	}
 
 	public void reset(){
-		this.stateChanged = true;
-		this.position = new Point3D(0, 0, 0);
+		this.position = Point3D.ZERO;
 		this.rx = 0;
 		this.ry = 0;
 		triggerPositionChange();
@@ -108,7 +128,10 @@ public class Camera{
 	}
 	
 	public void setRx(double rx){
-		if (this.rx != rx) this.stateChanged = true;
+		if (this.rx != rx){
+			this.stateChanged = true;
+			this.frustum = null;
+		}
 		this.rx = Math.max(-Math.PI/2, Math.min(Math.PI/2, rx));
 	}
 	
@@ -117,8 +140,106 @@ public class Camera{
 	}
 	
 	public void setRy(double ry){
-		if (this.ry != ry) this.stateChanged = true;
+		if (this.ry != ry){
+			this.stateChanged = true;
+			this.frustum = null;
+		}
 		this.ry = ry;
+	}
+
+	private Point3D rotateX(Point3D point, double rx){
+		double[] rot = Engine3D.multiply(Engine3D.getRotateX(rx), new double[]{point.getX(), point.getY(), point.getZ()});
+		return new Point3D(rot[0], rot[1], rot[2]);
+	}
+
+	private Point3D rotateY(Point3D point, double ry){
+		double[] rot = Engine3D.multiply(Engine3D.getRotateY(ry), new double[]{point.getX(), point.getY(), point.getZ()});
+		return new Point3D(rot[0], rot[1], rot[2]);
+	}
+
+	public Point3D[][] getViewFrustum(boolean viewSpace){
+		if (this.viewFrustum != null && viewSpace){
+			return this.viewFrustum;
+		}
+		if (this.frustum != null && !viewSpace){
+			return this.frustum;
+		}
+
+		double cx = viewSpace ? 0 : this.position.getX();
+		double cy = viewSpace ? 0 : this.position.getY();
+		double cz = viewSpace ? 0 : this.position.getZ();
+		double rx = viewSpace ? 0 : this.rx;
+		double ry = viewSpace ? 0 : this.ry;
+
+		double stepX = Math.cos(rx)*Math.cos(ry+Math.PI/2);
+		double stepY = -Math.sin(rx);
+		double stepZ = Math.cos(rx)*Math.sin(ry+Math.PI/2);
+		Point3D direction = new Point3D(stepX, stepY, stepZ);
+
+		stepX = Math.cos(rx+Math.PI/2)*Math.cos(ry+Math.PI/2);
+		stepY = -Math.sin(rx+Math.PI/2);
+		stepZ = Math.cos(rx+Math.PI/2)*Math.sin(ry+Math.PI/2);
+		Point3D vDirection = new Point3D(stepX, stepY, stepZ);
+
+		Point3D eye = new Point3D(cx, cy, cz);
+
+		double nearPlaneHeight = this.zNear*Math.tan(this.fov/2)*2;
+		double nearPlaneWidth = nearPlaneHeight/this.aspectRatio;
+
+		Point3D horizontalDirection = direction.crossProduct(new Point3D(0, -1, 0)).normalize().multiply(nearPlaneWidth/2);
+		Point3D verticalDirection = horizontalDirection.crossProduct(direction).normalize().multiply(nearPlaneHeight/2);
+		
+		// Points
+		Point3D frontPoint = eye.add(direction.multiply(this.zNear));
+		Point3D backPoint = eye.add(direction.multiply(this.zFar));
+
+		Point3D rightPoint = frontPoint.add(horizontalDirection);
+		Point3D leftPoint = frontPoint.add(horizontalDirection.multiply(-1));
+		Point3D topPoint = frontPoint.add(verticalDirection);
+		Point3D bottomPoint = frontPoint.add(verticalDirection.multiply(-1));
+
+		// Normals
+		Point3D frontNormal = frontPoint.subtract(eye).multiply(-1).normalize();
+		Point3D backNormal = backPoint.subtract(eye).normalize();
+
+		Point3D rightNormal = rightPoint.subtract(eye).crossProduct(vDirection).normalize();
+		Point3D leftNormal = leftPoint.subtract(eye).crossProduct(vDirection).normalize().multiply(-1);
+
+		stepX = Math.cos(rx+this.fov/2+Math.PI/2)*Math.cos(ry+Math.PI/2);
+		stepY = -Math.sin(rx+this.fov/2+Math.PI/2);
+		stepZ = Math.cos(rx+this.fov/2+Math.PI/2)*Math.sin(ry+Math.PI/2);
+		Point3D topNormal = new Point3D(stepX, stepY, stepZ);
+
+		stepX = Math.cos(rx-this.fov/2-Math.PI/2)*Math.cos(ry+Math.PI/2);
+		stepY = -Math.sin(rx-this.fov/2-Math.PI/2);
+		stepZ = Math.cos(rx-this.fov/2-Math.PI/2)*Math.sin(ry+Math.PI/2);
+		Point3D bottomNormal = new Point3D(stepX, stepY, stepZ);
+
+		Point3D[][] frustum = new Point3D[][]{{frontNormal, frontPoint}, {backNormal, backPoint}, {rightNormal, rightPoint}, {leftNormal, leftPoint}, {topNormal, topPoint}, {bottomNormal, bottomPoint}};
+		if (viewSpace){
+			this.viewFrustum = frustum;
+		} else {
+			this.frustum = frustum;
+		}
+
+		return viewSpace ? this.viewFrustum : this.frustum;
+	}
+
+	public boolean isVisible(MeshTriangle triangle){
+		Point3D[][] frustum = getViewFrustum(false);
+		Point3D v1 = triangle.getVertex1().getPosition();
+		Point3D v2 = triangle.getVertex2().getPosition();
+		Point3D v3 = triangle.getVertex3().getPosition();
+
+		for (Point3D[] plane : frustum){
+			double d1 = Engine3D.distanceToPlane(plane[0], plane[1], v1, plane[0].multiply(-1));
+			double d2 = Engine3D.distanceToPlane(plane[0], plane[1], v2, plane[0].multiply(-1));
+			double d3 = Engine3D.distanceToPlane(plane[0], plane[1], v3, plane[0].multiply(-1));
+			if (d1 > 0 && d2 > 0 && d3 > 0){
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public double[][] getViewMatrix(){
@@ -131,12 +252,17 @@ public class Camera{
 	}
 
 	public double[][] getProjectionMatrix(){
-		return new double[][]{
+		if (this.projectionMatrix != null){
+			return this.projectionMatrix;
+		}
+
+		this.projectionMatrix = new double[][]{
 			{aspectRatio*1/Math.tan(fov/2), 0, 0, 0},
 			{0, 1/Math.tan(fov/2), 0, 0},
 			{0, 0, 2/(zFar-zNear), -2*zNear/(zFar-zNear)-1},
 			{0, 0, 1, 0}
 		};
+		return this.projectionMatrix;
 	}
 
 	@Override

@@ -17,6 +17,7 @@ public class ChunkManager{
 	public ChunkManager(World world, int chunks){
 		this.world = world;
 		this.chunks = chunks;
+		loadPendingBlocks();
 	}
 
 	public void deleteSavedWorld(){
@@ -28,7 +29,7 @@ public class ChunkManager{
 		}
 	}
 
-	public void manage(Point3D chunkPos){
+	public synchronized void manage(Point3D chunkPos){
 		// Get the chunks to unload
 		List<Chunk> toUnload = new ArrayList<>();
 		for (Chunk chunk : this.world.getChunks()){
@@ -80,7 +81,7 @@ public class ChunkManager{
 		}
 	}
 
-	public void loadChunk(int x, int y, int z){
+	private void loadChunk(int x, int y, int z){
 		boolean loaded = loadChunkFromFile(x, y, z);
 		if (!loaded){
 			Chunk chunk = this.world.addChunk(x, y, z);
@@ -94,6 +95,7 @@ public class ChunkManager{
 		for (Chunk chunk : this.world.getChunks()){
 			saveChunkToFile(chunk);
 		}
+		savePendingBlocks();
 		System.out.println("World saved");
 	}
 
@@ -120,7 +122,7 @@ public class ChunkManager{
 		}
 	}
 
-	public boolean loadChunkFromFile(int x, int y, int z){
+	private boolean loadChunkFromFile(int x, int y, int z){
 		try {
 			File dir = new File(System.getProperty("user.home"), ".blockWorld/");
 			if (!dir.exists()) dir.mkdir();
@@ -150,6 +152,45 @@ public class ChunkManager{
 		} catch (IOException ex){
 			ex.printStackTrace();
 			return false;
+		}
+	}
+
+	private void savePendingBlocks(){
+		try {
+			File dir = new File(System.getProperty("user.home"), ".blockWorld/");
+			if (!dir.exists()) dir.mkdir();
+			File file = new File(dir, "pendingBlocks.data");
+			if (!file.exists()) file.createNewFile();
+			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+			for (Block block : Chunk.pendingBlocks){
+				writer.write(String.format("%d %d %d %d\n", block.getX(), block.getY(), block.getZ(), block.getId()));
+			}
+			writer.close();
+		} catch (IOException ex){
+			ex.printStackTrace();
+		}
+	}
+	
+	private void loadPendingBlocks(){
+		try {
+			File dir = new File(System.getProperty("user.home"), ".blockWorld/");
+			if (!dir.exists()) dir.mkdir();
+			File file = new File(dir, "pendingBlocks.data");
+			if (!file.exists()) file.createNewFile();
+			BufferedReader reader = new BufferedReader(new FileReader(file));
+			Chunk.pendingBlocks.clear();
+			reader.lines().forEach(line -> {
+				String[] parts = line.split(" ");
+				int xp = Integer.parseInt(parts[0]);
+				int yp = Integer.parseInt(parts[1]);
+				int zp = Integer.parseInt(parts[2]);
+				int id = Integer.parseInt(parts[3]);
+				Block block = new Block(this.world, xp, yp, zp, Atlas.MAIN_ATLAS.getBlockType(id));
+				Chunk.pendingBlocks.add(block);
+			});
+			reader.close();
+		} catch (IOException ex){
+			ex.printStackTrace();
 		}
 	}
 }

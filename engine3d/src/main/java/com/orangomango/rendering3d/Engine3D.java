@@ -86,6 +86,10 @@ public class Engine3D{
 		this.camera = camera;
 	}
 
+	public Camera getCamera(){
+		return this.camera;
+	}
+
 	public void addObject(Mesh object){
 		this.toAdd.add(object);
 	}
