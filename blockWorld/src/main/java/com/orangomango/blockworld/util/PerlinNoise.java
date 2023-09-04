@@ -1,68 +1,45 @@
-package com.orangomango.blockworld.model;
+package com.orangomango.blockworld.util;
 
 import java.util.Random;
 
 /**
- * <p>
- * Adapted from Riven's Implementation of Perlin noise. Modified it to be more
- * OOP rather than C like.
- * </p>
- *
  * @author Matthew A. Johnston (WarmWaffles)
- *
  */
 public class PerlinNoise {
 	private float   xo, yo, zo;
 	private float[] pow;
 	private int[]   perm;
 
-	/**
-	 * Builds the Perlin Noise generator.
-	 *
-	 * @param seed The seed for the random number generator
-	 */
 	public PerlinNoise(int seed) {
 		pow  = new float[32];
 		perm = new int[512];
 
-
-		for (int i = 0; i < pow.length; i++)
+		for (int i = 0; i < pow.length; i++){
 			pow[i] = (float) Math.pow(2, i);
+		}
 
 		int[] permutation = new int[256];
-
 		Random r = new Random(seed);
 
-		for(int i = 0; i < permutation.length; i++)
+		for(int i = 0; i < permutation.length; i++){
 			permutation[i] = r.nextInt(256);
+		}
 
-		if (permutation.length != 256)
+		if (permutation.length != 256){
 			throw new IllegalStateException();
+		}
 
-		for (int i = 0; i < 256; i++)
+		for (int i = 0; i < 256; i++){
 			perm[256 + i] = perm[i] = permutation[i];
+		}
 	}
 
-	/**
-	 *
-	 * @param x
-	 * @param y
-	 * @param z
-	 */
 	public void offset(float x, float y, float z) {
 		this.xo = x;
 		this.yo = y;
 		this.zo = z;
 	}
 
-	/**
-	 *
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param octaves
-	 * @return
-	 */
 	public float smoothNoise(float x, float y, float z, int octaves) {
 		float height = 0.0f;
 		for (int octave = 1; octave <= octaves; octave++)
@@ -70,14 +47,6 @@ public class PerlinNoise {
 		return height;
 	}
 
-	/**
-	 *
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param octaves
-	 * @return
-	 */
 	public float turbulentNoise(float x, float y, float z, int octaves) {
 		float height = 0.0f;
 		for (int octave = 1; octave <= octaves; octave++) {
@@ -89,13 +58,6 @@ public class PerlinNoise {
 		return height;
 	}
 
-	/**
-	 *
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @return
-	 */
 	public float noise(float x, float y, float z) {
 		float fx = floor(x);
 		float fy = floor(y);
@@ -136,60 +98,23 @@ public class PerlinNoise {
 		return a8_1;
 	}
 
-	// ========================================================================
-	//								PRIVATE
-	// ========================================================================
-
-	/**
-	 *
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param octave
-	 * @return
-	 */
 	private float noise(float x, float y, float z, int octave) {
 		float p = pow[octave];
 		return this.noise(x * p + this.xo, y * p + this.yo, z * p + this.zo) / p;
 	}
 
-	/**
-	 *
-	 * @param v
-	 * @return
-	 */
 	private final float floor(float v) {
 		return (int) v;
 	}
 
-	/**
-	 *
-	 * @param t
-	 * @return
-	 */
 	private final float fade(float t) {
 		return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
 	}
 
-	/**
-	 *
-	 * @param t
-	 * @param a
-	 * @param b
-	 * @return
-	 */
 	private final float lerp(float t, float a, float b) {
 		return a + t * (b - a);
 	}
 
-	/**
-	 *
-	 * @param hash
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @return
-	 */
 	private static float grad(int hash, float x, float y, float z) {
 		int h = hash & 15;
 		float u = (h < 8) ? x : y;

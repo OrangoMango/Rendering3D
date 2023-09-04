@@ -1,4 +1,4 @@
-package com.orangomango.blockworld;
+package com.orangomango.blockworld.util;
 
 import javafx.geometry.Point3D;
 

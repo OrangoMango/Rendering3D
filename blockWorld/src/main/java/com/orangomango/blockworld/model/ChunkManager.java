@@ -9,7 +9,7 @@ import com.orangomango.rendering3d.model.Mesh;
 import static com.orangomango.blockworld.MainApplication.ENGINE;
 
 public class ChunkManager{
-	public static final double RENDER_DISTANCE = 7.5;
+	public static final double RENDER_DISTANCE = 6.5;
 
 	private World world;
 	private int chunks;

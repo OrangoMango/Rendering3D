@@ -13,6 +13,7 @@ import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.rendering3d.model.Light;
 import com.orangomango.rendering3d.model.MeshVertex;
 import com.orangomango.blockworld.model.*;
+import com.orangomango.blockworld.entity.Player;
 
 /**
  * Minecraft-clone using a 3D engine made from scratch in Java/JavaFX
@@ -64,7 +65,7 @@ public class MainApplication extends Application{
 					b = Math.min(Math.max(0, b), 1);
 					this.backgroundColor = Color.hsb(this.backgroundColor.getHue(), this.backgroundColor.getSaturation(), b);
 					ENGINE.setBackgroundColor(this.backgroundColor);
-					Thread.sleep(300);
+					Thread.sleep(500);
 				} catch (InterruptedException ex){
 					ex.printStackTrace();
 				}
@@ -164,6 +165,21 @@ public class MainApplication extends Application{
 		ENGINE.setOnKey(KeyCode.O, ENGINE::toggleMouseMovement, true);
 		ENGINE.setOnKey(KeyCode.P, manager::saveWorld, true);
 		ENGINE.setOnKey(KeyCode.R, player.getCamera()::reset, true);
+
+		ENGINE.setOnPreUpdate(gc -> {
+			for (Chunk chunk : world.getChunks()){
+				for (int i = 0; i < Chunk.CHUNK_SIZE; i++){
+					for (int j = 0; j < Chunk.CHUNK_SIZE; j++){
+						for (int k = 0; k < Chunk.CHUNK_SIZE; k++){
+							Block block = chunk.getBlockAt(i, j, k);
+							if (block != null){
+								block.update();
+							}
+						}
+					}
+				}
+			}
+		});
 
 		ENGINE.setOnUpdate(gc -> {
 			gc.setFill(Color.BLACK);

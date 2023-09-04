@@ -1,10 +1,12 @@
-package com.orangomango.blockworld.model;
+package com.orangomango.blockworld.entity;
 
 import javafx.geometry.Point3D;
 
 import java.util.function.Consumer;
 
-import com.orangomango.blockworld.Util;
+import static com.orangomango.blockworld.model.ChunkManager.RENDER_DISTANCE;
+import static com.orangomango.blockworld.model.Chunk.CHUNK_SIZE;
+import com.orangomango.blockworld.util.Util;
 import com.orangomango.rendering3d.model.Camera;
 
 public class Player{
@@ -12,7 +14,7 @@ public class Player{
 	private Point3D lastChunkPos;
 
 	public Player(double x, double y, double z, int w, int h){
-		this.camera = new Camera(new Point3D(x, y, z), w, h, Math.PI/2, 75, 0.1);
+		this.camera = new Camera(new Point3D(x, y, z), w, h, Math.PI/2, RENDER_DISTANCE*CHUNK_SIZE*1.25, 0.1);
 		this.lastChunkPos = Util.getChunkPos(getPosition());
 	}
 

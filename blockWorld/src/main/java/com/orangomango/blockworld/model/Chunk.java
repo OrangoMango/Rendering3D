@@ -3,6 +3,7 @@ package com.orangomango.blockworld.model;
 import java.util.*;
 
 import com.orangomango.rendering3d.model.Mesh;
+import com.orangomango.blockworld.util.PerlinNoise;
 import static com.orangomango.blockworld.MainApplication.ENGINE;
 
 public class Chunk{
@@ -75,7 +76,7 @@ public class Chunk{
 						int pos = getY()*CHUNK_SIZE+j;
 						if (pos >= h){
 							String biome = b <= 0.4 || (pos > WATER_HEIGHT && random.nextInt(100) < 35) ? "sand" : (pos == h && pos <= WATER_HEIGHT ? "grass" : "dirt");
-							this.blocks[i][j][k] = new Block(this, i, j, k, pos > h+3 ? "stone" : biome);
+							setBlock(new Block(this, i, j, k, pos > h+3 ? "stone" : biome), i, j, k);
 						}
 					}
 				}

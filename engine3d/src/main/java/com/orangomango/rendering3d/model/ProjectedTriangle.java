@@ -9,17 +9,14 @@ import javafx.scene.paint.Color;
 
 import java.util.*;
 
-import static com.orangomango.rendering3d.Engine3D.swap;
-import static com.orangomango.rendering3d.Engine3D.isInScene;
-import static com.orangomango.rendering3d.Engine3D.convertPoint;
-import static com.orangomango.rendering3d.Engine3D.SHADOWS;
-import static com.orangomango.rendering3d.Engine3D.mixColors;
+import com.orangomango.rendering3d.Engine3D;
 
 public class ProjectedTriangle{
 	private double[] v1, v2, v3;
 	private boolean imageTriangle;
 	private Camera camera;
 	private boolean transparent;
+	private double lightIntensity;
 
 	// Light data
 	private MeshVertex vex1, vex2, vex3;
@@ -56,6 +53,10 @@ public class ProjectedTriangle{
 		this.col1 = col1;
 		this.col2 = col2;
 		this.col3 = col3;
+	}
+
+	public void setLightIntensity(double value){
+		this.lightIntensity = value;
 	}
 
 	public void setTransparent(boolean value){
@@ -111,19 +112,19 @@ public class ProjectedTriangle{
 		double w3 = this.v3[2];
 
 		if (y2 < y1){
-			y1 = swap(y2, y2 = y1);
-			x1 = swap(x2, x2 = x1);
-			w1 = swap(w2, w2 = w1);
+			y1 = Engine3D.swap(y2, y2 = y1);
+			x1 = Engine3D.swap(x2, x2 = x1);
+			w1 = Engine3D.swap(w2, w2 = w1);
 		}
 		if (y3 < y1){
-			y1 = swap(y3, y3 = y1);
-			x1 = swap(x3, x3 = x1);
-			w1 = swap(w3, w3 = w1);
+			y1 = Engine3D.swap(y3, y3 = y1);
+			x1 = Engine3D.swap(x3, x3 = x1);
+			w1 = Engine3D.swap(w3, w3 = w1);
 		}
 		if (y3 < y2){
-			y2 = swap(y3, y3 = y2);
-			x2 = swap(x3, x3 = x2);
-			w2 = swap(w3, w3 = w2);
+			y2 = Engine3D.swap(y3, y3 = y2);
+			x2 = Engine3D.swap(x3, x3 = x2);
+			w2 = Engine3D.swap(w3, w3 = w2);
 		}
 		
 		int dx1 = x2-x1;
@@ -153,8 +154,8 @@ public class ProjectedTriangle{
 				double col_ew = w1+(i-y1)*dw2_step;
 				
 				if (ax > bx){
-					ax = swap(bx, bx = ax);
-					col_sw = swap(col_ew, col_ew = col_sw);
+					ax = Engine3D.swap(bx, bx = ax);
+					col_sw = Engine3D.swap(col_ew, col_ew = col_sw);
 				}
 				
 				double tstep = 1.0/(bx-ax);
@@ -163,7 +164,7 @@ public class ProjectedTriangle{
 				for (int j = ax; j < bx; j++){
 					col_w = (1-t)*col_sw+t*col_ew;
 					
-					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
+					if (Engine3D.isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
 						this.camera.depthBuffer[j][i] = col_w;
 					}
 
@@ -191,8 +192,8 @@ public class ProjectedTriangle{
 				double col_ew = w1+(i-y1)*dw2_step;
 				
 				if (ax > bx){
-					ax = swap(bx, bx = ax);
-					col_sw = swap(col_ew, col_ew = col_sw);
+					ax = Engine3D.swap(bx, bx = ax);
+					col_sw = Engine3D.swap(col_ew, col_ew = col_sw);
 				}
 				
 				double tstep = 1.0/(bx-ax);
@@ -201,7 +202,7 @@ public class ProjectedTriangle{
 				for (int j = ax; j < bx; j++){
 					col_w = (1-t)*col_sw+t*col_ew;
 					
-					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
+					if (Engine3D.isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
 						this.camera.depthBuffer[j][i] = col_w;
 					}
 
@@ -249,28 +250,28 @@ public class ProjectedTriangle{
 		PixelReader reader = image.getPixelReader();
 
 		if (y2 < y1){
-			y1 = swap(y2, y2 = y1);
-			x1 = swap(x2, x2 = x1);
-			u1 = swap(u2, u2 = u1);
-			v1 = swap(v2, v2 = v1);
-			w1 = swap(w2, w2 = w1);
-			l1 = swap(l2, l2 = l1);
+			y1 = Engine3D.swap(y2, y2 = y1);
+			x1 = Engine3D.swap(x2, x2 = x1);
+			u1 = Engine3D.swap(u2, u2 = u1);
+			v1 = Engine3D.swap(v2, v2 = v1);
+			w1 = Engine3D.swap(w2, w2 = w1);
+			l1 = Engine3D.swap(l2, l2 = l1);
 		}
 		if (y3 < y1){
-			y1 = swap(y3, y3 = y1);
-			x1 = swap(x3, x3 = x1);
-			u1 = swap(u3, u3 = u1);
-			v1 = swap(v3, v3 = v1);
-			w1 = swap(w3, w3 = w1);
-			l1 = swap(l3, l3 = l1);
+			y1 = Engine3D.swap(y3, y3 = y1);
+			x1 = Engine3D.swap(x3, x3 = x1);
+			u1 = Engine3D.swap(u3, u3 = u1);
+			v1 = Engine3D.swap(v3, v3 = v1);
+			w1 = Engine3D.swap(w3, w3 = w1);
+			l1 = Engine3D.swap(l3, l3 = l1);
 		}
 		if (y3 < y2){
-			y2 = swap(y3, y3 = y2);
-			x2 = swap(x3, x3 = x2);
-			u2 = swap(u3, u3 = u2);
-			v2 = swap(v3, v3 = v2);
-			w2 = swap(w3, w3 = w2);
-			l2 = swap(l3, l3 = l2);
+			y2 = Engine3D.swap(y3, y3 = y2);
+			x2 = Engine3D.swap(x3, x3 = x2);
+			u2 = Engine3D.swap(u3, u3 = u2);
+			v2 = Engine3D.swap(v3, v3 = v2);
+			w2 = Engine3D.swap(w3, w3 = w2);
+			l2 = Engine3D.swap(l3, l3 = l2);
 		}
 		
 		int dx1 = x2-x1;
@@ -322,11 +323,11 @@ public class ProjectedTriangle{
 				double tex_el = l1+(i-y1)*dl2_step;
 				
 				if (ax > bx){
-					ax = swap(bx, bx = ax);
-					tex_su = swap(tex_eu, tex_eu = tex_su);
-					tex_sv = swap(tex_ev, tex_ev = tex_sv);
-					tex_sw = swap(tex_ew, tex_ew = tex_sw);
-					tex_sl = swap(tex_el, tex_el = tex_sl);
+					ax = Engine3D.swap(bx, bx = ax);
+					tex_su = Engine3D.swap(tex_eu, tex_eu = tex_su);
+					tex_sv = Engine3D.swap(tex_ev, tex_ev = tex_sv);
+					tex_sw = Engine3D.swap(tex_ew, tex_ew = tex_sw);
+					tex_sl = Engine3D.swap(tex_el, tex_el = tex_sl);
 				}
 				
 				double tstep = 1.0/(bx-ax);
@@ -341,7 +342,7 @@ public class ProjectedTriangle{
 					int pix_x = (int)Math.max(0, tex_u/tex_w*width);
 					int pix_y = (int)Math.max(0, tex_v/tex_w*height);
 
-					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= tex_w){
+					if (Engine3D.isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= tex_w){
 						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
 						Color backColor = canvas[j][i];
 
@@ -350,16 +351,16 @@ public class ProjectedTriangle{
 							t += tstep;
 							continue;
 						}
-						color = mixColors(color, backColor);
+						color = Engine3D.mixColors(color, backColor);
 						
 						// Light
 						color = Light.getLight(color, tex_l);
 
 						// Shadows
-						if (SHADOWS){
+						if (Engine3D.SHADOWS){
 							for (Light light : this.lights){
 								Camera cam2 = light.getCamera();
-								double[] shadow = convertPoint(new double[]{j, i, tex_w}, this.camera, cam2);
+								double[] shadow = Engine3D.convertPoint(new double[]{j, i, tex_w}, this.camera, cam2);
 								int index_x = (int)shadow[0];
 								int index_y = (int)shadow[1];
 								if (index_x >= 0 && index_y >= 0 && index_x < cam2.getWidth() && index_y < cam2.getHeight()){
@@ -372,7 +373,7 @@ public class ProjectedTriangle{
 						}
 
 						this.camera.depthBuffer[j][i] = tex_w;
-						canvas[j][i] = color;
+						canvas[j][i] = Light.getLight(color, this.lightIntensity);
 					}
 					
 					t += tstep;
@@ -414,11 +415,11 @@ public class ProjectedTriangle{
 				double tex_el = l1+(i-y1)*dl2_step;
 				
 				if (ax > bx){
-					ax = swap(bx, bx = ax);
-					tex_su = swap(tex_eu, tex_eu = tex_su);
-					tex_sv = swap(tex_ev, tex_ev = tex_sv);
-					tex_sw = swap(tex_ew, tex_ew = tex_sw);
-					tex_sl = swap(tex_el, tex_el = tex_sl);
+					ax = Engine3D.swap(bx, bx = ax);
+					tex_su = Engine3D.swap(tex_eu, tex_eu = tex_su);
+					tex_sv = Engine3D.swap(tex_ev, tex_ev = tex_sv);
+					tex_sw = Engine3D.swap(tex_ew, tex_ew = tex_sw);
+					tex_sl = Engine3D.swap(tex_el, tex_el = tex_sl);
 				}
 				
 				double tstep = 1.0/(bx-ax);
@@ -433,7 +434,7 @@ public class ProjectedTriangle{
 					int pix_x = (int)Math.max(0, tex_u/tex_w*width);
 					int pix_y = (int)Math.max(0, tex_v/tex_w*height);
 
-					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= tex_w){
+					if (Engine3D.isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= tex_w){
 						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
 						Color backColor = canvas[j][i];
 
@@ -442,16 +443,16 @@ public class ProjectedTriangle{
 							t += tstep;
 							continue;
 						}
-						color = mixColors(color, backColor);
+						color = Engine3D.mixColors(color, backColor);
 						
 						// Light
 						color = Light.getLight(color, tex_l);
 
 						// Shadows
-						if (SHADOWS){
+						if (Engine3D.SHADOWS){
 							for (Light light : this.lights){
 								Camera cam2 = light.getCamera();
-								double[] shadow = convertPoint(new double[]{j, i, tex_w}, this.camera, cam2);
+								double[] shadow = Engine3D.convertPoint(new double[]{j, i, tex_w}, this.camera, cam2);
 								int index_x = (int)shadow[0];
 								int index_y = (int)shadow[1];
 								if (index_x >= 0 && index_y >= 0 && index_x < cam2.getWidth() && index_y < cam2.getHeight()){
@@ -464,7 +465,7 @@ public class ProjectedTriangle{
 						}
 
 						this.camera.depthBuffer[j][i] = tex_w;
-						canvas[j][i] = color;
+						canvas[j][i] = Light.getLight(color, this.lightIntensity);
 					}
 					
 					t += tstep;
@@ -500,25 +501,25 @@ public class ProjectedTriangle{
 		l3 = Math.min(1, l3);
 
 		if (y2 < y1){
-			y1 = swap(y2, y2 = y1);
-			x1 = swap(x2, x2 = x1);
-			c1 = swap(c2, c2 = c1);
-			w1 = swap(w2, w2 = w1);
-			l1 = swap(l2, l2 = l1);
+			y1 = Engine3D.swap(y2, y2 = y1);
+			x1 = Engine3D.swap(x2, x2 = x1);
+			c1 = Engine3D.swap(c2, c2 = c1);
+			w1 = Engine3D.swap(w2, w2 = w1);
+			l1 = Engine3D.swap(l2, l2 = l1);
 		}
 		if (y3 < y1){
-			y1 = swap(y3, y3 = y1);
-			x1 = swap(x3, x3 = x1);
-			c1 = swap(c3, c3 = c1);
-			w1 = swap(w3, w3 = w1);
-			l1 = swap(l3, l3 = l1);
+			y1 = Engine3D.swap(y3, y3 = y1);
+			x1 = Engine3D.swap(x3, x3 = x1);
+			c1 = Engine3D.swap(c3, c3 = c1);
+			w1 = Engine3D.swap(w3, w3 = w1);
+			l1 = Engine3D.swap(l3, l3 = l1);
 		}
 		if (y3 < y2){
-			y2 = swap(y3, y3 = y2);
-			x2 = swap(x3, x3 = x2);
-			c2 = swap(c3, c3 = c2);
-			w2 = swap(w3, w3 = w2);
-			l2 = swap(l3, l3 = l2);
+			y2 = Engine3D.swap(y3, y3 = y2);
+			x2 = Engine3D.swap(x3, x3 = x2);
+			c2 = Engine3D.swap(c3, c3 = c2);
+			w2 = Engine3D.swap(w3, w3 = w2);
+			l2 = Engine3D.swap(l3, l3 = l2);
 		}
 
 		// Calculate the values of the first line
@@ -584,13 +585,13 @@ public class ProjectedTriangle{
 				double col_el = l1+(i-y1)*dl2_step;
 				
 				if (ax > bx){
-					ax = swap(bx, bx = ax);
-					col_sr = swap(col_er, col_er = col_sr);
-					col_sg = swap(col_eg, col_eg = col_sg);
-					col_sb = swap(col_eb, col_eb = col_sb);
-					col_so = swap(col_eo, col_eo = col_so);
-					col_sw = swap(col_ew, col_ew = col_sw);
-					col_sl = swap(col_el, col_el = col_sl);
+					ax = Engine3D.swap(bx, bx = ax);
+					col_sr = Engine3D.swap(col_er, col_er = col_sr);
+					col_sg = Engine3D.swap(col_eg, col_eg = col_sg);
+					col_sb = Engine3D.swap(col_eb, col_eb = col_sb);
+					col_so = Engine3D.swap(col_eo, col_eo = col_so);
+					col_sw = Engine3D.swap(col_ew, col_ew = col_sw);
+					col_sl = Engine3D.swap(col_el, col_el = col_sl);
 				}
 				
 				double tstep = 1.0/(bx-ax);
@@ -603,7 +604,7 @@ public class ProjectedTriangle{
 					col_o = (1-t)*col_so+t*col_eo;
 					col_w = (1-t)*col_sw+t*col_ew;
 					col_l = (1-t)*col_sl+t*col_el;
-					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
+					if (Engine3D.isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
 						Color color = Color.color(col_r, col_g, col_b, col_o);
 						Color backColor = canvas[j][i];
 
@@ -612,16 +613,16 @@ public class ProjectedTriangle{
 							t += tstep;
 							continue;
 						}
-						color = mixColors(color, backColor);
+						color = Engine3D.mixColors(color, backColor);
 
 						// Light
 						color = Light.getLight(color, col_l);
 
 						// Shadows
-						if (SHADOWS){
+						if (Engine3D.SHADOWS){
 							for (Light light : this.lights){
 								Camera cam2 = light.getCamera();
-								double[] shadow = convertPoint(new double[]{j, i, col_w}, this.camera, cam2);
+								double[] shadow = Engine3D.convertPoint(new double[]{j, i, col_w}, this.camera, cam2);
 								int index_x = (int)shadow[0];
 								int index_y = (int)shadow[1];
 								if (index_x >= 0 && index_y >= 0 && index_x < cam2.getWidth() && index_y < cam2.getHeight()){
@@ -634,7 +635,7 @@ public class ProjectedTriangle{
 						}
 						
 						this.camera.depthBuffer[j][i] = col_w;
-						canvas[j][i] = color;
+						canvas[j][i] = Light.getLight(color, this.lightIntensity);
 					}
 
 					t += tstep;
@@ -685,13 +686,13 @@ public class ProjectedTriangle{
 				double col_el = l1+(i-y1)*dl2_step;
 				
 				if (ax > bx){
-					ax = swap(bx, bx = ax);
-					col_sr = swap(col_er, col_er = col_sr);
-					col_sg = swap(col_eg, col_eg = col_sg);
-					col_sb = swap(col_eb, col_eb = col_sb);
-					col_so = swap(col_eo, col_eo = col_so);
-					col_sw = swap(col_ew, col_ew = col_sw);
-					col_sl = swap(col_el, col_el = col_sl);
+					ax = Engine3D.swap(bx, bx = ax);
+					col_sr = Engine3D.swap(col_er, col_er = col_sr);
+					col_sg = Engine3D.swap(col_eg, col_eg = col_sg);
+					col_sb = Engine3D.swap(col_eb, col_eb = col_sb);
+					col_so = Engine3D.swap(col_eo, col_eo = col_so);
+					col_sw = Engine3D.swap(col_ew, col_ew = col_sw);
+					col_sl = Engine3D.swap(col_el, col_el = col_sl);
 				}
 				
 				double tstep = 1.0/(bx-ax);
@@ -705,7 +706,7 @@ public class ProjectedTriangle{
 					col_w = (1-t)*col_sw+t*col_ew;
 					col_l = (1-t)*col_sl+t*col_el;
 					
-					if (isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
+					if (Engine3D.isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
 						Color color = Color.color(col_r, col_g, col_b, col_o);
 						Color backColor = canvas[j][i];
 
@@ -714,16 +715,16 @@ public class ProjectedTriangle{
 							t += tstep;
 							continue;
 						}
-						color = mixColors(color, backColor);
+						color = Engine3D.mixColors(color, backColor);
 
 						// Light
 						color = Light.getLight(color, col_l);
 
 						// Shadows
-						if (SHADOWS){
+						if (Engine3D.SHADOWS){
 							for (Light light : this.lights){
 								Camera cam2 = light.getCamera();
-								double[] shadow = convertPoint(new double[]{j, i, col_w}, this.camera, cam2);
+								double[] shadow = Engine3D.convertPoint(new double[]{j, i, col_w}, this.camera, cam2);
 								int index_x = (int)shadow[0];
 								int index_y = (int)shadow[1];
 								if (index_x >= 0 && index_y >= 0 && index_x < cam2.getWidth() && index_y < cam2.getHeight()){
@@ -736,7 +737,7 @@ public class ProjectedTriangle{
 						}
 						
 						this.camera.depthBuffer[j][i] = col_w;
-						canvas[j][i] = color;
+						canvas[j][i] = Light.getLight(color, this.lightIntensity);
 					}
 
 					t += tstep;

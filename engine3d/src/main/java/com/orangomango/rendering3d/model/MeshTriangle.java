@@ -12,6 +12,7 @@ public class MeshTriangle{
 	private MeshVertex vertex1, vertex2, vertex3;
 	private List<ProjectedTriangle> projected = new ArrayList<>();
 	private boolean showAllFaces, imageTransparent;
+	private double light = 1;
 
 	public MeshTriangle(MeshVertex vertex1, MeshVertex vertex2, MeshVertex vertex3){
 		this.vertex1 = vertex1;
@@ -20,6 +21,14 @@ public class MeshTriangle{
 		if (!(this.vertex1.isImageVertex() && this.vertex2.isImageVertex() && this.vertex3.isImageVertex()) && !(!this.vertex1.isImageVertex() && !this.vertex2.isImageVertex() && !this.vertex3.isImageVertex())){
 			throw new IllegalStateException("All vertices must be either imageVertices or colorVertices");
 		}
+	}
+
+	public void setLight(double value){
+		this.light = value;
+	}
+
+	public double getLight(){
+		return this.light;
 	}
 
 	public void setImageTransparent(boolean value){

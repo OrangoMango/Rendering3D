@@ -34,7 +34,7 @@ public class Engine3D{
 	private Map<KeyCode, Runnable> keyEvents = new HashMap<>();
 	private Map<KeyCode, Boolean> keyEventsSingle = new HashMap<>();
 	private int fps, frames;
-	private Consumer<GraphicsContext> onUpdate;
+	private Consumer<GraphicsContext> onUpdate, onPreUpdate;
 	private boolean mouseMovement = true;
 	private List<Mesh> toAdd = new ArrayList<>(), toRemove = new ArrayList<>();
 	private Color backgroundColor = Color.CYAN;
@@ -73,6 +73,10 @@ public class Engine3D{
 
 	public void setOnUpdate(Consumer<GraphicsContext> onUpdate){
 		this.onUpdate = onUpdate;
+	}
+
+	public void setOnPreUpdate(Consumer<GraphicsContext> onPreUpdate){
+		this.onPreUpdate = onPreUpdate;
 	}
 
 	public void toggleMouseMovement(){
@@ -158,6 +162,13 @@ public class Engine3D{
 		}
 		gc.setFill(this.backgroundColor);
 		gc.fillRect(0, 0, this.width, this.height);
+
+		// External pre-update function
+		if (this.onPreUpdate != null){
+			gc.save();
+			this.onPreUpdate.accept(gc);
+			gc.restore();
+		}
 
 		// Add and Remove objects
 		final int toAddN = this.toAdd.size();

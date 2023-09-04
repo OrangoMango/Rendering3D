@@ -127,6 +127,7 @@ public class Mesh{
 			MeshTriangle mt = this.triangles[i];
 			List<ProjectedTriangle> pts = mt.getProjectedTriangles();
 			for (ProjectedTriangle pt : pts){
+				pt.setLightIntensity(mt.getLight());
 				if (pt.isTransparent()){
 					transparentTriangles.add(pt);
 				} else {

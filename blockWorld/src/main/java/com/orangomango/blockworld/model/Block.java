@@ -6,6 +6,9 @@ import javafx.geometry.Point2D;
 import com.orangomango.rendering3d.model.Mesh;
 
 public class Block{
+	public static final double LIQUID_OFFSET = 0.2;
+	public static final int MAX_LIGHT_INTENSITY = 15;
+
 	private int x, y, z;
 	private World world;
 	private Mesh mesh;
@@ -15,8 +18,7 @@ public class Block{
 	private boolean sprite;
 	private double yOffset;
 	private boolean liquid;
-
-	public static final double LIQUID_OFFSET = 0.2;
+	private int light = MAX_LIGHT_INTENSITY;
 
 	public Block(Chunk chunk, int x, int y, int z, String type){
 		this.world = chunk.getWorld();
@@ -34,6 +36,10 @@ public class Block{
 		this.z = gz;
 		this.type = type;
 		setupSettings();
+	}
+
+	public void setLight(int intensity){
+		this.light = intensity;
 	}
 
 	private void setupSettings(){
@@ -131,6 +137,16 @@ public class Block{
 		this.mesh.setTransparentProcessing(this.transparent);
 		this.mesh.setShowAllFaces(this.transparent);
 		return this.mesh;
+	}
+
+	// Called once every frame
+	public void update(){
+		// Set light
+		if (this.mesh != null){
+			for (int i = 0; i < this.mesh.getTriangles().length; i++){
+				this.mesh.getTriangles()[i].setLight((double)this.light/MAX_LIGHT_INTENSITY);
+			}
+		}
 	}
 
 	public void removeMesh(){
