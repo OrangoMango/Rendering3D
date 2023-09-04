@@ -37,6 +37,7 @@ public class Engine3D{
 	private Consumer<GraphicsContext> onUpdate;
 	private boolean mouseMovement = true;
 	private List<Mesh> toAdd = new ArrayList<>(), toRemove = new ArrayList<>();
+	private Color backgroundColor = Color.CYAN;
 
 	// FLAGS
 	public static boolean SHOW_LINES = false;
@@ -76,6 +77,10 @@ public class Engine3D{
 
 	public void toggleMouseMovement(){
 		this.mouseMovement = !this.mouseMovement;
+	}
+
+	public void setBackgroundColor(Color bg){
+		this.backgroundColor = bg;
 	}
 
 	public void setOnMousePressed(EventHandler<MouseEvent> event){
@@ -148,11 +153,23 @@ public class Engine3D{
 		gc.clearRect(0, 0, this.width, this.height);
 		for (int i = 0; i < this.width; i++){
 			for (int j = 0; j < this.height; j++){
-				this.canvas[i][j] = Color.CYAN;
+				this.canvas[i][j] = this.backgroundColor;
 			}
 		}
-		gc.setFill(Color.CYAN);
+		gc.setFill(this.backgroundColor);
 		gc.fillRect(0, 0, this.width, this.height);
+
+		// Add and Remove objects
+		final int toAddN = this.toAdd.size();
+		final int toRemoveN = this.toRemove.size();
+		for (int i = 0; i < toAddN; i++){
+			this.objects.add(this.toAdd.get(i));
+		}
+		for (int i = 0; i < toRemoveN; i++){
+			this.objects.remove(this.toRemove.get(i));
+		}
+		this.toAdd.clear();
+		this.toRemove.clear();
 
 		this.camera.clearDepthBuffer();
 		
@@ -252,18 +269,6 @@ public class Engine3D{
 			this.onUpdate.accept(gc);
 			gc.restore();
 		}
-
-		// Add and Remove objects
-		final int toAddN = this.toAdd.size();
-		final int toRemoveN = this.toRemove.size();
-		for (int i = 0; i < toAddN; i++){
-			this.objects.add(this.toAdd.get(i));
-		}
-		for (int i = 0; i < toRemoveN; i++){
-			this.objects.remove(this.toRemove.get(i));
-		}
-		this.toAdd.clear();
-		this.toRemove.clear();
 
 		// Info box
 		gc.setFill(Color.BLACK);
@@ -434,6 +439,7 @@ public class Engine3D{
 		return new double[]{x, y, w};
 	}
 	
+	// TODO: Cache values
 	public static double[] convertPoint(double[] point, Camera cam1, Camera cam2){
 		double[] reverted = revertPoint(point, cam1);
 		double x = reverted[0];

@@ -1,15 +1,12 @@
 # Rendering3D
 [![Project Map](https://sourcespy.com/shield.svg)](https://sourcespy.com/github/orangomangorendering3d/)
 
-My own implementation of a 3D engine in Java/JavaFX.
+My own implementation of a 3D engine made entirely from scratch in Java/JavaFX. (I'm currently working on it, there are still many things to add)
 
 ## How to run
 * Engine3D: `./gradlew :engine3d:run`  
 * Block-World (Minecraft-clone): `./gradlew :blockWorld:run`
-* PerlinNoise tests: `./gradlew :perlinTest:run`
-## Trello boards
-* Block world: https://trello.com/b/cATDVy9p
-* Engine3D: https://trello.com/b/urvid5Vx
+
 ## Some screenshots
 ![20230123_175952](https://user-images.githubusercontent.com/61402409/214102079-893e4df3-15ff-489a-960b-13c258c80832.gif)  
 ![20230124_180456](https://user-images.githubusercontent.com/61402409/214359852-4723ab4a-318d-4dd5-908a-0be952f369ba.gif)  

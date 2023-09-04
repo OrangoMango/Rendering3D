@@ -23,13 +23,14 @@ import com.orangomango.blockworld.model.*;
 public class MainApplication extends Application{
 	private static final int WIDTH = 320;
 	private static final int HEIGHT = 180;
-	private static final int CHUNKS = 3;
+	private static final int CHUNKS = 9;
 
 	private static Image POINTER = new Image(MainApplication.class.getResourceAsStream("/pointer.png"));
 	private static final String[] inventoryBlocks = new String[]{"wood", "water", "grass", "flower_red", "wood_log", "leaves", "cobblestone", "bricks", "glass"};
 	public static Engine3D ENGINE;
 
 	private int currentBlock = 0;
+	private Color backgroundColor = Color.CYAN;
 	
 	@Override
 	public void start(Stage stage){
@@ -37,20 +38,44 @@ public class MainApplication extends Application{
 		
 		ENGINE = new Engine3D(stage, WIDTH, HEIGHT);
 
-		Player player = new Player(0, 15, 0, WIDTH, HEIGHT);
+		Player player = new Player(0, -15, 0, WIDTH, HEIGHT);
 		ENGINE.setCamera(player.getCamera());
 
-		Light light = new Light();
+		Light light = new Light(1);
 		ENGINE.getLights().add(light);
 
-		World world = new World((int)System.currentTimeMillis(), false);
+		World world = new World((int)System.currentTimeMillis(), true);
 
 		ChunkManager manager = new ChunkManager(world, CHUNKS);
 		manager.deleteSavedWorld();
 
+		Thread dayNight = new Thread(() -> {
+			double value = 1;
+			int direction = -1;
+			final double inc = 0.005;
+			while (true){
+				try {
+					value += inc*direction;
+					if (value < 0 || value > 1){
+						direction *= -1;
+					}
+					light.setFixedIntensity(Math.min(Math.max(0, value), 1));
+					double b = this.backgroundColor.getBrightness()+inc*direction;
+					b = Math.min(Math.max(0, b), 1);
+					this.backgroundColor = Color.hsb(this.backgroundColor.getHue(), this.backgroundColor.getSaturation(), b);
+					ENGINE.setBackgroundColor(this.backgroundColor);
+					Thread.sleep(300);
+				} catch (InterruptedException ex){
+					ex.printStackTrace();
+				}
+			}
+		});
+		dayNight.setDaemon(true);
+		dayNight.start();
+
 		// Chunk managing
 		player.setOnChunkPositionChanged(chunkPos -> {
-			new Thread(() -> manager.manage(chunkPos)).start();
+			manager.manage(chunkPos);
 		});
 
 		// Ray-casting

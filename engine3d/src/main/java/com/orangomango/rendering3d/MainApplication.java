@@ -110,7 +110,7 @@ public class MainApplication extends Application{
 			}
 		}
 
-		engine.getLights().add(new Light());
+		engine.getLights().add(new Light(1));
 
 		// New camera
 		engine.getCamera().setPosition(new Point3D(0, 0, 0));
@@ -275,7 +275,7 @@ public class MainApplication extends Application{
 		for (int j = 0; j < 12; j++) extra.getTriangles()[j].setImageTransparent(true);
 		engine.addObject(extra);
 
-		engine.getLights().add(new Light());
+		engine.getLights().add(new Light(1));
 
 		engine.setOnKey(KeyCode.O, engine::toggleMouseMovement, true);
 		engine.setOnUpdate(gc -> {
@@ -348,7 +348,7 @@ public class MainApplication extends Application{
 			}
 		}
 
-		Light light = new Light();
+		Light light = new Light(1);
 		engine.getLights().add(light);
 
 		engine.setOnUpdate(gc -> {

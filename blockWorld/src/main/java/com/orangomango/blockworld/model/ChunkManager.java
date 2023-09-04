@@ -9,7 +9,7 @@ import com.orangomango.rendering3d.model.Mesh;
 import static com.orangomango.blockworld.MainApplication.ENGINE;
 
 public class ChunkManager{
-	public static final double RENDER_DISTANCE = 5.5;
+	public static final double RENDER_DISTANCE = 7.5;
 
 	private World world;
 	private int chunks;
@@ -29,7 +29,7 @@ public class ChunkManager{
 		}
 	}
 
-	public synchronized void manage(Point3D chunkPos){
+	public void manage(Point3D chunkPos){
 		// Get the chunks to unload
 		List<Chunk> toUnload = new ArrayList<>();
 		for (Chunk chunk : this.world.getChunks()){

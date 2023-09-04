@@ -6,7 +6,7 @@ import com.orangomango.rendering3d.model.Mesh;
 import static com.orangomango.blockworld.MainApplication.ENGINE;
 
 public class Chunk{
-	public static final int CHUNK_SIZE = 8;
+	public static final int CHUNK_SIZE = 4;
 	private static final int HEIGHT_LIMIT = 2;
 	private static final int WATER_HEIGHT = HEIGHT_LIMIT*CHUNK_SIZE+9;
 
@@ -177,7 +177,9 @@ public class Chunk{
 		for (int i = 0; i < CHUNK_SIZE; i++){
 			for (int j = 0; j < CHUNK_SIZE; j++){
 				for (int k = 0; k < CHUNK_SIZE; k++){
-					if (this.blocks[i][j][k] != null) output.add(this.blocks[i][j][k].getMesh());
+					if (this.blocks[i][j][k] != null){
+						output.add(this.blocks[i][j][k].getMesh());
+					}
 				}
 			}
 		}

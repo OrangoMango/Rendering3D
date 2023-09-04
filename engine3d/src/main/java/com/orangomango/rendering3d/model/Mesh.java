@@ -27,7 +27,6 @@ public class Mesh{
 	private int[][] faces;
 	private Point3D[][] normals;
 	private boolean imageMesh;
-	private Point3D[][] trianglePoints;
 	private MeshTriangle[] triangles;
 	private List<Integer> hiddenFaces = new ArrayList<>();
 	private boolean showAllFaces;
@@ -144,14 +143,14 @@ public class Mesh{
 		this.normals = normals == null ? new Point3D[faces.length][3] : normals;
 		
 		// Build the triangles list
-		this.trianglePoints = new Point3D[this.faces.length][3];
+		Point3D[][] trianglePoints = new Point3D[this.faces.length][3];
 		this.vertexColors = new Color[this.faces.length][3];
-		for (int i = 0; i < this.trianglePoints.length; i++){
+		for (int i = 0; i < trianglePoints.length; i++){
 			Point3D[] tr = new Point3D[3];
 			tr[0] = this.vertices[this.faces[i][0]];
 			tr[1] = this.vertices[this.faces[i][1]];
 			tr[2] = this.vertices[this.faces[i][2]];
-			this.trianglePoints[i] = tr;
+			trianglePoints[i] = tr;
 			if (!this.imageMesh && this.colors != null){
 				Color[] cr = new Color[3];
 				cr[0] = this.colors[this.faces[i][0]];
@@ -162,9 +161,9 @@ public class Mesh{
 		}
 
 		// Create the triangles that form this mesh
-		this.triangles = new MeshTriangle[this.trianglePoints.length];
-		for (int i = 0; i < this.trianglePoints.length; i++){
-			Point3D[] tr = this.trianglePoints[i];
+		this.triangles = new MeshTriangle[trianglePoints.length];
+		for (int i = 0; i < trianglePoints.length; i++){
+			Point3D[] tr = trianglePoints[i];
 			if (this.imageMesh){
 				MeshVertex v1 = new MeshVertex(tr[0], this.normals == null ? null : this.normals[i][0], this.textureVertices[this.textureFaces[i][0]], this.images[this.facesImages[i]]);
 				MeshVertex v2 = new MeshVertex(tr[1], this.normals == null ? null : this.normals[i][1], this.textureVertices[this.textureFaces[i][1]], this.images[this.facesImages[i]]);
