@@ -22,17 +22,28 @@ public class MeshVertex{
 	// Color vertex
 	private Color vertexColor;
 
-	public static HashMap<MeshVertex, ProjectedVertex> VERTICES = new HashMap<>(300);
+	private static HashMap<MeshVertex, ProjectedVertex> VERTICES = new HashMap<>(300);
 
-	// ============================ DEBUG ============================ private -> public
-	public static class ProjectedVertex{
+	private static class ProjectedVertex{
 		private double[] view;
-		public double[] projection;
+		private double[] projection;
 
 		public ProjectedVertex(double[] view, double[] proj){
 			this.view = view;
 			this.projection = proj;
 		}
+	}
+
+	public static void clearStoredVertices(){
+		VERTICES.clear();
+	}
+
+	public static int getViewVerticesCount(){
+		return VERTICES.size(); // If a vertex has a projection, then it also has a position in view space
+	}
+
+	public static long getProjectedVerticesCount(){
+		return VERTICES.values().stream().filter(p -> p.projection != null).count();
 	}
 
 	public MeshVertex(Point3D position, Point3D normal, Point2D tex, Image image){

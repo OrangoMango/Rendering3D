@@ -147,16 +147,6 @@ public class Camera{
 		this.ry = ry;
 	}
 
-	private Point3D rotateX(Point3D point, double rx){
-		double[] rot = Engine3D.multiply(Engine3D.getRotateX(rx), new double[]{point.getX(), point.getY(), point.getZ()});
-		return new Point3D(rot[0], rot[1], rot[2]);
-	}
-
-	private Point3D rotateY(Point3D point, double ry){
-		double[] rot = Engine3D.multiply(Engine3D.getRotateY(ry), new double[]{point.getX(), point.getY(), point.getZ()});
-		return new Point3D(rot[0], rot[1], rot[2]);
-	}
-
 	public Point3D[][] getViewFrustum(boolean viewSpace){
 		if (this.viewFrustum != null && viewSpace){
 			return this.viewFrustum;

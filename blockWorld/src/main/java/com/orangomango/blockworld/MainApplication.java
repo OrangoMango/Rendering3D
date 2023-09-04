@@ -11,7 +11,7 @@ import javafx.scene.text.Font;
 
 import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.rendering3d.model.Light;
-import static com.orangomango.rendering3d.model.MeshVertex.VERTICES;
+import com.orangomango.rendering3d.model.MeshVertex;
 import com.orangomango.blockworld.model.*;
 
 /**
@@ -144,7 +144,9 @@ public class MainApplication extends Application{
 			gc.setFill(Color.BLACK);
 			gc.setTextAlign(TextAlignment.RIGHT);
 			gc.setFont(new Font("sans-serif", 11));
-			gc.fillText("Vertices: "+VERTICES.size(), WIDTH*0.95, HEIGHT*0.1);
+			String text = "Projected: "+MeshVertex.getProjectedVerticesCount();
+			text += "\nView: "+MeshVertex.getViewVerticesCount();
+			gc.fillText(text, WIDTH*0.95, HEIGHT*0.1);
 
 			// Show pointer
 			double pointerSize = 26*player.getCamera().getAspectRatio();
