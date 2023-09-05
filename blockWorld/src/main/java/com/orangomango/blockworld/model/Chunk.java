@@ -67,7 +67,7 @@ public class Chunk{
 			for (int j = 0; j < CHUNK_SIZE; j++){ // y
 				for (int k = 0; k < CHUNK_SIZE; k++){ // z
 					if (getY() < HEIGHT_LIMIT){
-						this.blocks[i][j][k] = null;
+						setBlock(null, i, j, k);
 					} else {
 						float n = (noise.noise((i+getX()*CHUNK_SIZE)*frequency, 0, (k+getZ()*CHUNK_SIZE)*frequency)+1)/2;
 						float b = (noise.noise((i+getX()*CHUNK_SIZE)*biomeFreq, 0, (k+getZ()*CHUNK_SIZE)*biomeFreq)+1)/2;
@@ -92,26 +92,33 @@ public class Chunk{
 					else break;
 				}
 				if (h > 0 && h < CHUNK_SIZE && h-1+getY()*CHUNK_SIZE < WATER_HEIGHT){
-					if (random.nextInt(1000) < 12 && !this.blocks[i][h][j].getType().equals("sand") && !this.blocks[i][h][j].getType().equals("water")){
-						int treeHeight = 5;
-						for (int k = 0; k < treeHeight; k++){
-							setBlock(new Block(this, i, h-1-k, j, "wood_log"), i, h-1-k, j);
-						}
-						// 5x5
-						for (int kx = i-2; kx < i+3; kx++){
-							for (int ky = j-2; ky < j+3; ky++){
-								if (kx == i && ky == j) continue;
-								setBlock(new Block(this, kx, h-1-(treeHeight-2), ky, "leaves"), kx, h-1-(treeHeight-2), ky);
+					if (random.nextInt(1000) < 12){
+						if (this.blocks[i][h][j].getType().equals("grass")){
+							int treeHeight = 5;
+							for (int k = 0; k < treeHeight; k++){
+								setBlock(new Block(this, i, h-1-k, j, "wood_log"), i, h-1-k, j);
+							}
+							// 5x5
+							for (int kx = i-2; kx < i+3; kx++){
+								for (int ky = j-2; ky < j+3; ky++){
+									if (kx == i && ky == j) continue;
+									setBlock(new Block(this, kx, h-1-(treeHeight-2), ky, "leaves"), kx, h-1-(treeHeight-2), ky);
+								}
+							}
+							// 3x3
+							for (int kx = i-1; kx < i+2; kx++){
+								for (int ky = j-1; ky < j+2; ky++){
+									if (kx == i && ky == j) continue;
+									setBlock(new Block(this, kx, h-1-(treeHeight-1), ky, "leaves"), kx, h-1-(treeHeight-1), ky);
+								}
+							}
+							setBlock(new Block(this, i, h-1-treeHeight, j, "leaves"), i, h-1-treeHeight, j);
+						} else if (this.blocks[i][h][j].getType().equals("sand")){
+							int cactusHeight = 3;
+							for (int k = 0; k < cactusHeight; k++){
+								setBlock(new Block(this, i, h-1-k, j, "cactus"), i, h-1-k, j);
 							}
 						}
-						// 3x3
-						for (int kx = i-1; kx < i+2; kx++){
-							for (int ky = j-1; ky < j+2; ky++){
-								if (kx == i && ky == j) continue;
-								setBlock(new Block(this, kx, h-1-(treeHeight-1), ky, "leaves"), kx, h-1-(treeHeight-1), ky);
-							}
-						}
-						setBlock(new Block(this, i, h-1-treeHeight, j, "leaves"), i, h-1-treeHeight, j);
 					} else if (random.nextInt(1000) < 16){
 						String flowerType = "flower_"+(random.nextBoolean() ? "red" : "yellow");
 						if (this.blocks[i][h][j].getType().equals("sand")){
@@ -148,9 +155,9 @@ public class Chunk{
 				for (int k = 0; k < CHUNK_SIZE; k++){ // z
 					int id = input[i][j][k];
 					if (id == 0){
-						this.blocks[i][j][k] = null;
+						setBlock(null, i, j, k);
 					} else {
-						this.blocks[i][j][k] = new Block(this, i, j, k, Atlas.MAIN_ATLAS.getBlockType(id));
+						setBlock(new Block(this, i, j, k, Atlas.MAIN_ATLAS.getBlockType(id)), i, j, k);
 					}
 				}
 			}

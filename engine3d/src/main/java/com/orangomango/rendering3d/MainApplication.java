@@ -106,6 +106,7 @@ public class MainApplication extends Application{
 
 				setupHiddenFaces(object, i, 0, j, width, 1, depth);
 
+				object.build();
 				engine.addObject(object);
 			}
 		}
@@ -207,6 +208,7 @@ public class MainApplication extends Application{
 				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
 			});
 			setupHiddenFaces(wood, i, 0, 0, 4, 1, 1);
+			wood.build();
 			engine.addObject(wood);
 
 			Mesh glass = new Mesh(new Point3D[]{
@@ -228,6 +230,7 @@ public class MainApplication extends Application{
 			});
 			for (int j = 0; j < 12; j++) glass.getTriangles()[j].setImageTransparent(true);
 			setupHiddenFaces(glass, i, 0, 0, 4, 1, 1);
+			glass.build();
 			engine.addObject(glass);
 
 			for (int j = 0; j < 3; j++){
@@ -249,6 +252,7 @@ public class MainApplication extends Application{
 					{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
 				});
 				setupHiddenFaces(block, i, 2-j, 0, 4, 3, 1);
+				block.build();
 				engine.addObject(block);
 			}
 		}
@@ -272,6 +276,7 @@ public class MainApplication extends Application{
 		});
 		extra.addHiddenFace(0);
 		extra.addHiddenFace(1);
+		extra.build();
 		for (int j = 0; j < 12; j++) extra.getTriangles()[j].setImageTransparent(true);
 		engine.addObject(extra);
 
@@ -295,6 +300,7 @@ public class MainApplication extends Application{
 		}
 		Mesh loadedObject = loader.load(false);
 		loadedObject.setRotation(Math.PI/2, 0, 0);
+		loadedObject.build();
 
 		Light light = new Light(new Camera(new Point3D(-6, -6, -3), WIDTH, HEIGHT, Math.PI/4, 100, 0.3));
 
@@ -343,6 +349,7 @@ public class MainApplication extends Application{
 					setupHiddenFaces(block, i, j, k, width, height, depth);
 
 					//block.setShowAllFaces(true);
+					block.build();
 					engine.addObject(block);
 				}
 			}
@@ -435,6 +442,11 @@ public class MainApplication extends Application{
 		rotateLight.start();
 
 		engine.setOnKey(KeyCode.F6, () -> ROTATE_LIGHT = !ROTATE_LIGHT, true);
+
+		object.build();
+		object2.build();
+		loadedObject.build();
+		shadowObject.build();
 
 		engine.addObject(object);
 		engine.addObject(object2);

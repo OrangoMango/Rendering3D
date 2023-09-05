@@ -13,6 +13,7 @@ import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.rendering3d.model.Light;
 import com.orangomango.rendering3d.model.MeshVertex;
 import com.orangomango.blockworld.model.*;
+import com.orangomango.blockworld.util.Util;
 import com.orangomango.blockworld.entity.Player;
 
 /**
@@ -26,12 +27,14 @@ public class MainApplication extends Application{
 	private static final int HEIGHT = 180;
 	private static final int CHUNKS = 9;
 
-	private static Image POINTER = new Image(MainApplication.class.getResourceAsStream("/pointer.png"));
+	private static Image POINTER = new Image(MainApplication.class.getResourceAsStream("/images/pointer.png"));
 	private static final String[] inventoryBlocks = new String[]{"wood", "water", "grass", "flower_red", "wood_log", "leaves", "cobblestone", "bricks", "glass"};
 	public static Engine3D ENGINE;
 
 	private int currentBlock = 0;
 	private Color backgroundColor = Color.CYAN;
+	private double time = 1;
+	private boolean amTime = false;
 	
 	@Override
 	public void start(Stage stage){
@@ -45,27 +48,27 @@ public class MainApplication extends Application{
 		Light light = new Light(1);
 		ENGINE.getLights().add(light);
 
-		World world = new World((int)System.currentTimeMillis(), true);
+		World world = new World((int)System.currentTimeMillis(), false);
 
 		ChunkManager manager = new ChunkManager(world, CHUNKS);
 		manager.deleteSavedWorld();
 
 		Thread dayNight = new Thread(() -> {
-			double value = 1;
 			int direction = -1;
-			final double inc = 0.005;
+			final double inc = 0.0008;
 			while (true){
 				try {
-					value += inc*direction;
-					if (value < 0 || value > 1){
+					this.time += inc*direction;
+					if (this.time < 0 || this.time > 1){
 						direction *= -1;
+						this.amTime = !this.amTime;
 					}
-					light.setFixedIntensity(Math.min(Math.max(0, value), 1));
+					light.setFixedIntensity(Math.min(Math.max(0, this.time), 1));
 					double b = this.backgroundColor.getBrightness()+inc*direction;
 					b = Math.min(Math.max(0, b), 1);
 					this.backgroundColor = Color.hsb(this.backgroundColor.getHue(), this.backgroundColor.getSaturation(), b);
 					ENGINE.setBackgroundColor(this.backgroundColor);
-					Thread.sleep(500);
+					Thread.sleep(250);
 				} catch (InterruptedException ex){
 					ex.printStackTrace();
 				}
@@ -187,6 +190,7 @@ public class MainApplication extends Application{
 			gc.setFont(new Font("sans-serif", 11));
 			String text = "Projected: "+MeshVertex.getProjectedVerticesCount();
 			text += "\nView: "+MeshVertex.getViewVerticesCount();
+			text += "\n"+Util.formatTime(this.time, this.amTime);
 			gc.fillText(text, WIDTH*0.95, HEIGHT*0.1);
 
 			// Show pointer

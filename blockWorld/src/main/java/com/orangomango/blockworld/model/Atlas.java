@@ -1,6 +1,7 @@
 package com.orangomango.blockworld.model;
 
 import javafx.scene.image.Image;
+import javafx.geometry.Point3D;
 
 import java.io.*;
 import java.util.*;
@@ -11,6 +12,10 @@ public class Atlas{
 	private Map<String, Image[]> images = new HashMap<>();
 	private Map<String, int[]> imageFaces = new HashMap<>();
 	private Map<Integer, String> blockIds = new HashMap<>();
+
+	// Mesh
+	private Map<String, Point3D[]> vertices = new HashMap<>();
+	private Map<String, int[][]> faces = new HashMap<>();
 
 	public static Atlas MAIN_ATLAS;
 
@@ -47,11 +52,50 @@ public class Atlas{
 			}
 
 			this.imageFaces.put(blockType, imageF);
+			buildMesh(blockType, this.json.getJSONObject("blocks").getJSONObject(blockType).getString("mesh"));
 		}
 		
 		for (Object block : this.json.getJSONObject("blocks").keySet()){
 			String blockType = (String)block;
 			blockIds.put(getBlockId(blockType), blockType);
+		}
+	}
+
+	private void buildMesh(String type, String fileName){
+		try {
+			File file = new File(Atlas.class.getResource(fileName).toURI());
+			BufferedReader reader = new BufferedReader(new FileReader(file));
+			boolean vertices = true;
+			List<Point3D> vx = new ArrayList<>();
+			List<int[]> fc = new ArrayList<>();
+			String line;
+			while ((line = reader.readLine()) != null){
+				if (!line.equals("")){
+					if (line.startsWith("vertices:")){
+						vertices = true;
+					} else if (line.startsWith("faces:")){
+						vertices = false;
+					} else {
+						if (vertices){
+							double x = Double.parseDouble(line.split(" ")[0]);
+							double y = Double.parseDouble(line.split(" ")[1]);
+							double z = Double.parseDouble(line.split(" ")[2]);
+							vx.add(new Point3D(x, y, z));
+						} else {
+							int i = Integer.parseInt(line.split(" ")[0]);
+							int j = Integer.parseInt(line.split(" ")[1]);
+							int k = Integer.parseInt(line.split(" ")[2]);
+							fc.add(new int[]{i, j, k});
+						}
+					}
+				}
+			}
+			reader.close();
+
+			this.vertices.put(type, vx.toArray(new Point3D[vx.size()]));
+			this.faces.put(type, fc.toArray(new int[fc.size()][3]));
+		} catch (Exception ex){
+			ex.printStackTrace();
 		}
 	}
 	
@@ -81,6 +125,14 @@ public class Atlas{
 	
 	public Map<String, int[]> getBlockFaces(){
 		return this.imageFaces;
+	}
+
+	public Map<String, Point3D[]> getVertices(){
+		return this.vertices;
+	}
+
+	public Map<String, int[][]> getFaces(){
+		return this.faces;
 	}
 
 	public JSONObject getJSON(){

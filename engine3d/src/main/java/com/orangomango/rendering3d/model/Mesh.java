@@ -76,6 +76,13 @@ public class Mesh{
 		return this.triangles;
 	}
 
+	public void translate(double x, double y, double z){
+		for (int i = 0; i < this.vertices.length; i++){
+			Point3D vertex = this.vertices[i];
+			this.vertices[i] = vertex.add(x, y, z);
+		}
+	}
+
 	public void setRotation(double rx, double ry, double rz){
 		for (int i = 0; i < this.vertices.length; i++){
 			Point3D vertex = this.vertices[i];
@@ -105,8 +112,6 @@ public class Mesh{
 				this.normals[i][2] = new Point3D(rn3[0], rn3[1], rn3[2]);
 			}
 		}
-
-		setupMesh(this.vertices, this.faces, this.normals);
 	}
 
 	public void update(Camera camera, List<Light> lights){
@@ -142,7 +147,9 @@ public class Mesh{
 		this.vertices = vertices;
 		this.faces = faces;
 		this.normals = normals == null ? new Point3D[faces.length][3] : normals;
-		
+	}
+
+	public void build(){
 		// Build the triangles list
 		Point3D[][] trianglePoints = new Point3D[this.faces.length][3];
 		this.vertexColors = new Color[this.faces.length][3];
