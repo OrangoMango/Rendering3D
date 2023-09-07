@@ -16,7 +16,7 @@ public class Util{
 		if (!amTime){
 			hours += 12;
 		}
-		return String.format("%02d:%02d %s", hours, minutes, amTime ? "AM" : "PM");
+		return String.format("%02d:%02d", hours, minutes);
 	}
 
 	public static Point3D getChunkPos(Point3D pos){

@@ -15,6 +15,7 @@ public class Block{
 	private String type;
 	private double yOffset;
 	private int light = MAX_LIGHT_INTENSITY;
+	private BlockMesh blockMesh;
 
 	public Block(Chunk chunk, int x, int y, int z, String type){
 		this.world = chunk.getWorld();
@@ -22,6 +23,7 @@ public class Block{
 		this.y = y+chunk.getY()*Chunk.CHUNK_SIZE;
 		this.z = z+chunk.getZ()*Chunk.CHUNK_SIZE;
 		this.type = type;
+		this.blockMesh = Atlas.MAIN_ATLAS.getBlockMesh(this.type);
 	}
 
 	public Block(World world, int gx, int gy, int gz, String type){
@@ -30,6 +32,7 @@ public class Block{
 		this.y = gy;
 		this.z = gz;
 		this.type = type;
+		this.blockMesh = Atlas.MAIN_ATLAS.getBlockMesh(this.type);
 	}
 
 	public void setLight(int intensity){
@@ -40,32 +43,32 @@ public class Block{
 		if (isSprite() || this.mesh == null) return;
 		this.mesh.clearHiddenFaces();
 		Block block = this.world.getBlockAt(this.x+1, this.y, this.z);
-		if (block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
+		if (this.blockMesh.getCullingMap().get("R") && block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
 			this.mesh.addHiddenFace(2);
 			this.mesh.addHiddenFace(3);
 		}
 		block = this.world.getBlockAt(this.x, this.y+1, this.z);
-		if (block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type)))){
+		if (this.blockMesh.getCullingMap().get("D") && block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type)))){
 			this.mesh.addHiddenFace(8);
 			this.mesh.addHiddenFace(9);
 		}
 		block = this.world.getBlockAt(this.x, this.y, this.z+1);
-		if (block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
+		if (this.blockMesh.getCullingMap().get("B") && block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
 			this.mesh.addHiddenFace(4);
 			this.mesh.addHiddenFace(5);
 		}
 		block = this.world.getBlockAt(this.x-1, this.y, this.z);
-		if (block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
+		if (this.blockMesh.getCullingMap().get("L") && block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
 			this.mesh.addHiddenFace(6);
 			this.mesh.addHiddenFace(7);
 		}
 		block = this.world.getBlockAt(this.x, this.y-1, this.z);
-		if (block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && (!isLiquid() || block.isLiquid())){
+		if (this.blockMesh.getCullingMap().get("T") && block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && (!isLiquid() || block.isLiquid())){
 			this.mesh.addHiddenFace(10);
 			this.mesh.addHiddenFace(11);
 		}
 		block = this.world.getBlockAt(this.x, this.y, this.z-1);
-		if (block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
+		if (this.blockMesh.getCullingMap().get("F") && block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
 			this.mesh.addHiddenFace(0);
 			this.mesh.addHiddenFace(1);
 		}
@@ -86,8 +89,8 @@ public class Block{
 			this.yOffset = 0;
 		}
 
-		Point3D[] vertices = Atlas.MAIN_ATLAS.getVertices().get(this.type);
-		int[][] faces = Atlas.MAIN_ATLAS.getFaces().get(this.type);
+		Point3D[] vertices = this.blockMesh.getVertices();
+		int[][] faces = this.blockMesh.getFacesPoints();
 		Point3D[] blockVertices = new Point3D[vertices.length];
 		int[][] blockFaces = new int[faces.length][3];
 
@@ -95,27 +98,18 @@ public class Block{
 		System.arraycopy(faces, 0, blockFaces, 0, faces.length);
 
 		if (isSprite()){
-			this.mesh = new Mesh(blockVertices, blockFaces,
+			/*this.mesh = new Mesh(blockVertices, blockFaces,
 				null, Atlas.MAIN_ATLAS.getImages().get(this.type), Atlas.MAIN_ATLAS.getBlockFaces().get(this.type), new Point2D[]{
 				new Point2D(0, 0), new Point2D(0, 1), new Point2D(1, 1), new Point2D(1, 0)
 			}, new int[][]{
 				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
 			});
-			this.mesh.setShowAllFaces(true);
+			this.mesh.setShowAllFaces(true);*/
 		} else {
-			this.mesh = new Mesh(blockVertices, blockFaces,
-				null, Atlas.MAIN_ATLAS.getImages().get(this.type), Atlas.MAIN_ATLAS.getBlockFaces().get(this.type), new Point2D[]{
-				new Point2D(0, 0), new Point2D(0, 1), new Point2D(1, 1), new Point2D(1, 0)
-			}, new int[][]{
-				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
-				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
-				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3},
-				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
-			});
+			this.mesh = new Mesh(blockVertices, blockFaces, null, this.blockMesh.getImages(), this.blockMesh.getImageIndices(), this.blockMesh.getTex(), this.blockMesh.getFacesTex());
 			this.mesh.setSkipCondition(cam -> {
 				Point3D pos = new Point3D(this.x, this.y, this.z);
-				Point3D camPos = new Point3D(cam.getPosition().getX(), cam.getPosition().getY(), cam.getPosition().getZ());
-				return pos.distance(camPos) > ChunkManager.RENDER_DISTANCE*Chunk.CHUNK_SIZE;
+				return pos.distance(cam.getPosition()) > ChunkManager.RENDER_DISTANCE*Chunk.CHUNK_SIZE;
 			});
 		}
 		this.mesh.translate(this.x, this.y+this.yOffset, this.z);

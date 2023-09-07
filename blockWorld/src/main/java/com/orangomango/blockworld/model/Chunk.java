@@ -114,17 +114,17 @@ public class Chunk{
 							}
 							setBlock(new Block(this, i, h-1-treeHeight, j, "leaves"), i, h-1-treeHeight, j);
 						} else if (this.blocks[i][h][j].getType().equals("sand")){
-							int cactusHeight = 3;
+							/*int cactusHeight = 3;
 							for (int k = 0; k < cactusHeight; k++){
 								setBlock(new Block(this, i, h-1-k, j, "cactus"), i, h-1-k, j);
-							}
+							}*/
 						}
 					} else if (random.nextInt(1000) < 16){
-						String flowerType = "flower_"+(random.nextBoolean() ? "red" : "yellow");
+						/*String flowerType = "flower_"+(random.nextBoolean() ? "red" : "yellow");
 						if (this.blocks[i][h][j].getType().equals("sand")){
 							flowerType = "bush";
 						}
-						setBlock(new Block(this, i, h-1, j, flowerType), i, h-1, j);
+						setBlock(new Block(this, i, h-1, j, flowerType), i, h-1, j);*/
 					}
 				}
 			}

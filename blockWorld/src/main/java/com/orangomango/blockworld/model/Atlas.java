@@ -5,17 +5,12 @@ import javafx.geometry.Point3D;
 
 import java.io.*;
 import java.util.*;
-import org.json.*;
+import org.json.JSONObject;
 
 public class Atlas{
 	private JSONObject json;
-	private Map<String, Image[]> images = new HashMap<>();
-	private Map<String, int[]> imageFaces = new HashMap<>();
 	private Map<Integer, String> blockIds = new HashMap<>();
-
-	// Mesh
-	private Map<String, Point3D[]> vertices = new HashMap<>();
-	private Map<String, int[][]> faces = new HashMap<>();
+	private Map<String, BlockMesh> blocks = new HashMap<>();
 
 	public static Atlas MAIN_ATLAS;
 
@@ -36,71 +31,29 @@ public class Atlas{
 		}
 
 		for (String blockType : this.json.getJSONObject("blocks").keySet()){
-			List<Image> imageObjects = new ArrayList<>();
-			for (Object imageName : this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONArray("images")){
-				imageObjects.add(new Image(Atlas.class.getResourceAsStream((String)imageName)));
-			}
-			this.images.put(blockType, imageObjects.toArray(new Image[imageObjects.size()]));
-			
-			int[] imageF = new int[12];
-			String[] directions = new String[]{"front", "right", "back", "left", "down", "top"};
-			int i = 0;
-			for (String dir : directions){
-				imageF[i] = this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("config").getInt(dir);
-				imageF[i+1] = imageF[i];
-				i += 2;
-			}
-
-			this.imageFaces.put(blockType, imageF);
-			buildMesh(blockType, this.json.getJSONObject("blocks").getJSONObject(blockType).getString("mesh"));
+			this.blockIds.put(getBlockId(blockType), blockType);
+			BlockMesh block = new BlockMesh(this.json.getJSONObject("blocks").getJSONObject(blockType).getString("mesh"), this.json.getJSONObject("blocks").getJSONObject(blockType).getJSONObject("textures"));
+			this.blocks.put(blockType, block);
 		}
-		
-		for (Object block : this.json.getJSONObject("blocks").keySet()){
-			String blockType = (String)block;
-			blockIds.put(getBlockId(blockType), blockType);
-		}
-	}
 
-	private void buildMesh(String type, String fileName){
-		try {
-			File file = new File(Atlas.class.getResource(fileName).toURI());
-			BufferedReader reader = new BufferedReader(new FileReader(file));
-			boolean vertices = true;
-			List<Point3D> vx = new ArrayList<>();
-			List<int[]> fc = new ArrayList<>();
-			String line;
-			while ((line = reader.readLine()) != null){
-				if (!line.equals("")){
-					if (line.startsWith("vertices:")){
-						vertices = true;
-					} else if (line.startsWith("faces:")){
-						vertices = false;
-					} else {
-						if (vertices){
-							double x = Double.parseDouble(line.split(" ")[0]);
-							double y = Double.parseDouble(line.split(" ")[1]);
-							double z = Double.parseDouble(line.split(" ")[2]);
-							vx.add(new Point3D(x, y, z));
-						} else {
-							int i = Integer.parseInt(line.split(" ")[0]);
-							int j = Integer.parseInt(line.split(" ")[1]);
-							int k = Integer.parseInt(line.split(" ")[2]);
-							fc.add(new int[]{i, j, k});
-						}
-					}
-				}
-			}
-			reader.close();
-
-			this.vertices.put(type, vx.toArray(new Point3D[vx.size()]));
-			this.faces.put(type, fc.toArray(new int[fc.size()][3]));
-		} catch (Exception ex){
-			ex.printStackTrace();
-		}
+		/*BlockMesh blockMesh = getBlockMesh("grass");
+		System.out.println("Vertices: "+Arrays.toString(blockMesh.getVertices()));
+		System.out.println("Faces points:");
+		Arrays.asList(blockMesh.getFacesPoints()).stream().forEach(l -> System.out.println(Arrays.toString(l)));
+		System.out.println("Images: "+Arrays.toString(blockMesh.getImages()));
+		System.out.println("Image idx: "+Arrays.toString(blockMesh.getImageIndices()));
+		System.out.println("Texture v: "+Arrays.toString(blockMesh.getTex()));
+		System.out.println("Faces tex:");
+		Arrays.asList(blockMesh.getFacesTex()).stream().forEach(l -> System.out.println(Arrays.toString(l)));
+		System.exit(0);*/
 	}
 	
 	public int getBlockId(String blockType){
 		return this.json.getJSONObject("blocks").getJSONObject(blockType).getInt("id");
+	}
+
+	public String getBlockType(int id){
+		return this.blockIds.get(id);
 	}
 	
 	public boolean isTransparent(String blockType){
@@ -108,34 +61,14 @@ public class Atlas{
 	}
 	
 	public boolean isSprite(String blockType){
-		return this.json.getJSONObject("blocks").getJSONObject(blockType).optBoolean("sprite");
+		return false; //this.json.getJSONObject("blocks").getJSONObject(blockType).optBoolean("sprite"); // TODO
 	}
 	
 	public boolean isLiquid(String blockType){
-		return this.json.getJSONObject("blocks").getJSONObject(blockType).optBoolean("liquid");
-	}
-	
-	public String getBlockType(int id){
-		return this.blockIds.get(id);
+		return this.json.getJSONObject("blocks").getJSONObject(blockType).getBoolean("liquid");
 	}
 
-	public Map<String, Image[]> getImages(){
-		return this.images;
-	}
-	
-	public Map<String, int[]> getBlockFaces(){
-		return this.imageFaces;
-	}
-
-	public Map<String, Point3D[]> getVertices(){
-		return this.vertices;
-	}
-
-	public Map<String, int[][]> getFaces(){
-		return this.faces;
-	}
-
-	public JSONObject getJSON(){
-		return this.json;
+	public BlockMesh getBlockMesh(String blockType){
+		return this.blocks.get(blockType);
 	}
 }

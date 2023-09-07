@@ -31,7 +31,7 @@ public class MainApplication extends Application{
 	private static final String[] inventoryBlocks = new String[]{"wood", "water", "grass", "flower_red", "wood_log", "leaves", "cobblestone", "bricks", "glass"};
 	public static Engine3D ENGINE;
 
-	private int currentBlock = 0;
+	private int currentBlock = 2;
 	private Color backgroundColor = Color.CYAN;
 	private double time = 1;
 	private boolean amTime = false;
@@ -39,6 +39,8 @@ public class MainApplication extends Application{
 	@Override
 	public void start(Stage stage){
 		stage.setTitle("BlockWorld");
+
+		System.out.println(Atlas.MAIN_ATLAS);
 		
 		ENGINE = new Engine3D(stage, WIDTH, HEIGHT);
 
