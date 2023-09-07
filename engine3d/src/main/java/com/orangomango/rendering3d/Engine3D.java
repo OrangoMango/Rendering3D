@@ -204,7 +204,7 @@ public class Engine3D{
 		}
 
 		// Render the transparent triangles
-		transparentTriangles.sort((pt1, pt2) -> Double.compare(pt1.getMeanDepth(), pt2.getMeanDepth()));
+		transparentTriangles.sort((pt1, pt2) -> Double.compare(pt1.getMeanDepth(), pt2.getMeanDepth())); // TODO improve performance
 		for (ProjectedTriangle pt : transparentTriangles){
 			pt.render(canvas, SHOW_LINES ? gc : null);
 		}

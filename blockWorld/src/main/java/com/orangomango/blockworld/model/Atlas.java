@@ -36,7 +36,7 @@ public class Atlas{
 			this.blocks.put(blockType, block);
 		}
 
-		/*BlockMesh blockMesh = getBlockMesh("grass");
+		/*BlockMesh blockMesh = getBlockMesh("debug");
 		System.out.println("Vertices: "+Arrays.toString(blockMesh.getVertices()));
 		System.out.println("Faces points:");
 		Arrays.asList(blockMesh.getFacesPoints()).stream().forEach(l -> System.out.println(Arrays.toString(l)));
@@ -66,6 +66,10 @@ public class Atlas{
 	
 	public boolean isLiquid(String blockType){
 		return this.json.getJSONObject("blocks").getJSONObject(blockType).getBoolean("liquid");
+	}
+
+	public int getHidePattern(String blockType){
+		return this.json.getJSONObject("blocks").getJSONObject(blockType).getInt("hidePattern");
 	}
 
 	public BlockMesh getBlockMesh(String blockType){

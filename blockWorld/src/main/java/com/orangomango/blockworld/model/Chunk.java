@@ -114,34 +114,33 @@ public class Chunk{
 							}
 							setBlock(new Block(this, i, h-1-treeHeight, j, "leaves"), i, h-1-treeHeight, j);
 						} else if (this.blocks[i][h][j].getType().equals("sand")){
-							/*int cactusHeight = 3;
+							int cactusHeight = 3;
 							for (int k = 0; k < cactusHeight; k++){
 								setBlock(new Block(this, i, h-1-k, j, "cactus"), i, h-1-k, j);
-							}*/
+							}
 						}
 					} else if (random.nextInt(1000) < 16){
-						/*String flowerType = "flower_"+(random.nextBoolean() ? "red" : "yellow");
+						String flowerType = "flower_"+(random.nextBoolean() ? "red" : "yellow");
 						if (this.blocks[i][h][j].getType().equals("sand")){
 							flowerType = "bush";
 						}
-						setBlock(new Block(this, i, h-1, j, flowerType), i, h-1, j);*/
+						setBlock(new Block(this, i, h-1, j, flowerType), i, h-1, j);
 					}
 				}
 			}
 		}
 
 		// Water generation
-		for (int i = 0; i < CHUNK_SIZE; i++){ // x
+		/*for (int i = 0; i < CHUNK_SIZE; i++){ // x
 			for (int j = 0; j < CHUNK_SIZE; j++){ // z
 				for (int k = 0; k < CHUNK_SIZE; k++){ // y
 					if (this.blocks[i][k][j] == null && k+getY()*CHUNK_SIZE >= WATER_HEIGHT){
 						Block waterBlock = new Block(this, i, k, j, "water");
-						waterBlock.setYOffset(Block.LIQUID_OFFSET);
 						setBlock(waterBlock, i, k, j);
 					}
 				}
 			}
-		}
+		}*/
 
 		buildPendingBlocks();
 	}

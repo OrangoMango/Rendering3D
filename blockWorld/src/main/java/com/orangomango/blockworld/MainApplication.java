@@ -28,10 +28,10 @@ public class MainApplication extends Application{
 	private static final int CHUNKS = 9;
 
 	private static Image POINTER = new Image(MainApplication.class.getResourceAsStream("/images/pointer.png"));
-	private static final String[] inventoryBlocks = new String[]{"wood", "water", "grass", "flower_red", "wood_log", "leaves", "cobblestone", "bricks", "glass"};
+	private static final String[] inventoryBlocks = new String[]{"wood", "cactus", "debug", "torch", "wood_log", "leaves", "cobblestone", "bricks", "glass"};
 	public static Engine3D ENGINE;
 
-	private int currentBlock = 2;
+	private int currentBlock = 0;
 	private Color backgroundColor = Color.CYAN;
 	private double time = 1;
 	private boolean amTime = false;
@@ -40,8 +40,6 @@ public class MainApplication extends Application{
 	public void start(Stage stage){
 		stage.setTitle("BlockWorld");
 
-		System.out.println(Atlas.MAIN_ATLAS);
-		
 		ENGINE = new Engine3D(stage, WIDTH, HEIGHT);
 
 		Player player = new Player(0, -15, 0, WIDTH, HEIGHT);

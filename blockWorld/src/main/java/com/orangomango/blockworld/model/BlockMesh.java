@@ -25,9 +25,9 @@ public class BlockMesh{
 		private Point2D startUv, endUv;
 		private boolean culling;
 		private int imageIndex;
-		private String name;
+		private int name;
 
-		public Face(String name, Point3D[] v, Point2D sUv, Point2D eUv, boolean culling, int imageIndex){
+		public Face(int name, Point3D[] v, Point2D sUv, Point2D eUv, boolean culling, int imageIndex){
 			this.name = name;
 			this.points = v;
 			this.startUv = sUv;
@@ -57,18 +57,8 @@ public class BlockMesh{
 
 		public Element(List<Face> faces){
 			this.faces = faces;
-			List<String> order = Arrays.asList(new String[]{"F", "R", "B", "L", "D", "T"});
-			this.faces.sort((face1, face2) -> Integer.compare(order.indexOf(face1.name), order.indexOf(face2.name)));
 			this.vertices = this.faces.stream().flatMap(f -> f.getVertices().stream()).map(v -> v.position).distinct().map(p -> p.multiply(1/16.0)).toList();
 			this.tex = this.faces.stream().flatMap(f -> f.getVertices().stream()).map(v -> v.tex).distinct().map(p -> p.multiply(1/16.0)).toList();
-		}
-
-		public Map<String, Boolean> buildCullingMap(){
-			Map<String, Boolean> output = new HashMap<>();
-			for (Face face : this.faces){
-				output.put(face.name, face.culling);
-			}
-			return output;
 		}
 
 		public int[] buildImageIndices(){
@@ -91,7 +81,7 @@ public class BlockMesh{
 				output.add(new int[]{v1, v2, v3});
 				output.add(new int[]{v1, v3, v4});
 			}
-			return output.toArray(new int[12][3]);
+			return output.toArray(new int[output.size()][3]);
 		}
 
 		public int[][] buildFacesTextures(){
@@ -105,7 +95,25 @@ public class BlockMesh{
 				output.add(new int[]{v1, v2, v3});
 				output.add(new int[]{v1, v3, v4});
 			}
-			return output.toArray(new int[12][3]);
+			return output.toArray(new int[output.size()][3]);
+		}
+
+		public Map<Integer, List<Integer>> buildCullingIdx(){
+			Map<Integer, List<Integer>> output = new HashMap<>();
+			int count = 0;
+			for (Face face : this.faces){
+				if (face.culling){
+					List<Integer> idx = output.getOrDefault(face.name, null);
+					if (idx == null){
+						idx = new ArrayList<Integer>();
+					}
+					idx.add(count);
+					idx.add(count+1);
+					output.put(face.name, idx);
+				}
+				count += 2;
+			}
+			return output;
 		}
 	}
 
@@ -117,7 +125,15 @@ public class BlockMesh{
 	private Point2D[] tex;
 	private int[][] facesPoints;
 	private int[][] facesTex;
-	private Map<String, Boolean> cullingMap = new HashMap<>();
+	private Map<Integer, List<Integer>> cullingIdx = new HashMap<>();
+
+	// Hide pattern
+	public static final int FACE_FRONT = 32;
+	public static final int FACE_RIGHT = 16;
+	public static final int FACE_BACK = 8;
+	public static final int FACE_LEFT = 4;
+	public static final int FACE_DOWN = 2;
+	public static final int FACE_TOP = 1;
 
 	public BlockMesh(String meshFile, JSONObject textures){
 		this.textures = textures;
@@ -139,13 +155,19 @@ public class BlockMesh{
 			ex.printStackTrace();
 		}
 
-		List<Element> elements = buildElements();
-		this.vertices = elements.get(0).vertices.toArray(new Point3D[elements.get(0).vertices.size()]);
-		this.tex = elements.get(0).tex.toArray(new Point2D[elements.get(0).tex.size()]);
-		this.facesPoints = elements.get(0).buildFacesPoints();
-		this.facesTex = elements.get(0).buildFacesTextures();
-		this.imageIndices = elements.get(0).buildImageIndices();
-		this.cullingMap = elements.get(0).buildCullingMap();
+		Element element = mergeElements(buildElements());
+		this.vertices = element.vertices.toArray(new Point3D[element.vertices.size()]);
+		this.tex = element.tex.toArray(new Point2D[element.tex.size()]);
+		this.facesPoints = element.buildFacesPoints();
+		this.facesTex = element.buildFacesTextures();
+		this.imageIndices = element.buildImageIndices();
+		this.cullingIdx = element.buildCullingIdx();
+	}
+
+	private Element mergeElements(List<Element> elements){
+		List<Face> faces = new ArrayList<>(elements.stream().flatMap(e -> e.faces.stream()).toList());
+		Element e = new Element(faces);
+		return e;
 	}
 
 	private List<Element> buildElements(){
@@ -159,8 +181,8 @@ public class BlockMesh{
 	}
 
 	private Element makeElement(JSONObject json){
-		Point3D start = new Point3D(json.getJSONArray("from").getInt(0), json.getJSONArray("from").getInt(1), json.getJSONArray("from").getInt(2));
-		Point3D end = new Point3D(json.getJSONArray("to").getInt(0), json.getJSONArray("to").getInt(1), json.getJSONArray("to").getInt(2));
+		Point3D start = new Point3D(json.getJSONArray("from").getDouble(0), json.getJSONArray("from").getDouble(1), json.getJSONArray("from").getDouble(2));
+		Point3D end = new Point3D(json.getJSONArray("to").getDouble(0), json.getJSONArray("to").getDouble(1), json.getJSONArray("to").getDouble(2));
 		List<Face> faces = new ArrayList<>();
 
 		for (String f : json.getJSONObject("faces").keySet()){
@@ -168,48 +190,48 @@ public class BlockMesh{
 			Point2D sUv = new Point2D(data.getJSONArray("uv").getInt(0), data.getJSONArray("uv").getInt(1));
 			Point2D eUv = new Point2D(data.getJSONArray("uv").getInt(2), data.getJSONArray("uv").getInt(3));
 			boolean culling = data.getBoolean("culling");
-			int imageIndex = this.textures.getJSONObject("config").getInt(f);
+			int imageIndex = this.textures.getJSONObject("config").optInt(f, -1);
 			if (f.equals("front")){
 				Point3D a = new Point3D(start.getX(), start.getY(), start.getZ()); // sx sy sz
 				Point3D b = new Point3D(start.getX(), end.getY(), start.getZ()); // sx ey sz
 				Point3D c = new Point3D(end.getX(), end.getY(), start.getZ()); // ex ey sz
 				Point3D d = new Point3D(end.getX(), start.getY(), start.getZ()); // ex sy sz
-				Face face = new Face("F", new Point3D[]{a, b, c, d}, sUv, eUv, culling, imageIndex);
+				Face face = new Face(FACE_FRONT, new Point3D[]{a, b, c, d}, sUv, eUv, culling, imageIndex);
 				faces.add(face);
 			} else if (f.equals("right")){
 				Point3D a = new Point3D(end.getX(), start.getY(), start.getZ()); // ex sy sz
 				Point3D b = new Point3D(end.getX(), end.getY(), start.getZ()); // ex ey sz
 				Point3D c = new Point3D(end.getX(), end.getY(), end.getZ()); // ex ey ez
 				Point3D d = new Point3D(end.getX(), start.getY(), end.getZ()); // ex sy ez
-				Face face = new Face("R", new Point3D[]{a, b, c, d}, sUv, eUv, culling, imageIndex);
+				Face face = new Face(FACE_RIGHT, new Point3D[]{a, b, c, d}, sUv, eUv, culling, imageIndex);
 				faces.add(face);
 			} else if (f.equals("back")){
 				Point3D a = new Point3D(end.getX(), start.getY(), end.getZ()); // ex sy ez
 				Point3D b = new Point3D(end.getX(), end.getY(), end.getZ()); // ex ey ez
 				Point3D c = new Point3D(start.getX(), end.getY(), end.getZ()); // sx ey ez
 				Point3D d = new Point3D(start.getX(), start.getY(), end.getZ()); // sx sy ez
-				Face face = new Face("B", new Point3D[]{a, b, c, d}, sUv, eUv, culling, imageIndex);
+				Face face = new Face(FACE_BACK, new Point3D[]{a, b, c, d}, sUv, eUv, culling, imageIndex);
 				faces.add(face);
 			} else if (f.equals("left")){
 				Point3D a = new Point3D(start.getX(), start.getY(), end.getZ()); // sx sy ez
 				Point3D b = new Point3D(start.getX(), end.getY(), end.getZ()); // sx ey ez
 				Point3D c = new Point3D(start.getX(), end.getY(), start.getZ()); // sx ey sz
 				Point3D d = new Point3D(start.getX(), start.getY(), start.getZ()); // sx sy sz
-				Face face = new Face("L", new Point3D[]{a, b, c, d}, sUv, eUv, culling, imageIndex);
+				Face face = new Face(FACE_LEFT, new Point3D[]{a, b, c, d}, sUv, eUv, culling, imageIndex);
 				faces.add(face);
 			} else if (f.equals("down")){
 				Point3D a = new Point3D(start.getX(), end.getY(), start.getZ()); // sx ey sz
 				Point3D b = new Point3D(start.getX(), end.getY(), end.getZ()); // sx ey ez
 				Point3D c = new Point3D(end.getX(), end.getY(), end.getZ()); // ex ey ez
 				Point3D d = new Point3D(end.getX(), end.getY(), start.getZ()); // ex ey sz
-				Face face = new Face("D", new Point3D[]{a, b, c, d}, sUv, eUv, culling, imageIndex);
+				Face face = new Face(FACE_DOWN, new Point3D[]{a, b, c, d}, sUv, eUv, culling, imageIndex);
 				faces.add(face);
 			} else if (f.equals("top")){
 				Point3D a = new Point3D(start.getX(), start.getY(), end.getZ()); // sx sy ez
 				Point3D b = new Point3D(start.getX(), start.getY(), start.getZ()); // sx sy sz
 				Point3D c = new Point3D(end.getX(), start.getY(), start.getZ()); // ex sy sz
 				Point3D d = new Point3D(end.getX(), start.getY(), end.getZ()); // ex sy ez
-				Face face = new Face("T", new Point3D[]{a, b, c, d}, sUv, eUv, culling, imageIndex);
+				Face face = new Face(FACE_TOP, new Point3D[]{a, b, c, d}, sUv, eUv, culling, imageIndex);
 				faces.add(face);
 			}
 		}
@@ -242,7 +264,7 @@ public class BlockMesh{
 		return this.facesTex;
 	}
 
-	public Map<String, Boolean> getCullingMap(){
-		return this.cullingMap;
+	public Map<Integer, List<Integer>> getCullingIdx(){
+		return this.cullingIdx;
 	}
 }

@@ -3,6 +3,8 @@ package com.orangomango.blockworld.model;
 import javafx.geometry.Point3D;
 import javafx.geometry.Point2D;
 
+import java.util.List;
+
 import com.orangomango.rendering3d.model.Mesh;
 
 public class Block{
@@ -13,9 +15,9 @@ public class Block{
 	private World world;
 	private Mesh mesh;
 	private String type;
-	private double yOffset;
 	private int light = MAX_LIGHT_INTENSITY;
 	private BlockMesh blockMesh;
+	private double yOffset;
 
 	public Block(Chunk chunk, int x, int y, int z, String type){
 		this.world = chunk.getWorld();
@@ -39,54 +41,50 @@ public class Block{
 		this.light = intensity;
 	}
 
-	public void setupFaces(){
-		if (isSprite() || this.mesh == null) return;
-		this.mesh.clearHiddenFaces();
-		Block block = this.world.getBlockAt(this.x+1, this.y, this.z);
-		if (this.blockMesh.getCullingMap().get("R") && block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
-			this.mesh.addHiddenFace(2);
-			this.mesh.addHiddenFace(3);
-		}
-		block = this.world.getBlockAt(this.x, this.y+1, this.z);
-		if (this.blockMesh.getCullingMap().get("D") && block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type)))){
-			this.mesh.addHiddenFace(8);
-			this.mesh.addHiddenFace(9);
-		}
-		block = this.world.getBlockAt(this.x, this.y, this.z+1);
-		if (this.blockMesh.getCullingMap().get("B") && block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
-			this.mesh.addHiddenFace(4);
-			this.mesh.addHiddenFace(5);
-		}
-		block = this.world.getBlockAt(this.x-1, this.y, this.z);
-		if (this.blockMesh.getCullingMap().get("L") && block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
-			this.mesh.addHiddenFace(6);
-			this.mesh.addHiddenFace(7);
-		}
-		block = this.world.getBlockAt(this.x, this.y-1, this.z);
-		if (this.blockMesh.getCullingMap().get("T") && block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && (!isLiquid() || block.isLiquid())){
-			this.mesh.addHiddenFace(10);
-			this.mesh.addHiddenFace(11);
-		}
-		block = this.world.getBlockAt(this.x, this.y, this.z-1);
-		if (this.blockMesh.getCullingMap().get("F") && block != null && (!block.isTransparent() || (isTransparent() && block.getType().equals(this.type))) && block.yOffset <= this.yOffset){
-			this.mesh.addHiddenFace(0);
-			this.mesh.addHiddenFace(1);
+	private void hideFace(int name){
+		List<Integer> idx = this.blockMesh.getCullingIdx().getOrDefault(name, null);
+		if (idx != null){
+			for (int n : idx){
+				this.mesh.addHiddenFace(n);
+			}
 		}
 	}
 
-	/**
-	 * Block is declared like this:
-	 * F  F  R  R  B  B  L  L  D  D  U  U
-	 * 00 01 02 03 04 05 06 07 08 09 10 11
-	 */
+	public void setupFaces(){
+		if (this.mesh == null) return;
+		this.mesh.clearHiddenFaces();
+		Block block = this.world.getBlockAt(this.x+1, this.y, this.z);
+		if (block != null && (Atlas.MAIN_ATLAS.getHidePattern(block.getType()) & BlockMesh.FACE_LEFT) == 0){
+			hideFace(BlockMesh.FACE_RIGHT);
+		}
+		block = this.world.getBlockAt(this.x, this.y+1, this.z);
+		if (block != null && (Atlas.MAIN_ATLAS.getHidePattern(block.getType()) & BlockMesh.FACE_TOP) == 0){
+			hideFace(BlockMesh.FACE_DOWN);
+		}
+		block = this.world.getBlockAt(this.x, this.y, this.z+1);
+		if (block != null && (Atlas.MAIN_ATLAS.getHidePattern(block.getType()) & BlockMesh.FACE_FRONT) == 0){
+			hideFace(BlockMesh.FACE_BACK);
+		}
+		block = this.world.getBlockAt(this.x-1, this.y, this.z);
+		if (block != null && (Atlas.MAIN_ATLAS.getHidePattern(block.getType()) & BlockMesh.FACE_RIGHT) == 0){
+			hideFace(BlockMesh.FACE_LEFT);
+		}
+		block = this.world.getBlockAt(this.x, this.y-1, this.z);
+		if (block != null && (Atlas.MAIN_ATLAS.getHidePattern(block.getType()) & BlockMesh.FACE_DOWN) == 0){
+			hideFace(BlockMesh.FACE_TOP);
+		}
+		block = this.world.getBlockAt(this.x, this.y, this.z-1);
+		if (block != null && (Atlas.MAIN_ATLAS.getHidePattern(block.getType()) & BlockMesh.FACE_BACK) == 0){
+			hideFace(BlockMesh.FACE_FRONT);
+		}
+	}
+
 	public Mesh getMesh(){
 		if (this.mesh != null) return this.mesh;
 
 		Block top = this.world.getBlockAt(this.x, this.y-1, this.z);
 		if ((top == null || !top.isLiquid()) && isLiquid()){
 			this.yOffset = LIQUID_OFFSET;
-		} else {
-			this.yOffset = 0;
 		}
 
 		Point3D[] vertices = this.blockMesh.getVertices();
@@ -97,22 +95,22 @@ public class Block{
 		System.arraycopy(vertices, 0, blockVertices, 0, vertices.length);
 		System.arraycopy(faces, 0, blockFaces, 0, faces.length);
 
-		if (isSprite()){
-			/*this.mesh = new Mesh(blockVertices, blockFaces,
-				null, Atlas.MAIN_ATLAS.getImages().get(this.type), Atlas.MAIN_ATLAS.getBlockFaces().get(this.type), new Point2D[]{
-				new Point2D(0, 0), new Point2D(0, 1), new Point2D(1, 1), new Point2D(1, 0)
-			}, new int[][]{
-				{0, 1, 2}, {0, 2, 3}, {0, 1, 2}, {0, 2, 3}
-			});
-			this.mesh.setShowAllFaces(true);*/
-		} else {
-			this.mesh = new Mesh(blockVertices, blockFaces, null, this.blockMesh.getImages(), this.blockMesh.getImageIndices(), this.blockMesh.getTex(), this.blockMesh.getFacesTex());
-			this.mesh.setSkipCondition(cam -> {
-				Point3D pos = new Point3D(this.x, this.y, this.z);
-				return pos.distance(cam.getPosition()) > ChunkManager.RENDER_DISTANCE*Chunk.CHUNK_SIZE;
-			});
+		if (this.yOffset != 0){
+			for (int i = 0; i < blockVertices.length; i++){
+				Point3D v = blockVertices[i];
+				if (v.getY() == 0){
+					blockVertices[i] = new Point3D(v.getX(), this.yOffset, v.getZ());
+				}
+			}
 		}
-		this.mesh.translate(this.x, this.y+this.yOffset, this.z);
+
+		this.mesh = new Mesh(blockVertices, blockFaces, null, this.blockMesh.getImages(), this.blockMesh.getImageIndices(), this.blockMesh.getTex(), this.blockMesh.getFacesTex());
+		this.mesh.setSkipCondition(cam -> {
+			Point3D pos = new Point3D(this.x, this.y, this.z);
+			return pos.distance(cam.getPosition()) > ChunkManager.RENDER_DISTANCE*Chunk.CHUNK_SIZE;
+		});
+
+		this.mesh.translate(this.x, this.y, this.z);
 		this.mesh.build();
 		this.mesh.setTransparentProcessing(isTransparent());
 		this.mesh.setShowAllFaces(isTransparent());
@@ -141,10 +139,6 @@ public class Block{
 		return Atlas.MAIN_ATLAS.isLiquid(this.type);
 	}
 
-	public boolean isSprite(){
-		return Atlas.MAIN_ATLAS.isSprite(this.type);
-	}
-
 	public int getX(){
 		return this.x;
 	}
@@ -163,9 +157,5 @@ public class Block{
 
 	public int getId(){
 		return Atlas.MAIN_ATLAS.getBlockId(this.type);
-	}
-
-	public void setYOffset(double value){
-		this.yOffset = value;
 	}
 }
