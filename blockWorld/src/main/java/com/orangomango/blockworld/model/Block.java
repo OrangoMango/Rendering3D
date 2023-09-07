@@ -50,31 +50,35 @@ public class Block{
 		}
 	}
 
+	private static int evalHidePattern(String type, int faceName){
+		return Atlas.MAIN_ATLAS.getHidePattern(type) & faceName;
+	}
+
 	public void setupFaces(){
 		if (this.mesh == null) return;
 		this.mesh.clearHiddenFaces();
 		Block block = this.world.getBlockAt(this.x+1, this.y, this.z);
-		if (block != null && (Atlas.MAIN_ATLAS.getHidePattern(block.getType()) & BlockMesh.FACE_LEFT) == 0){
+		if (block != null && (evalHidePattern(block.getType(), BlockMesh.FACE_LEFT) == 0 || (evalHidePattern(this.getType(), BlockMesh.FACE_RIGHT) != 0 && evalHidePattern(block.getType(), BlockMesh.FACE_LEFT) != 0))){
 			hideFace(BlockMesh.FACE_RIGHT);
 		}
 		block = this.world.getBlockAt(this.x, this.y+1, this.z);
-		if (block != null && (Atlas.MAIN_ATLAS.getHidePattern(block.getType()) & BlockMesh.FACE_TOP) == 0){
+		if (block != null && (evalHidePattern(block.getType(), BlockMesh.FACE_TOP) == 0 || (evalHidePattern(this.getType(), BlockMesh.FACE_DOWN) != 0 && evalHidePattern(block.getType(), BlockMesh.FACE_TOP) != 0))){
 			hideFace(BlockMesh.FACE_DOWN);
 		}
 		block = this.world.getBlockAt(this.x, this.y, this.z+1);
-		if (block != null && (Atlas.MAIN_ATLAS.getHidePattern(block.getType()) & BlockMesh.FACE_FRONT) == 0){
+		if (block != null && (evalHidePattern(block.getType(), BlockMesh.FACE_FRONT) == 0 || (evalHidePattern(this.getType(), BlockMesh.FACE_BACK) != 0 && evalHidePattern(block.getType(), BlockMesh.FACE_FRONT) != 0))){
 			hideFace(BlockMesh.FACE_BACK);
 		}
 		block = this.world.getBlockAt(this.x-1, this.y, this.z);
-		if (block != null && (Atlas.MAIN_ATLAS.getHidePattern(block.getType()) & BlockMesh.FACE_RIGHT) == 0){
+		if (block != null && (evalHidePattern(block.getType(), BlockMesh.FACE_RIGHT) == 0 || (evalHidePattern(this.getType(), BlockMesh.FACE_LEFT) != 0 && evalHidePattern(block.getType(), BlockMesh.FACE_RIGHT) != 0))){
 			hideFace(BlockMesh.FACE_LEFT);
 		}
 		block = this.world.getBlockAt(this.x, this.y-1, this.z);
-		if (block != null && (Atlas.MAIN_ATLAS.getHidePattern(block.getType()) & BlockMesh.FACE_DOWN) == 0){
+		if (block != null && (evalHidePattern(block.getType(), BlockMesh.FACE_DOWN) == 0 || (evalHidePattern(this.getType(), BlockMesh.FACE_TOP) != 0 && evalHidePattern(block.getType(), BlockMesh.FACE_DOWN) != 0))){
 			hideFace(BlockMesh.FACE_TOP);
 		}
 		block = this.world.getBlockAt(this.x, this.y, this.z-1);
-		if (block != null && (Atlas.MAIN_ATLAS.getHidePattern(block.getType()) & BlockMesh.FACE_BACK) == 0){
+		if (block != null && (evalHidePattern(block.getType(), BlockMesh.FACE_BACK) == 0 || (evalHidePattern(this.getType(), BlockMesh.FACE_FRONT) != 0 && evalHidePattern(block.getType(), BlockMesh.FACE_BACK) != 0))){
 			hideFace(BlockMesh.FACE_FRONT);
 		}
 	}

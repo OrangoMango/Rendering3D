@@ -131,7 +131,7 @@ public class Chunk{
 		}
 
 		// Water generation
-		/*for (int i = 0; i < CHUNK_SIZE; i++){ // x
+		for (int i = 0; i < CHUNK_SIZE; i++){ // x
 			for (int j = 0; j < CHUNK_SIZE; j++){ // z
 				for (int k = 0; k < CHUNK_SIZE; k++){ // y
 					if (this.blocks[i][k][j] == null && k+getY()*CHUNK_SIZE >= WATER_HEIGHT){
@@ -140,7 +140,7 @@ public class Chunk{
 					}
 				}
 			}
-		}*/
+		}
 
 		buildPendingBlocks();
 	}

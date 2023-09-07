@@ -94,8 +94,8 @@
 			"id" : 6,
 			"transparent" : true,
 			"liquid" : false,
-			"hidePattern" : 0,
-			"mesh" : "/meshes/leaves.json",
+			"hidePattern" : 63,
+			"mesh" : "/meshes/block.json",
 			"textures" : {
 				"images" : ["/images/leaves.png"],
 				"config" : {
@@ -184,7 +184,7 @@
 			"id" : 11,
 			"transparent" : true,
 			"liquid" : true,
-			"hidePattern" : 0,
+			"hidePattern" : 63,
 			"mesh" : "/meshes/block.json",
 			"textures" : {
 				"images" : ["/images/water.png"],
@@ -244,7 +244,7 @@
 			"id" : 15,
 			"transparent" : false,
 			"liquid" : false,
-			"hidePattern" : 0,
+			"hidePattern" : 63,
 			"mesh" : "/meshes/cactus.json",
 			"textures" : {
 				"images" : ["/images/cactus_bottom.png", "/images/cactus_side.png", "/images/cactus_top.png"],
