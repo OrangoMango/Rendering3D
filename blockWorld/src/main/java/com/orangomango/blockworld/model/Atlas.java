@@ -47,6 +47,10 @@ public class Atlas{
 		Arrays.asList(blockMesh.getFacesTex()).stream().forEach(l -> System.out.println(Arrays.toString(l)));
 		System.exit(0);*/
 	}
+
+	public int getMaxId(){
+		return this.blockIds.keySet().stream().mapToInt(i -> i.intValue()).max().getAsInt();
+	}
 	
 	public int getBlockId(String blockType){
 		return this.json.getJSONObject("blocks").getJSONObject(blockType).getInt("id");

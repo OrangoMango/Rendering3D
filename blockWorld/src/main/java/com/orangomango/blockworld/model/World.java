@@ -2,6 +2,8 @@ package com.orangomango.blockworld.model;
 
 import java.util.*;
 
+import static com.orangomango.blockworld.MainApplication.ENGINE;
+
 public class World{
 	private int seed;
 	private boolean superFlat;
@@ -10,7 +12,6 @@ public class World{
 
 	public World(int seed, boolean superFlat){
 		this.seed = seed;
-		System.out.println("Seed: "+seed);
 		this.superFlat = superFlat;
 		this.random = new Random(seed);
 	}
@@ -83,6 +84,12 @@ public class World{
 
 	public int getSeed(){
 		return this.seed;
+	}
+
+	public void setSeed(int seed){
+		this.seed = seed;
+		this.chunks.clear();
+		ENGINE.clearObjects();
 	}
 
 	public Random getRandom(){

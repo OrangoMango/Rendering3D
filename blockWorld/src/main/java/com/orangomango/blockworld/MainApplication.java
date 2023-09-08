@@ -8,6 +8,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.Font;
+import javafx.util.Pair;
+import javafx.geometry.Point3D;
 
 import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.rendering3d.model.Light;
@@ -15,6 +17,7 @@ import com.orangomango.rendering3d.model.MeshVertex;
 import com.orangomango.blockworld.model.*;
 import com.orangomango.blockworld.util.Util;
 import com.orangomango.blockworld.entity.Player;
+import com.orangomango.blockworld.console.Console;
 
 /**
  * Minecraft-clone using a 3D engine made from scratch in Java/JavaFX
@@ -28,10 +31,9 @@ public class MainApplication extends Application{
 	private static final int CHUNKS = 9;
 
 	private static Image POINTER = new Image(MainApplication.class.getResourceAsStream("/images/pointer.png"));
-	private static final String[] inventoryBlocks = new String[]{"wood", "cactus", "debug", "torch", "wood_log", "leaves", "cobblestone", "bricks", "glass"};
 	public static Engine3D ENGINE;
 
-	private int currentBlock = 0;
+	private String currentBlock = "wood";
 	private Color backgroundColor = Color.CYAN;
 	private double time = 1;
 	private boolean amTime = false;
@@ -39,17 +41,15 @@ public class MainApplication extends Application{
 	@Override
 	public void start(Stage stage){
 		stage.setTitle("BlockWorld");
-
 		ENGINE = new Engine3D(stage, WIDTH, HEIGHT);
 
 		Player player = new Player(0, -15, 0, WIDTH, HEIGHT);
 		ENGINE.setCamera(player.getCamera());
-
 		Light light = new Light(1);
 		ENGINE.getLights().add(light);
 
 		World world = new World((int)System.currentTimeMillis(), false);
-
+		System.out.println("Seed: "+world.getSeed());
 		ChunkManager manager = new ChunkManager(world, CHUNKS);
 		manager.deleteSavedWorld();
 
@@ -63,10 +63,9 @@ public class MainApplication extends Application{
 						direction *= -1;
 						this.amTime = !this.amTime;
 					}
-					light.setFixedIntensity(Math.min(Math.max(0, this.time), 1));
-					double b = this.backgroundColor.getBrightness()+inc*direction;
-					b = Math.min(Math.max(0, b), 1);
-					this.backgroundColor = Color.hsb(this.backgroundColor.getHue(), this.backgroundColor.getSaturation(), b);
+					this.time = Math.min(Math.max(0, this.time), 1);
+					light.setFixedIntensity(this.time);
+					this.backgroundColor = Color.hsb(this.backgroundColor.getHue(), this.backgroundColor.getSaturation(), this.time);
 					ENGINE.setBackgroundColor(this.backgroundColor);
 					Thread.sleep(250);
 				} catch (InterruptedException ex){
@@ -76,6 +75,50 @@ public class MainApplication extends Application{
 		});
 		dayNight.setDaemon(true);
 		dayNight.start();
+
+		// Console
+		Console console = new Console(command -> {
+			if (command.startsWith("/")){
+				String[] args = command.split(" ");
+				if (args[0].equals("/give")){
+					try {
+						int id = Integer.parseInt(args[1]);
+						this.currentBlock = Atlas.MAIN_ATLAS.getBlockType(id);
+						System.out.println(this.currentBlock);
+					} catch (NumberFormatException ex){
+						System.out.println("Error");
+					}
+				} else if (args[0].equals("/settime")){
+					try {
+						Pair<Double, Boolean> time = Util.parseTime(args[1]);
+						this.time = time.getKey();
+						this.amTime = time.getValue();
+					} catch (NumberFormatException ex){
+						System.out.println("Error");
+					}
+				} else if (args[0].equals("/quit") || args[0].equals("/exit")){
+					System.exit(0);
+				} else if (args[0].equals("/list")){
+					int n = Atlas.MAIN_ATLAS.getMaxId();
+					for (int i = 1; i <= n; i++){
+						System.out.println(i+". "+Atlas.MAIN_ATLAS.getBlockType(i));
+					}
+				} else if (args[0].equals("/tp")){
+					double x = Double.parseDouble(args[1]);
+					double y = Double.parseDouble(args[2]);
+					double z = Double.parseDouble(args[3]);
+					player.getCamera().setPosition(new Point3D(x, y, z));
+				} else if (args[0].equals("/save")){
+					manager.saveWorld();
+				} else if (args[0].equals("/delete")){
+					world.setSeed((int)System.currentTimeMillis());
+					System.out.println("Seed: "+world.getSeed());
+					manager.deleteSavedWorld();
+					manager.manage(Util.getChunkPos(player.getPosition()));
+				}
+			}
+		});
+		console.start();
 
 		// Chunk managing
 		player.setOnChunkPositionChanged(chunkPos -> {
@@ -117,7 +160,7 @@ public class MainApplication extends Application{
 					chunkUpdate = true;
 					down = world.getBlockAt(block.getX(), block.getY()+1, block.getZ());
 				} else if (e.getButton() == MouseButton.SECONDARY && lastX >= 0 && lastY >= 0 && lastZ >= 0){
-					world.setBlockAt(lastX, lastY, lastZ, inventoryBlocks[this.currentBlock]);
+					world.setBlockAt(lastX, lastY, lastZ, this.currentBlock);
 					int chunkX = lastX / Chunk.CHUNK_SIZE;
 					int chunkY = lastY / Chunk.CHUNK_SIZE;
 					int chunkZ = lastZ / Chunk.CHUNK_SIZE;
@@ -153,23 +196,13 @@ public class MainApplication extends Application{
 		ENGINE.setOnKey(KeyCode.SPACE, () -> player.move(0, -speed, 0), false);
 		ENGINE.setOnKey(KeyCode.SHIFT, () -> player.move(0, speed, 0), false);
 
-		// Inventory
-		ENGINE.setOnKey(KeyCode.DIGIT1, () -> this.currentBlock = 0, true);
-		ENGINE.setOnKey(KeyCode.DIGIT2, () -> this.currentBlock = 1, true);
-		ENGINE.setOnKey(KeyCode.DIGIT3, () -> this.currentBlock = 2, true);
-		ENGINE.setOnKey(KeyCode.DIGIT4, () -> this.currentBlock = 3, true);
-		ENGINE.setOnKey(KeyCode.DIGIT5, () -> this.currentBlock = 4, true);
-		ENGINE.setOnKey(KeyCode.DIGIT6, () -> this.currentBlock = 5, true);
-		ENGINE.setOnKey(KeyCode.DIGIT7, () -> this.currentBlock = 6, true);
-		ENGINE.setOnKey(KeyCode.DIGIT8, () -> this.currentBlock = 7, true);
-		ENGINE.setOnKey(KeyCode.DIGIT9, () -> this.currentBlock = 8, true);
-
 		// Settings
 		ENGINE.setOnKey(KeyCode.O, ENGINE::toggleMouseMovement, true);
-		ENGINE.setOnKey(KeyCode.P, manager::saveWorld, true);
 		ENGINE.setOnKey(KeyCode.R, player.getCamera()::reset, true);
 
 		ENGINE.setOnPreUpdate(gc -> {
+			console.runLastCommand();
+
 			for (Chunk chunk : world.getChunks()){
 				for (int i = 0; i < Chunk.CHUNK_SIZE; i++){
 					for (int j = 0; j < Chunk.CHUNK_SIZE; j++){
@@ -203,7 +236,7 @@ public class MainApplication extends Application{
 		stage.show();
 	}
 	
-	public static void main(String[] args){		
+	public static void main(String[] args){
 		launch(args);
 	}
 }
