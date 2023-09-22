@@ -299,7 +299,7 @@ public class MainApplication extends Application{
 			ex.printStackTrace();
 		}
 		Mesh loadedObject = loader.load(false);
-		loadedObject.setRotation(Math.PI/2, 0, 0);
+		loadedObject.setRotation(Math.PI/2, 0, 0, Point3D.ZERO);
 		loadedObject.build();
 
 		Light light = new Light(new Camera(new Point3D(-6, -6, -3), WIDTH, HEIGHT, Math.PI/4, 100, 0.3));
@@ -408,7 +408,7 @@ public class MainApplication extends Application{
 			ex.printStackTrace();
 		}
 		Mesh loadedObject = loader.load(false);
-		loadedObject.setRotation(Math.PI/2, 0, 0);
+		loadedObject.setRotation(Math.PI/2, 0, 0, Point3D.ZERO);
 
 		loader = null;
 		try {
@@ -419,7 +419,7 @@ public class MainApplication extends Application{
 			ex.printStackTrace();
 		}
 		Mesh shadowObject = loader.load(false);
-		shadowObject.setRotation(0, 0, Math.PI);
+		shadowObject.setRotation(0, 0, Math.PI, Point3D.ZERO);
 
 		Light light = new Light(new Camera(new Point3D(7.5, -3.9, 12), WIDTH, HEIGHT, Math.PI/4, 100, 0.3));
 		light.getCamera().setRx(-0.4);

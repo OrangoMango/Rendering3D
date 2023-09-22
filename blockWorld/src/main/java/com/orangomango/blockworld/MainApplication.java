@@ -60,9 +60,9 @@ public class MainApplication extends Application{
 				try {
 					this.time += inc*direction;
 					if (this.time < 0 || this.time > 1){
-						direction *= -1;
 						this.amTime = !this.amTime;
 					}
+					direction = this.amTime ? 1 : -1;
 					this.time = Math.min(Math.max(0, this.time), 1);
 					light.setFixedIntensity(this.time);
 					this.backgroundColor = Color.hsb(this.backgroundColor.getHue(), this.backgroundColor.getSaturation(), this.time);

@@ -83,13 +83,14 @@ public class Mesh{
 		}
 	}
 
-	public void setRotation(double rx, double ry, double rz){
+	public void setRotation(double rx, double ry, double rz, Point3D pivot){
 		for (int i = 0; i < this.vertices.length; i++){
-			Point3D vertex = this.vertices[i];
+			Point3D vertex = this.vertices[i].subtract(pivot);
 			double[] rv = Engine3D.multiply(Engine3D.getRotateX(rx), new double[]{vertex.getX(), vertex.getY(), vertex.getZ()});
 			rv = Engine3D.multiply(Engine3D.getRotateY(ry), rv);
 			rv = Engine3D.multiply(Engine3D.getRotateZ(rz), rv);
 			this.vertices[i] = new Point3D(rv[0], rv[1], rv[2]);
+			this.vertices[i].add(pivot);
 		}
 
 		if (this.normals != null){
@@ -169,20 +170,21 @@ public class Mesh{
 		}
 
 		// Create the triangles that form this mesh
-		this.triangles = new MeshTriangle[trianglePoints.length];
+		MeshTriangle[] triangles = new MeshTriangle[trianglePoints.length];
 		for (int i = 0; i < trianglePoints.length; i++){
 			Point3D[] tr = trianglePoints[i];
 			if (this.imageMesh){
 				MeshVertex v1 = new MeshVertex(tr[0], this.normals == null ? null : this.normals[i][0], this.textureVertices[this.textureFaces[i][0]], this.images[this.facesImages[i]]);
 				MeshVertex v2 = new MeshVertex(tr[1], this.normals == null ? null : this.normals[i][1], this.textureVertices[this.textureFaces[i][1]], this.images[this.facesImages[i]]);
 				MeshVertex v3 = new MeshVertex(tr[2], this.normals == null ? null : this.normals[i][2], this.textureVertices[this.textureFaces[i][2]], this.images[this.facesImages[i]]);
-				this.triangles[i] = new MeshTriangle(v1, v2, v3);
+				triangles[i] = new MeshTriangle(v1, v2, v3);
 			} else {
 				MeshVertex v1 = new MeshVertex(tr[0], this.normals == null ? null : this.normals[i][0], this.facesColors != null ? this.facesColors[i] : this.vertexColors[i][0]);
 				MeshVertex v2 = new MeshVertex(tr[1], this.normals == null ? null : this.normals[i][1], this.facesColors != null ? this.facesColors[i] : this.vertexColors[i][1]);
 				MeshVertex v3 = new MeshVertex(tr[2], this.normals == null ? null : this.normals[i][2], this.facesColors != null ? this.facesColors[i] : this.vertexColors[i][2]);
-				this.triangles[i] = new MeshTriangle(v1, v2, v3);
+				triangles[i] = new MeshTriangle(v1, v2, v3);
 			}
 		}
+		this.triangles = triangles;
 	}
 }

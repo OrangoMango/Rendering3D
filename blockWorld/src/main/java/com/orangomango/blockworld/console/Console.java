@@ -15,8 +15,8 @@ public class Console{
 		Thread main = new Thread(() -> {
 			try {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+				System.out.print("> ");
 				while (true){
-					System.out.print("> ");
 					String command = reader.readLine();
 					this.lastCommand = command;
 				}
@@ -31,6 +31,7 @@ public class Console{
 	public void runLastCommand(){
 		if (this.lastCommand != null){
 			this.consumer.accept(this.lastCommand);
+			System.out.print("> ");
 			this.lastCommand = null;
 		}
 	}
