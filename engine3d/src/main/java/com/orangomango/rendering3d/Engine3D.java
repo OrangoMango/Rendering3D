@@ -314,7 +314,7 @@ public class Engine3D{
 		return (normal.dotProduct(planePoint)-normal.dotProduct(point))/normal.dotProduct(direction);
 	}
 
-	// TODO: Color needs to be interpolated
+	// TODO: Color and light needs to be interpolated
 	public static List<MeshTriangle> clip(MeshTriangle original, Camera camera, Point3D planeN, Point3D planeA){
 		MeshVertex[] inside = new MeshVertex[3];
 		MeshVertex[] outside = new MeshVertex[3];
@@ -465,6 +465,21 @@ public class Engine3D{
 		out[1] = (out[1]+1)*0.5*cam2.getHeight();
 		
 		return new double[]{out[0], out[1], 1/out[3]};
+	}
+
+	/*
+	 * Check https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
+	 */
+	public static double[][] getRotateAxis(Point3D axis, double angle){
+		double ux = axis.getX();
+		double uy = axis.getY();
+		double uz = axis.getZ();
+		return new double[][]{
+			{Math.cos(angle)+Math.pow(ux, 2)*(1-Math.cos(angle)), ux*uy*(1-Math.cos(angle))-uz*Math.sin(angle), ux*uz*(1-Math.cos(angle))+uy*Math.sin(angle), 0},
+			{uy*ux*(1-Math.cos(angle))+uz*Math.sin(angle), Math.cos(angle)+Math.pow(uy, 2)*(1-Math.cos(angle)), uy*uz*(1-Math.cos(angle))-ux*Math.sin(angle), 0},
+			{uz*ux*(1-Math.cos(angle))-uy*Math.sin(angle), uz*uy*(1-Math.cos(angle))+ux*Math.sin(angle), Math.cos(angle)+Math.pow(uz, 2)*(1-Math.cos(angle)), 0},
+			{0, 0, 0, 1}
+		};
 	}
 
 	public static double[][] getRotateX(double angle){

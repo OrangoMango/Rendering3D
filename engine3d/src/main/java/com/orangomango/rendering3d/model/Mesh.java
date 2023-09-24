@@ -83,14 +83,42 @@ public class Mesh{
 		}
 	}
 
+	public void setRotation(Point3D axis, double rot, Point3D pivot){
+		double[][] rotMat = Engine3D.getRotateAxis(axis, rot);
+
+		for (int i = 0; i < this.vertices.length; i++){
+			Point3D vertex = this.vertices[i].subtract(pivot);
+			double[] rv = new double[]{vertex.getX(), vertex.getY(), vertex.getZ()};
+			rv = Engine3D.multiply(rotMat, rv);
+			this.vertices[i] = new Point3D(rv[0], rv[1], rv[2]);
+			this.vertices[i] = this.vertices[i].add(pivot);
+		}
+
+		if (this.normals != null){
+			for (int i = 0; i < this.normals.length; i++){
+				Point3D n1 = this.normals[i][0];
+				Point3D n2 = this.normals[i][1];
+				Point3D n3 = this.normals[i][2];
+
+				double[] rn1 = Engine3D.multiply(rotMat, new double[]{n1.getX(), n1.getY(), n1.getZ()});
+				double[] rn2 = Engine3D.multiply(rotMat, new double[]{n2.getX(), n2.getY(), n2.getZ()});
+				double[] rn3 = Engine3D.multiply(rotMat, new double[]{n3.getX(), n3.getY(), n3.getZ()});
+				this.normals[i][0] = new Point3D(rn1[0], rn1[1], rn1[2]);
+				this.normals[i][1] = new Point3D(rn2[0], rn2[1], rn2[2]);
+				this.normals[i][2] = new Point3D(rn3[0], rn3[1], rn3[2]);
+			}
+		}
+	}
+
 	public void setRotation(double rx, double ry, double rz, Point3D pivot){
 		for (int i = 0; i < this.vertices.length; i++){
 			Point3D vertex = this.vertices[i].subtract(pivot);
-			double[] rv = Engine3D.multiply(Engine3D.getRotateX(rx), new double[]{vertex.getX(), vertex.getY(), vertex.getZ()});
-			rv = Engine3D.multiply(Engine3D.getRotateY(ry), rv);
-			rv = Engine3D.multiply(Engine3D.getRotateZ(rz), rv);
+			double[] rv = new double[]{vertex.getX(), vertex.getY(), vertex.getZ()};
+			if (rx != 0) rv = Engine3D.multiply(Engine3D.getRotateX(rx), rv);
+			if (ry != 0) rv = Engine3D.multiply(Engine3D.getRotateY(ry), rv);
+			if (rz != 0) rv = Engine3D.multiply(Engine3D.getRotateZ(rz), rv);
 			this.vertices[i] = new Point3D(rv[0], rv[1], rv[2]);
-			this.vertices[i].add(pivot);
+			this.vertices[i] = this.vertices[i].add(pivot);
 		}
 
 		if (this.normals != null){
