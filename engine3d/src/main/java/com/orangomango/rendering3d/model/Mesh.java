@@ -76,6 +76,7 @@ public class Mesh{
 		return this.triangles;
 	}
 
+	// TODO: Change x,y,z to Point3D
 	public void translate(double x, double y, double z){
 		for (int i = 0; i < this.vertices.length; i++){
 			Point3D vertex = this.vertices[i];
