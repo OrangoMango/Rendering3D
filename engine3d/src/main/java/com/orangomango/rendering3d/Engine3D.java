@@ -314,44 +314,32 @@ public class Engine3D{
 		return (normal.dotProduct(planePoint)-normal.dotProduct(point))/normal.dotProduct(direction);
 	}
 
-	// TODO: Color and light needs to be interpolated
-	public static List<MeshTriangle> clip(MeshTriangle original, Camera camera, Point3D planeN, Point3D planeA){
+	// TODO: Color needs to be interpolated
+	public static List<MeshTriangle> clip(MeshTriangle original, Point3D planeN, Point3D planeA){
 		MeshVertex[] inside = new MeshVertex[3];
 		MeshVertex[] outside = new MeshVertex[3];
-		Point3D[] insideView = new Point3D[3];
-		Point3D[] outsideView = new Point3D[3];
 		int insideN = 0;
 		int outsideN = 0;
 		List<MeshTriangle> output = new ArrayList<>();
 
-		Point3D view1 = original.getVertex1().getViewPosition(camera);
-		Point3D view2 = original.getVertex2().getViewPosition(camera);
-		Point3D view3 = original.getVertex3().getViewPosition(camera);
-
-		double d1 = distanceToPlane(planeN, planeA, view1, planeN.multiply(-1));
-		double d2 = distanceToPlane(planeN, planeA, view2, planeN.multiply(-1));
-		double d3 = distanceToPlane(planeN, planeA, view3, planeN.multiply(-1));
+		double d1 = distanceToPlane(planeN, planeA, original.getVertex1().getPosition(), planeN.multiply(-1));
+		double d2 = distanceToPlane(planeN, planeA, original.getVertex2().getPosition(), planeN.multiply(-1));
+		double d3 = distanceToPlane(planeN, planeA, original.getVertex3().getPosition(), planeN.multiply(-1));
 
 		if (d1 >= 0){
-			inside[insideN] = original.getVertex1();
-			insideView[insideN++] = view1;
+			inside[insideN++] = original.getVertex1();
 		} else {
-			outside[outsideN] = original.getVertex1();
-			outsideView[outsideN++] = view1;
+			outside[outsideN++] = original.getVertex1();
 		}
 		if (d2 >= 0){
-			inside[insideN] = original.getVertex2();
-			insideView[insideN++] = view2;
+			inside[insideN++] = original.getVertex2();
 		} else {
-			outside[outsideN] = original.getVertex2();
-			outsideView[outsideN++] = view2;
+			outside[outsideN++] = original.getVertex2();
 		}
 		if (d3 >= 0){
-			inside[insideN] = original.getVertex3();
-			insideView[insideN++] = view3;
+			inside[insideN++] = original.getVertex3();
 		} else {
-			outside[outsideN] = original.getVertex3();
-			outsideView[outsideN++] = view3;
+			outside[outsideN++] = original.getVertex3();
 		}
 
 		if (insideN == 3){
@@ -360,36 +348,32 @@ public class Engine3D{
 			// No output (All vertices are outside)
 		} else if (insideN == 1){
 			// 1 triangle is produced
-			Point3D dp1 = outsideView[0].subtract(insideView[0]).normalize();
-			Point3D dp2 = outsideView[1].subtract(insideView[0]).normalize();
-			double factor1 = distanceToPlane(planeN, planeA, insideView[0], dp1);
-			double factor2 = distanceToPlane(planeN, planeA, insideView[0], dp2);
+			Point3D dp1 = outside[0].getPosition().subtract(inside[0].getPosition()).normalize();
+			Point3D dp2 = outside[1].getPosition().subtract(inside[0].getPosition()).normalize();
+			double factor1 = distanceToPlane(planeN, planeA, inside[0].getPosition(), dp1);
+			double factor2 = distanceToPlane(planeN, planeA, inside[0].getPosition(), dp2);
 			MeshVertex vex1, vex2, vex3;
 			if (original.getVertex1().isImageVertex()){
 				Point2D tex1 = inside[0].getTextureCoords().add(outside[0].getTextureCoords().subtract(inside[0].getTextureCoords()).normalize().multiply(factor1));
 				Point2D tex2 = inside[0].getTextureCoords().add(outside[1].getTextureCoords().subtract(inside[0].getTextureCoords()).normalize().multiply(factor2));
 				vex1 = inside[0];
-				vex2 = new MeshVertex(insideView[0].add(dp1.multiply(factor1)), outside[0].getNormal(), tex1, outside[0].getImage());
-				vex3 = new MeshVertex(insideView[0].add(dp2.multiply(factor2)), outside[1].getNormal(), tex2, outside[1].getImage());
+				vex2 = new MeshVertex(inside[0].getPosition().add(dp1.multiply(factor1)), outside[0].getNormal(), tex1, outside[0].getImage());
+				vex3 = new MeshVertex(inside[0].getPosition().add(dp2.multiply(factor2)), outside[1].getNormal(), tex2, outside[1].getImage());
 			} else {
 				vex1 = inside[0];
-				vex2 = new MeshVertex(insideView[0].add(dp1.multiply(factor1)), outside[0].getNormal(), outside[0].getColor());
-				vex3 = new MeshVertex(insideView[0].add(dp2.multiply(factor2)), outside[1].getNormal(), outside[1].getColor());
+				vex2 = new MeshVertex(inside[0].getPosition().add(dp1.multiply(factor1)), outside[0].getNormal(), outside[0].getColor());
+				vex3 = new MeshVertex(inside[0].getPosition().add(dp2.multiply(factor2)), outside[1].getNormal(), outside[1].getColor());
 			}
-
-			// Build the view
-			vex2.setInView();
-			vex3.setInView();
 
 			MeshTriangle triangle = new MeshTriangle(vex1, vex2, vex3);
 			output.add(triangle);
 		} else if (insideN == 2){
 			// 2 triangles are produced
-			Point3D dp1 = outsideView[0].subtract(insideView[0]).normalize();
-			Point3D dp2 = outsideView[0].subtract(insideView[1]).normalize();
-			double factor1 = distanceToPlane(planeN, planeA, insideView[0], dp1);
-			double factor2 = distanceToPlane(planeN, planeA, insideView[1], dp2);
-			Point3D tempP = insideView[0].add(dp1.multiply(factor1));
+			Point3D dp1 = outside[0].getPosition().subtract(inside[0].getPosition()).normalize();
+			Point3D dp2 = outside[0].getPosition().subtract(inside[1].getPosition()).normalize();
+			double factor1 = distanceToPlane(planeN, planeA, inside[0].getPosition(), dp1);
+			double factor2 = distanceToPlane(planeN, planeA, inside[1].getPosition(), dp2);
+			Point3D tempP = inside[0].getPosition().add(dp1.multiply(factor1));
 			MeshVertex vex1, vex2, vex3; // Triangle 1
 			MeshVertex vex4, vex5, vex6; // Triangle 2
 			if (original.getVertex1().isImageVertex()){
@@ -400,7 +384,7 @@ public class Engine3D{
 
 				vex4 = vex3;
 				vex5 = inside[1];
-				vex6 = new MeshVertex(insideView[1].add(dp2.multiply(factor2)), outside[0].getNormal(), inside[1].getTextureCoords().add(outside[0].getTextureCoords().subtract(inside[1].getTextureCoords()).normalize().multiply(factor2)), outside[0].getImage());
+				vex6 = new MeshVertex(inside[1].getPosition().add(dp2.multiply(factor2)), outside[0].getNormal(), inside[1].getTextureCoords().add(outside[0].getTextureCoords().subtract(inside[1].getTextureCoords()).normalize().multiply(factor2)), outside[0].getImage());
 			} else {
 				vex1 = inside[0];
 				vex2 = inside[1];
@@ -408,12 +392,8 @@ public class Engine3D{
 
 				vex4 = vex3;
 				vex5 = inside[1];
-				vex6 = new MeshVertex(insideView[1].add(dp2.multiply(factor2)), outside[0].getNormal(), outside[0].getColor());
+				vex6 = new MeshVertex(inside[1].getPosition().add(dp2.multiply(factor2)), outside[0].getNormal(), outside[0].getColor());
 			}
-
-			// Build the view
-			vex3.setInView();
-			vex6.setInView();
 
 			MeshTriangle triangle1 = new MeshTriangle(vex1, vex2, vex3);
 			MeshTriangle triangle2 = new MeshTriangle(vex4, vex5, vex6);

@@ -46,6 +46,10 @@ public class Light{
 				if (factor < -1) factor = 1;
 				else if (factor > 0) factor = 0;
 				else factor = Math.abs(factor);
+
+				if (normal.equals(Point3D.ZERO)){
+					System.out.println("Heyyyy");
+				}
 			}
 			
 			return factor*intensity+AMBIENT_LIGHT;

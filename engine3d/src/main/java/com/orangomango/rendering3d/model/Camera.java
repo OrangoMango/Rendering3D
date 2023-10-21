@@ -12,7 +12,7 @@ public class Camera{
 	private double width, height;
 	private boolean stateChanged = true;
 	private double[][] savedMatrix = null;
-	private Point3D[][] frustum, viewFrustum;
+	private Point3D[][] frustum;
 	private double[][] projectionMatrix = null;
 	private Consumer<Point3D> onPositionChanged;
 	private Point3D lastPosition;
@@ -46,7 +46,6 @@ public class Camera{
 
 	private void rebuildCamera(){
 		this.frustum = null;
-		this.viewFrustum = null;
 		this.projectionMatrix = null;
 	}
 
@@ -147,31 +146,22 @@ public class Camera{
 		this.ry = ry;
 	}
 
-	public Point3D[][] getViewFrustum(boolean viewSpace){
-		if (this.viewFrustum != null && viewSpace){
-			return this.viewFrustum;
-		}
-		if (this.frustum != null && !viewSpace){
+	public Point3D[][] getViewFrustum(){
+		if (this.frustum != null){
 			return this.frustum;
 		}
 
-		double cx = viewSpace ? 0 : this.position.getX();
-		double cy = viewSpace ? 0 : this.position.getY();
-		double cz = viewSpace ? 0 : this.position.getZ();
-		double rx = viewSpace ? 0 : this.rx;
-		double ry = viewSpace ? 0 : this.ry;
-
-		double stepX = Math.cos(rx)*Math.cos(ry+Math.PI/2);
-		double stepY = -Math.sin(rx);
-		double stepZ = Math.cos(rx)*Math.sin(ry+Math.PI/2);
+		double stepX = Math.cos(this.rx)*Math.cos(this.ry+Math.PI/2);
+		double stepY = -Math.sin(this.rx);
+		double stepZ = Math.cos(this.rx)*Math.sin(this.ry+Math.PI/2);
 		Point3D direction = new Point3D(stepX, stepY, stepZ);
 
-		stepX = Math.cos(rx+Math.PI/2)*Math.cos(ry+Math.PI/2);
-		stepY = -Math.sin(rx+Math.PI/2);
-		stepZ = Math.cos(rx+Math.PI/2)*Math.sin(ry+Math.PI/2);
+		stepX = Math.cos(this.rx+Math.PI/2)*Math.cos(this.ry+Math.PI/2);
+		stepY = -Math.sin(this.rx+Math.PI/2);
+		stepZ = Math.cos(this.rx+Math.PI/2)*Math.sin(this.ry+Math.PI/2);
 		Point3D vDirection = new Point3D(stepX, stepY, stepZ);
 
-		Point3D eye = new Point3D(cx, cy, cz);
+		Point3D eye = new Point3D(this.position.getX(), this.position.getY(), this.position.getZ());
 
 		double nearPlaneHeight = this.zNear*Math.tan(this.fov/2)*2;
 		double nearPlaneWidth = nearPlaneHeight/this.aspectRatio;
@@ -195,28 +185,23 @@ public class Camera{
 		Point3D rightNormal = rightPoint.subtract(eye).crossProduct(vDirection).normalize();
 		Point3D leftNormal = leftPoint.subtract(eye).crossProduct(vDirection).normalize().multiply(-1);
 
-		stepX = Math.cos(rx+this.fov/2+Math.PI/2)*Math.cos(ry+Math.PI/2);
-		stepY = -Math.sin(rx+this.fov/2+Math.PI/2);
-		stepZ = Math.cos(rx+this.fov/2+Math.PI/2)*Math.sin(ry+Math.PI/2);
+		stepX = Math.cos(this.rx+this.fov/2+Math.PI/2)*Math.cos(this.ry+Math.PI/2);
+		stepY = -Math.sin(this.rx+this.fov/2+Math.PI/2);
+		stepZ = Math.cos(this.rx+this.fov/2+Math.PI/2)*Math.sin(this.ry+Math.PI/2);
 		Point3D topNormal = new Point3D(stepX, stepY, stepZ);
 
-		stepX = Math.cos(rx-this.fov/2-Math.PI/2)*Math.cos(ry+Math.PI/2);
-		stepY = -Math.sin(rx-this.fov/2-Math.PI/2);
-		stepZ = Math.cos(rx-this.fov/2-Math.PI/2)*Math.sin(ry+Math.PI/2);
+		stepX = Math.cos(this.rx-this.fov/2-Math.PI/2)*Math.cos(this.ry+Math.PI/2);
+		stepY = -Math.sin(this.rx-this.fov/2-Math.PI/2);
+		stepZ = Math.cos(this.rx-this.fov/2-Math.PI/2)*Math.sin(this.ry+Math.PI/2);
 		Point3D bottomNormal = new Point3D(stepX, stepY, stepZ);
 
-		Point3D[][] frustum = new Point3D[][]{{frontNormal, frontPoint}, {backNormal, backPoint}, {rightNormal, rightPoint}, {leftNormal, leftPoint}, {topNormal, topPoint}, {bottomNormal, bottomPoint}};
-		if (viewSpace){
-			this.viewFrustum = frustum;
-		} else {
-			this.frustum = frustum;
-		}
+		this.frustum = new Point3D[][]{{frontNormal, frontPoint}, {backNormal, backPoint}, {rightNormal, rightPoint}, {leftNormal, leftPoint}, {topNormal, topPoint}, {bottomNormal, bottomPoint}};
 
-		return viewSpace ? this.viewFrustum : this.frustum;
+		return this.frustum;
 	}
 
 	public boolean isVisible(MeshTriangle triangle){
-		Point3D[][] frustum = getViewFrustum(false);
+		Point3D[][] frustum = getViewFrustum();
 		Point3D v1 = triangle.getVertex1().getPosition();
 		Point3D v2 = triangle.getVertex2().getPosition();
 		Point3D v3 = triangle.getVertex3().getPosition();

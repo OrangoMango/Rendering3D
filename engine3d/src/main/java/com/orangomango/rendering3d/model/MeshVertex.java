@@ -13,7 +13,6 @@ import com.orangomango.rendering3d.Engine3D;
 public class MeshVertex{
 	private boolean imageVertex;
 	private Point3D position, normal;
-	private double[] view;
 
 	// Image vertex
 	private Point2D textureCoords;
@@ -102,7 +101,7 @@ public class MeshVertex{
 		this.normal = n;
 	}
 
-	public Point3D getViewPosition(Camera camera){
+	private double[] getViewPosition(Camera camera){
 		ProjectedVertex projectedVertex = VERTICES.getOrDefault(this, null);
 		if (projectedVertex == null || projectedVertex.view == null){
 			double[] p = new double[]{this.position.getX(), this.position.getY(), this.position.getZ(), 1};
@@ -115,40 +114,20 @@ public class MeshVertex{
 				projectedVertex.view = view;
 			}
 
-			this.view = view;
-
-			return new Point3D(view[0], view[1], view[2]);
+			return view;
 		} else {
-			return new Point3D(projectedVertex.view[0], projectedVertex.view[1], projectedVertex.view[2]);
+			return projectedVertex.view;
 		}
-	}
-
-	/**
-	 * Set this vertex as already projected into view space.
-	 * After calling this method, {@link MeshVertex#position} can't be used anymore (it contains the view position and not the absolute position).
-	 * As there is only 1 camera in the scene, at this view position ({@link MeshVertex#position}) there is only 1 vertex associated.
-	 * @see MeshVertex#hashCode()
-	 */
-	public void setInView(){
-		double[] view = new double[]{this.position.getX(), this.position.getY(), this.position.getZ(), 1};
-		ProjectedVertex projectedVertex = VERTICES.getOrDefault(this, null);
-		if (projectedVertex == null || projectedVertex.view == null){
-			if (projectedVertex == null){
-				projectedVertex = new ProjectedVertex(view, null);
-				VERTICES.put(this, projectedVertex);
-			} else {
-				projectedVertex.view = view;
-			}
-		} else {
-			projectedVertex.view = view;
-		}
-		this.view = view;
 	}
 
 	public double[] getProjection(Camera camera){
 		ProjectedVertex projectedVertex = VERTICES.getOrDefault(this, null);
+
+		// Calculate the position in the view space
+		double[] view = getViewPosition(camera);
+
 		if (projectedVertex == null || projectedVertex.projection == null){
-			double[] proj = Engine3D.multiply(camera.getProjectionMatrix(), projectedVertex == null ? this.view : projectedVertex.view);
+			double[] proj = Engine3D.multiply(camera.getProjectionMatrix(), view);
 			double px = proj[0]/(proj[3] == 0 ? 1 : proj[3]);
 			double py = proj[1]/(proj[3] == 0 ? 1 : proj[3]);
 			double pz = proj[2];
@@ -161,7 +140,7 @@ public class MeshVertex{
 			double[] projection = new double[]{px, py, 1/proj[3]};
 
 			if (projectedVertex == null){
-				projectedVertex = new ProjectedVertex(this.view, projection);
+				projectedVertex = new ProjectedVertex(view, projection);
 				VERTICES.put(this, projectedVertex);
 			} else {
 				projectedVertex.projection = projection;

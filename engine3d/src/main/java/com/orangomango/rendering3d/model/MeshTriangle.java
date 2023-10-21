@@ -59,13 +59,13 @@ public class MeshTriangle{
 
 		if (isVisible && (dot < 0 || this.showAllFaces)){
 			// Frustum clipping
-			Point3D[][] frustum = camera.getViewFrustum(true);
+			Point3D[][] frustum = camera.getViewFrustum();
 			List<MeshTriangle> triangles = new ArrayList<>();
 			triangles.add(this);
 			for (Point3D[] plane : frustum){
 				List<MeshTriangle> generated = new ArrayList<>();
 				for (MeshTriangle bigTriangle : triangles){
-					generated.addAll(Engine3D.clip(bigTriangle, camera, plane[0].multiply(-1), plane[1]));
+					generated.addAll(Engine3D.clip(bigTriangle, plane[0].multiply(-1), plane[1]));
 				}
 				triangles = generated;
 			}

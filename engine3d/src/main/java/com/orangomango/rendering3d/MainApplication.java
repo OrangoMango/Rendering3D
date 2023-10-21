@@ -47,36 +47,58 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.SPACE, () -> camera.move(new Point3D(0, -speed, 0)), false);
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(new Point3D(0, speed, 0)), false);
 
-		buildScene5(engine);
-		engine.setOnKey(KeyCode.DIGIT1, () -> {
-			engine.clearObjects();
-			engine.getLights().clear();
-			buildScene1(engine);
-		}, true);
-		engine.setOnKey(KeyCode.DIGIT2, () -> {
-			engine.clearObjects();
-			engine.getLights().clear();
-			buildScene2(engine);
-		}, true);
-		engine.setOnKey(KeyCode.DIGIT3, () -> {
-			engine.clearObjects();
-			engine.getLights().clear();
-			buildScene3(engine);
-		}, true);
-		engine.setOnKey(KeyCode.DIGIT4, () -> {
-			engine.clearObjects();
-			engine.getLights().clear();
-			buildScene4(engine);
-		}, true);
-		engine.setOnKey(KeyCode.DIGIT5, () -> {
-			engine.clearObjects();
-			engine.getLights().clear();
-			buildScene5(engine);
-		}, true);
+		buildScene6(engine);
 
 		stage.setResizable(false);
 		stage.setScene(engine.getScene());
 		stage.show();
+	}
+
+	private void buildScene6(Engine3D engine){
+		final int width = 5;
+		final int depth = 5;
+
+		for (int i = 0; i < width; i++){
+			for (int j = 0; j < depth; j++){
+				Color top = Color.color(Math.random(), Math.random(), Math.random());
+				Color bottom = Color.color(Math.random(), Math.random(), Math.random());
+				Color right = Color.color(Math.random(), Math.random(), Math.random());
+				Color left = Color.color(Math.random(), Math.random(), Math.random());
+				Color front = Color.color(Math.random(), Math.random(), Math.random());
+				Color back = Color.color(Math.random(), Math.random(), Math.random());
+
+				Mesh object = new Mesh(new Point3D[]{
+					new Point3D(i, 0, j), new Point3D(i, 1, j), new Point3D(i+1, 1, j), new Point3D(i+1, 0, j),
+					new Point3D(i, 0, j+1), new Point3D(i, 1, j+1), new Point3D(i+1, 1, j+1), new Point3D(i+1, 0, j+1)
+				}, new int[][]{
+					{0, 1, 2}, {0, 2, 3}, {3, 2, 6},
+					{3, 6, 7}, {7, 6, 5}, {7, 5, 4},
+					{4, 5, 1}, {4, 1, 0}, {1, 5, 6},
+					{1, 6, 2}, {4, 0, 3}, {4, 3, 7}
+				}, null, null, new Color[]{
+					front, front, right, right, back, back, left, left, bottom, bottom, top, top
+				});
+
+				setupHiddenFaces(object, i, 0, j, width, 1, depth);
+
+				object.build();
+				engine.addObject(object);
+			}
+		}
+
+		Light light = new Light(new Camera(new Point3D(0, -2, 0), WIDTH, HEIGHT, Math.PI/4, 100, 0.3));
+		engine.getLights().add(light);
+
+		engine.getCamera().setPosition(new Point3D(0, 0, 0));
+
+		engine.setOnUpdate(gc -> {
+			gc.setFill(Color.BLACK);
+			gc.setTextAlign(TextAlignment.RIGHT);
+			gc.setFont(new Font("sans-serif", 11));
+			String text = "Projected: "+MeshVertex.getProjectedVerticesCount();
+			text += "\nView: "+MeshVertex.getViewVerticesCount();
+			gc.fillText(text, WIDTH*0.95, HEIGHT*0.1);
+		});
 	}
 
 	private void buildScene5(Engine3D engine){
