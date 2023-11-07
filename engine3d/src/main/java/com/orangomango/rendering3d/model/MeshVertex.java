@@ -123,7 +123,7 @@ public class MeshVertex{
 	public double[] getProjection(Camera camera){
 		ProjectedVertex projectedVertex = VERTICES.getOrDefault(this, null);
 
-		// Calculate the position in the view space
+		// Calculate the position in the view space if needed
 		double[] view = getViewPosition(camera);
 
 		if (projectedVertex == null || projectedVertex.projection == null){

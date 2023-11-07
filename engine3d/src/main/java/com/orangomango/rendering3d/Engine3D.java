@@ -66,6 +66,10 @@ public class Engine3D{
 		counter.start();
 	}
 
+	public int getFPS(){
+		return this.fps;
+	}
+
 	public void setOnKey(KeyCode code, Runnable r, boolean singleClick){
 		this.keyEvents.put(code, r);
 		this.keyEventsSingle.put(code, singleClick);
