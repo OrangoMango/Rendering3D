@@ -5,6 +5,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.image.PixelWriter;
 import javafx.scene.layout.StackPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
@@ -215,11 +216,12 @@ public class Engine3D{
 
 		// Render meshes
 		if (!SHOW_LINES){
+			PixelWriter pixelWriter = gc.getPixelWriter();
 			for (int i = 0; i < this.width; i++){
 				for (int j = 0; j < this.height; j++){
 					Color color = this.canvas[i][j];
 					if (color != null){
-						gc.getPixelWriter().setColor(i, j, Color.color(color.getRed(), color.getGreen(), color.getBlue()));
+						pixelWriter.setColor(i, j, Color.color(color.getRed(), color.getGreen(), color.getBlue()));
 					}
 				}
 			}
