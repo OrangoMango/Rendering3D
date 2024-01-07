@@ -28,7 +28,7 @@ public class Engine3D{
 	private EventHandler<MouseEvent> onMousePressed;
 	private Robot robot;
 	private Stage stage;
-	private Color[][] canvas;
+	private ColorCanvas canvas;
 	private Camera camera;
 	private List<Mesh> objects = new ArrayList<>();
 	private List<Light> sceneLights = new ArrayList<>();
@@ -50,7 +50,7 @@ public class Engine3D{
 		this.width = width;
 		this.height = height;
 		this.stage = stage;
-		this.canvas = new Color[this.width][this.height];
+		this.canvas = new ColorCanvas(this.width, this.height);
 
 		Thread counter = new Thread(() -> {
 			while (true){
@@ -162,7 +162,7 @@ public class Engine3D{
 		gc.clearRect(0, 0, this.width, this.height);
 		for (int i = 0; i < this.width; i++){
 			for (int j = 0; j < this.height; j++){
-				this.canvas[i][j] = this.backgroundColor;
+				this.canvas.setColor(this.backgroundColor, i, j);
 			}
 		}
 		gc.setFill(this.backgroundColor);
@@ -219,7 +219,7 @@ public class Engine3D{
 			PixelWriter pixelWriter = gc.getPixelWriter();
 			for (int i = 0; i < this.width; i++){
 				for (int j = 0; j < this.height; j++){
-					Color color = this.canvas[i][j];
+					Color color = this.canvas.getColor(i, j);
 					if (color != null){
 						pixelWriter.setColor(i, j, Color.color(color.getRed(), color.getGreen(), color.getBlue()));
 					}

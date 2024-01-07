@@ -9,7 +9,7 @@ public class Camera{
 	private double rx, ry;
 	public double[][] depthBuffer;
 	private double aspectRatio, fov, zFar, zNear;
-	private double width, height;
+	private int width, height;
 	private boolean stateChanged = true;
 	private double[][] savedMatrix = null;
 	private Point3D[][] frustum;

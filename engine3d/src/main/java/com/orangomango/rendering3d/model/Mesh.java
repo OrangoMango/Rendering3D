@@ -156,7 +156,7 @@ public class Mesh{
 		}
 	}
 
-	public List<ProjectedTriangle> render(Color[][] canvas, GraphicsContext gc){
+	public List<ProjectedTriangle> render(ColorCanvas canvas, GraphicsContext gc){
 		List<ProjectedTriangle> transparentTriangles = new ArrayList<>();
 		for (int i = 0; i < this.triangles.length; i++){
 			MeshTriangle mt = this.triangles[i];

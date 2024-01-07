@@ -26,8 +26,8 @@ import com.orangomango.rendering3d.meshloader.MeshLoader;
  * @author Paul Kocian aka OrangoMango (https://orangomango.github.io)
  */
 public class MainApplication extends Application{
-	private static final int WIDTH = 360;
-	private static final int HEIGHT = 180;
+	private static final int WIDTH = 720; //360;
+	private static final int HEIGHT = 360; //180;
 	private static boolean ROTATE_LIGHT = false;
 	
 	@Override
@@ -46,6 +46,8 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.R, () -> camera.reset(), true);
 		engine.setOnKey(KeyCode.SPACE, () -> camera.move(new Point3D(0, -speed, 0)), false);
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(new Point3D(0, speed, 0)), false);
+
+		engine.setOnKey(KeyCode.O, engine::toggleMouseMovement, true);
 
 		buildScene6(engine);
 

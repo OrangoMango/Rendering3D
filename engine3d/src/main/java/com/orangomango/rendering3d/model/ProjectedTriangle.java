@@ -80,7 +80,7 @@ public class ProjectedTriangle{
 		}
 	}
 
-	public void render(Color[][] canvas, GraphicsContext gc){
+	public void render(ColorCanvas canvas, GraphicsContext gc){
 		if (canvas == null && gc == null){
 			calculateDepthBuffer();
 		} else {
@@ -178,7 +178,6 @@ public class ProjectedTriangle{
 		dw1 = w3-w2;
 		
 		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
-		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
 		
 		dw1_step = 0;
 		if (dy1 != 0) dw1_step = dw1/Math.abs(dy1);
@@ -212,7 +211,7 @@ public class ProjectedTriangle{
 		}
 	}
 
-	private void renderTriangle(Color[][] canvas){
+	private void renderTriangle(ColorCanvas canvas){
 		int x1 = (int)this.v1[0];
 		int y1 = (int)this.v1[1];
 		double w1 = this.v1[2];
@@ -344,7 +343,7 @@ public class ProjectedTriangle{
 
 					if (Engine3D.isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= tex_w){
 						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
-						Color backColor = canvas[j][i];
+						Color backColor = canvas.getColor(j, i);
 
 						// Transparency
 						if (color.getOpacity() == 0 || (backColor.getOpacity() < 1 && color.getOpacity() < 1 && Math.abs(this.camera.depthBuffer[j][i]-tex_w) < W_EPSILON)){
@@ -373,7 +372,7 @@ public class ProjectedTriangle{
 						}
 
 						this.camera.depthBuffer[j][i] = tex_w;
-						canvas[j][i] = Light.getLight(color, this.lightIntensity);
+						canvas.setColor(Light.getLight(color, this.lightIntensity), j, i);
 					}
 					
 					t += tstep;
@@ -389,7 +388,6 @@ public class ProjectedTriangle{
 		dl1 = l3-l2;
 		
 		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
-		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
 		
 		du1_step = 0; dv1_step = 0; dw1_step = 0; dl1_step = 0;
 		if (dy1 != 0){
@@ -436,7 +434,7 @@ public class ProjectedTriangle{
 
 					if (Engine3D.isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= tex_w){
 						Color color = reader.getColor(Math.min((int)width-1, pix_x), Math.min((int)height-1, pix_y));
-						Color backColor = canvas[j][i];
+						Color backColor = canvas.getColor(j, i);
 
 						// Transparency
 						if (color.getOpacity() == 0 || (backColor.getOpacity() < 1 && color.getOpacity() < 1 && Math.abs(this.camera.depthBuffer[j][i]-tex_w) < W_EPSILON)){
@@ -465,7 +463,7 @@ public class ProjectedTriangle{
 						}
 
 						this.camera.depthBuffer[j][i] = tex_w;
-						canvas[j][i] = Light.getLight(color, this.lightIntensity);
+						canvas.setColor(Light.getLight(color, this.lightIntensity), j, i);
 					}
 					
 					t += tstep;
@@ -474,7 +472,7 @@ public class ProjectedTriangle{
 		}
 	}
 
-	private void renderColoredTriangle(Color[][] canvas){
+	private void renderColoredTriangle(ColorCanvas canvas){
 		int x1 = (int)this.v1[0];
 		int y1 = (int)this.v1[1];
 		double w1 = this.v1[2];
@@ -606,7 +604,7 @@ public class ProjectedTriangle{
 					col_l = (1-t)*col_sl+t*col_el;
 					if (Engine3D.isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
 						Color color = Color.color(col_r, col_g, col_b, col_o);
-						Color backColor = canvas[j][i];
+						Color backColor = canvas.getColor(j, i);
 
 						// Transparency
 						if (color.getOpacity() == 0 || (backColor.getOpacity() < 1 && color.getOpacity() < 1 && Math.abs(this.camera.depthBuffer[j][i]-col_w) < W_EPSILON)){
@@ -635,7 +633,7 @@ public class ProjectedTriangle{
 						}
 						
 						this.camera.depthBuffer[j][i] = col_w;
-						canvas[j][i] = Light.getLight(color, this.lightIntensity);
+						canvas.setColor(Light.getLight(color, this.lightIntensity), j, i);
 					}
 
 					t += tstep;
@@ -654,7 +652,6 @@ public class ProjectedTriangle{
 		dl1 = l3-l2;
 
 		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
-		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
 
 		dr1_step = 0; dg1_step = 0; db1_step = 0; dw1_step = 0; dl1_step = 0;
 		if (dy1 != 0){
@@ -708,7 +705,7 @@ public class ProjectedTriangle{
 					
 					if (Engine3D.isInScene(j, i, this.camera) && this.camera.depthBuffer[j][i] <= col_w){
 						Color color = Color.color(col_r, col_g, col_b, col_o);
-						Color backColor = canvas[j][i];
+						Color backColor = canvas.getColor(j, i);
 
 						// Transparency
 						if (color.getOpacity() == 0 || (backColor.getOpacity() < 1 && color.getOpacity() < 1 && Math.abs(this.camera.depthBuffer[j][i]-col_w) < W_EPSILON)){
@@ -737,7 +734,7 @@ public class ProjectedTriangle{
 						}
 						
 						this.camera.depthBuffer[j][i] = col_w;
-						canvas[j][i] = Light.getLight(color, this.lightIntensity);
+						canvas.setColor(Light.getLight(color, this.lightIntensity), j, i);
 					}
 
 					t += tstep;
