@@ -542,7 +542,7 @@ public class ProjectedTriangle{
 
 		double col_r, col_g, col_b, col_o, col_w, col_l;
 		double dax_step = 0, dbx_step = 0, dr1_step = 0, dg1_step = 0, db1_step = 0, da1_step = 0, dr2_step = 0, dg2_step = 0, db2_step = 0, da2_step = 0, dw1_step = 0, dw2_step = 0, dl1_step = 0, dl2_step = 0;
-		
+
 		if (dy1 != 0) dax_step = dx1/(double)Math.abs(dy1);
 		if (dy2 != 0) dbx_step = dx2/(double)Math.abs(dy2);
 		
